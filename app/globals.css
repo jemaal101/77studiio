@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+
+  html,
+  body {
+    background-color: #080808;
+    color: #f5f5f5;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  ::selection {
+    background: #b14eff;
+    color: #080808;
+  }
+
+  /* Focus ring — single, deliberate purple */
+  :focus-visible {
+    outline: 2px solid #b14eff;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Hide scrollbar but keep functionality on horizontal scroll regions */
+  .scroll-x::-webkit-scrollbar {
+    display: none;
+  }
+  .scroll-x {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer components {
+  /* Container — generous editorial gutters */
+  .container-edge {
+    @apply mx-auto w-full max-w-[1400px] px-6 md:px-10 lg:px-16;
+  }
+
+  /* Eyebrow / kicker — mono, small caps feel */
+  .kicker {
+    @apply font-mono text-[11px] uppercase tracking-[0.25em] text-ink-muted;
+  }
+
+  /* Hairline divider */
+  .hairline {
+    @apply h-px w-full bg-line;
+  }
+
+  /* Magnetic button base */
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-accent px-7 py-3.5 text-sm font-medium text-black transition-all duration-300 hover:bg-accent-hover hover:shadow-[0_0_40px_rgba(177,78,255,0.45)] active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-full border border-line-bright px-7 py-3.5 text-sm font-medium text-ink transition-all duration-300 hover:border-ink hover:bg-ink/[0.03] active:scale-[0.98];
+  }
+
+  /* Editorial link with underline transition */
+  .link-underline {
+    @apply relative inline-block text-ink transition-colors;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute bottom-0 left-0 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-500;
+    transform-origin: right;
+  }
+  .link-underline:hover::after {
+    @apply scale-x-100;
+    transform-origin: left;
+  }
+
+  /* Noise overlay */
+  .noise {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Vertical line element — page architecture */
+  .v-line {
+    @apply absolute top-0 h-full w-px bg-line;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Stagger child entrance — used with intersection observer */
+  .will-reveal > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .will-reveal.revealed > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .will-reveal.revealed > *:nth-child(1) { transition-delay: 0ms; }
+  .will-reveal.revealed > *:nth-child(2) { transition-delay: 80ms; }
+  .will-reveal.revealed > *:nth-child(3) { transition-delay: 160ms; }
+  .will-reveal.revealed > *:nth-child(4) { transition-delay: 240ms; }
+  .will-reveal.revealed > *:nth-child(5) { transition-delay: 320ms; }
+  .will-reveal.revealed > *:nth-child(6) { transition-delay: 400ms; }
+  .will-reveal.revealed > *:nth-child(7) { transition-delay: 480ms; }
+  .will-reveal.revealed > *:nth-child(8) { transition-delay: 560ms; }
+
+  /* Reduced motion respect */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .will-reveal > * {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+}
