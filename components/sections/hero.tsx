@@ -33,7 +33,7 @@ export function Hero() {
         poster=""
         className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover opacity-[0.55]"
       >
-        <source src="/pillars/pillar-03.mp4" type="video/mp4" />
+        <source src="/hero/hero.mp4" type="video/mp4" />
       </video>
 
       {/* Layered overlays — vignette + bottom darken + brand wash */}

@@ -49,7 +49,7 @@ export function Pillars() {
         </div>
 
         {/* Alternating editorial blocks */}
-        <div className="mt-20 flex flex-col gap-24 md:mt-32 md:gap-40">
+        <div className="mt-12 flex flex-col gap-14 md:mt-16 md:gap-20">
           {pillars.map((p, i) => (
             <Pillar key={p.n} pillar={p} flipped={i % 2 === 1} />
           ))}
@@ -110,7 +110,7 @@ function Pillar({
   return (
     <article
       ref={ref}
-      className={`grid items-start gap-8 md:grid-cols-12 md:gap-12 ${flipped ? "md:[&>*:first-child]:col-start-7" : ""}`}
+      className={`grid items-center gap-6 md:grid-cols-12 md:gap-12 ${flipped ? "md:[&>*:first-child]:col-start-7" : ""}`}
     >
       {/* Text */}
       <div className={`md:col-span-6 ${flipped ? "md:col-start-7" : ""}`}>
@@ -121,12 +121,12 @@ function Pillar({
           </div>
         </Reveal>
         <Reveal delay={0.05}>
-          <h3 className="mt-6 font-display text-display-lg text-balance text-ink">
+          <h3 className="mt-4 font-display text-display-md text-balance text-ink">
             {pillar.title}
           </h3>
         </Reveal>
         <Reveal delay={0.1}>
-          <p className="mt-8 max-w-xl text-pretty text-body-xl leading-snug text-ink-muted">
+          <p className="mt-5 max-w-lg text-pretty text-body-lg leading-relaxed text-ink-muted">
             {pillar.body}
           </p>
         </Reveal>
@@ -147,7 +147,7 @@ function Pillar({
               rotateY: tiltY,
               transformStyle: "preserve-3d",
             }}
-            className="group relative aspect-[3/4] overflow-hidden rounded-3xl border border-line bg-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)] md:aspect-[4/5]"
+            className="group relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)] md:aspect-[5/4]"
           >
             {pillar.video ? (
               <>
