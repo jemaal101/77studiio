@@ -260,6 +260,14 @@ export const workSamplesGallery: WorkSample[] = [
     note: "Third variant. Picked, polished, shipped.",
   },
   {
+    n: "08b",
+    video: "/work/work-hf4.mp4",
+    title: "AI cinematic — set 04",
+    client: "Studio brief",
+    discipline: "Motion · generated",
+    note: "Vertical hero cut. Compressed for the web, sharp on every screen.",
+  },
+  {
     n: "09",
     video: "/pillars/pillar-01.mp4",
     title: "Beverage motion",

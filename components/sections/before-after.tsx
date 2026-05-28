@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ImageIcon } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 
@@ -85,7 +85,7 @@ export function BeforeAfter() {
           </Reveal>
         </div>
 
-        <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-3 md:gap-6">
+        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3 md:gap-8 lg:gap-10">
           {CASES.map((c, i) => (
             <Reveal key={c.id} delay={i * 0.08}>
               <BeforeAfterCard data={c} />
@@ -213,22 +213,9 @@ function BeforeAfterCard({ data }: { data: Case }) {
 }
 
 function MediaSlot({ slot, tone }: { slot: Slot; tone: "before" | "after" }) {
-  // Video
+  // Video — playback gated to viewport so we don't decode every clip at once
   if (slot.video) {
-    return (
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-label={slot.alt}
-        className="absolute inset-0 h-full w-full object-cover"
-        style={{ objectPosition: slot.position ?? "center" }}
-      >
-        <source src={slot.video} type="video/mp4" />
-      </video>
-    );
+    return <InViewFillVideo src={slot.video} position={slot.position} alt={slot.alt} />;
   }
 
   // Image
@@ -268,5 +255,64 @@ function MediaSlot({ slot, tone }: { slot: Slot; tone: "before" | "after" }) {
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Absolutely-filled video that only plays while it's in the viewport.
+ * Critical for this section: with multiple before/after clips, decoding them
+ * all at once tanks the framerate and can trip the browser's concurrent-
+ * autoplay cap (which silently stops some clips from ever starting).
+ */
+function InViewFillVideo({
+  src,
+  position,
+  alt,
+}: {
+  src: string;
+  position?: string;
+  alt?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+
+    if (reduced) {
+      v.pause();
+      try {
+        v.currentTime = 0.05;
+      } catch {}
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) v.play().catch(() => {});
+          else v.pause();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, [reduced]);
+
+  return (
+    <video
+      ref={ref}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      aria-label={alt}
+      className="absolute inset-0 h-full w-full object-cover"
+      style={{ objectPosition: position ?? "center" }}
+    >
+      <source src={src} type="video/mp4" />
+    </video>
   );
 }
