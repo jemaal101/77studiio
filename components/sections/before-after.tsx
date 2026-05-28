@@ -2,9 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ImageIcon } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
+import { HoverVideo } from "@/components/ui/hover-video";
+
+// "/case/x.mp4" -> "/case/x.jpg"
+const posterFor = (src: string) => src.replace(/\.mp4$/, ".jpg");
 
 type Slot = {
   src?: string;
@@ -100,6 +104,7 @@ export function BeforeAfter() {
 function BeforeAfterCard({ data }: { data: Case }) {
   const [pos, setPos] = useState(50); // 0–100, % from left
   const [dragging, setDragging] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
 
@@ -141,7 +146,11 @@ function BeforeAfterCard({ data }: { data: Case }) {
   }
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-bg-raised/60 transition-all duration-500 hover:border-line-bright hover:shadow-[0_30px_80px_-40px_rgba(177,78,255,0.4)]">
+    <article
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-bg-raised/60 transition-all duration-500 hover:border-line-bright hover:shadow-[0_30px_80px_-40px_rgba(177,78,255,0.4)]"
+    >
       {/* Header chip */}
       <div className="flex items-center justify-between border-b border-line p-5">
         <div>
@@ -167,14 +176,14 @@ function BeforeAfterCard({ data }: { data: Case }) {
         className="relative aspect-[4/5] w-full cursor-ew-resize select-none overflow-hidden bg-black"
       >
         {/* AFTER — full layer underneath */}
-        <MediaSlot slot={data.after} tone="after" />
+        <MediaSlot slot={data.after} tone="after" active={hovered} />
 
         {/* BEFORE — full layer on top, clipped by clip-path so it stays aligned */}
         <div
           className="absolute inset-0"
           style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
         >
-          <MediaSlot slot={data.before} tone="before" />
+          <MediaSlot slot={data.before} tone="before" active={hovered} />
         </div>
 
         {/* Side labels */}
@@ -212,10 +221,27 @@ function BeforeAfterCard({ data }: { data: Case }) {
   );
 }
 
-function MediaSlot({ slot, tone }: { slot: Slot; tone: "before" | "after" }) {
-  // Video — playback gated to viewport so we don't decode every clip at once
+function MediaSlot({
+  slot,
+  tone,
+  active,
+}: {
+  slot: Slot;
+  tone: "before" | "after";
+  active?: boolean;
+}) {
+  // Video — plays only while the card is hovered; static poster otherwise.
+  // Keeps idle decode at zero so the grid doesn't run 4 clips at once.
   if (slot.video) {
-    return <InViewFillVideo src={slot.video} position={slot.position} alt={slot.alt} />;
+    return (
+      <HoverVideo
+        src={slot.video}
+        poster={posterFor(slot.video)}
+        active={active}
+        className="absolute inset-0 h-full w-full object-cover"
+        style={{ objectPosition: slot.position ?? "center" }}
+      />
+    );
   }
 
   // Image
@@ -255,64 +281,5 @@ function MediaSlot({ slot, tone }: { slot: Slot; tone: "before" | "after" }) {
         </p>
       </div>
     </div>
-  );
-}
-
-/**
- * Absolutely-filled video that only plays while it's in the viewport.
- * Critical for this section: with multiple before/after clips, decoding them
- * all at once tanks the framerate and can trip the browser's concurrent-
- * autoplay cap (which silently stops some clips from ever starting).
- */
-function InViewFillVideo({
-  src,
-  position,
-  alt,
-}: {
-  src: string;
-  position?: string;
-  alt?: string;
-}) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const reduced = useReducedMotion();
-
-  useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-
-    if (reduced) {
-      v.pause();
-      try {
-        v.currentTime = 0.05;
-      } catch {}
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) v.play().catch(() => {});
-          else v.pause();
-        }
-      },
-      { threshold: 0.15 }
-    );
-    io.observe(v);
-    return () => io.disconnect();
-  }, [reduced]);
-
-  return (
-    <video
-      ref={ref}
-      muted
-      loop
-      playsInline
-      preload="metadata"
-      aria-label={alt}
-      className="absolute inset-0 h-full w-full object-cover"
-      style={{ objectPosition: position ?? "center" }}
-    >
-      <source src={src} type="video/mp4" />
-    </video>
   );
 }

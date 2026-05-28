@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { InViewVideo } from "@/components/ui/in-view-video";
+import { HoverVideo } from "@/components/ui/hover-video";
 import type { WorkSample } from "@/lib/content";
 import { cn } from "@/lib/utils";
+
+// "/work/x.mp4" -> "/work/x.jpg"
+const posterFor = (src: string) => src.replace(/\.mp4$/, ".jpg");
 
 type Props = {
   items: WorkSample[];
@@ -27,9 +30,13 @@ export function ImageGallery({ items, className }: Props) {
           key={s.n}
           className="group relative h-full w-24 flex-grow overflow-hidden rounded-2xl border border-line bg-bg-raised transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:w-full md:w-36"
         >
-          {/* Media */}
+          {/* Media — poster when idle, plays on hover (kills multi-video lag) */}
           {s.video ? (
-            <InViewVideo src={s.video} className="h-full w-full" />
+            <HoverVideo
+              src={s.video}
+              poster={posterFor(s.video)}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
           ) : s.image ? (
             <Image
               src={s.image}

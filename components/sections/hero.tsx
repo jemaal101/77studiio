@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowDownRight, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GatedVideo } from "@/components/ui/gated-video";
 
 const ROTATING_WORDS = ["evolved.", "automated.", "managed.", "ahead.", "yours."];
 
@@ -66,15 +67,11 @@ export function Hero() {
             transition={{ duration: 0.7 }}
             className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border border-line bg-bg-raised shadow-[0_30px_80px_-30px_rgba(0,0,0,0.7)]"
           >
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
+            <GatedVideo
+              src="/hero/hero.mp4"
+              poster="/hero/hero.jpg"
               className="absolute inset-0 h-full w-full object-cover"
-            >
-              <source src="/hero/hero.mp4" type="video/mp4" />
-            </video>
+            />
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/85 via-transparent to-bg/20"
@@ -148,17 +145,12 @@ export function Hero() {
           text. Only difference vs before: hidden on mobile (hidden md:flex).
       ════════════════════════════════════════════════════════════════ */}
       <section className="relative isolate hidden min-h-[100svh] w-full items-end overflow-hidden bg-bg pb-20 pt-32 md:flex md:pb-28 md:pt-40">
-        {/* Background video — full bleed, behind everything */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster=""
+        {/* Background video — full bleed, behind everything (pauses when scrolled past) */}
+        <GatedVideo
+          src="/hero/hero.mp4"
+          poster="/hero/hero.jpg"
           className="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover opacity-[0.55]"
-        >
-          <source src="/hero/hero.mp4" type="video/mp4" />
-        </video>
+        />
 
         {/* Layered overlays — vignette + bottom darken + brand wash */}
         <div

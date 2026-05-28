@@ -68,13 +68,13 @@ export function Clients() {
 
         <ProgressiveBlur
           direction="left"
-          blurLayers={6}
+          blurLayers={3}
           blurIntensity={0.5}
           className="pointer-events-none absolute inset-y-0 left-0 z-10 w-[10%]"
         />
         <ProgressiveBlur
           direction="right"
-          blurLayers={6}
+          blurLayers={3}
           blurIntensity={0.5}
           className="pointer-events-none absolute inset-y-0 right-0 z-10 w-[10%]"
         />
