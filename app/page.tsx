@@ -25,7 +25,10 @@ export default function HomePage() {
       <Clients />
       <Pillars />
       <Work />
-      <BeforeAfter />
+      {/* Before/After hidden on phone (heavy video section) — desktop unchanged */}
+      <div className="hidden md:block">
+        <BeforeAfter />
+      </div>
       <Industries />
       <Process />
       <Pricing />

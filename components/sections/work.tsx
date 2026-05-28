@@ -248,7 +248,8 @@ export function Work() {
         </div>
 
         {/* === HOVER-EXPAND GALLERY for the rest === */}
-        <Reveal delay={0.15}>
+        {/* Hidden on phone (heavy multi-video strip) — desktop unchanged */}
+        <Reveal delay={0.15} className="hidden md:block">
           <div className="mt-16 md:mt-20">
             <div className="mb-6 flex items-end justify-between gap-6">
               <h3 className="font-display text-display-sm font-medium tracking-tight text-ink">
