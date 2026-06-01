@@ -12,7 +12,7 @@ const METHODS = [
     Icon: Mail,
     value: brand.email,
     sub: "Fastest reply — usually under an hour.",
-    href: `mailto:${brand.email}?subject=${encodeURIComponent("New enquiry — 77 Studio Co")}&body=${encodeURIComponent(
+    href: `mailto:${brand.email}?subject=${encodeURIComponent("New enquiry — 77")}&body=${encodeURIComponent(
       "Hey 77,\n\nMy business: \nWhat I need: \nWhere I am: \n\n— "
     )}`,
     cta: "Send email",

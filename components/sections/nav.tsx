@@ -48,7 +48,7 @@ export function Nav() {
           <a
             href="#top"
             className="group flex items-center transition-opacity hover:opacity-80"
-            aria-label="77 Studio Co — home"
+            aria-label="77 — home"
           >
             <Wordmark className="text-6xl md:text-7xl" />
           </a>

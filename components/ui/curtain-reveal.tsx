@@ -51,7 +51,7 @@ export function CurtainReveal() {
           >
             <Wordmark className="text-[10rem] md:text-[14rem]" />
             <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-ink-muted">
-              77 Studio Co
+              77
             </p>
           </motion.div>
         </motion.div>

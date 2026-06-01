@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const brand = {
-  name: "77 Studio Co",
+  name: "77",
   shortName: "77",
   tagline: "Marketing, Evolved.",
   email: "77marketing.co@gmail.com",
@@ -23,10 +23,11 @@ export const brand = {
   phoneDisplay: "+61 478 251 089",
   location: "Melbourne, Australia",
   social: {
-    instagram: "https://instagram.com/77studioco",
-    instagramHandle: "@77studioco",
-    tiktok: "https://tiktok.com/@77studioco",
-    linkedin: "https://linkedin.com/company/77studioco",
+    instagram: "https://instagram.com/77.visuals",
+    instagramHandle: "@77.visuals",
+    // TODO: confirm TikTok + LinkedIn handles for the new "77" brand
+    tiktok: "https://tiktok.com/@77.visuals",
+    linkedin: "https://linkedin.com/company/77visuals",
   },
 };
 
@@ -231,7 +232,7 @@ export const workSamplesGallery: WorkSample[] = [
     n: "05",
     video: "/work/work-recent.mp4",
     title: "Studio reel",
-    client: "77 Studio Co",
+    client: "77",
     discipline: "Motion · reel",
     note: "Fresh studio cut. Multi-format, on-brand.",
   },

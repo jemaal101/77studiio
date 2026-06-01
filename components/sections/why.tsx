@@ -28,7 +28,7 @@ export function Why() {
               id="why-heading"
               className="font-display text-display-md font-medium tracking-tight text-balance text-ink md:text-display-lg"
             >
-              <span className="text-ink">77 Studio Co</span>
+              <span className="text-ink">77</span>
               <span className="mx-3 text-ink-muted">vs.</span>
               <span className="font-serif font-normal italic text-ink-muted">
                 a traditional agency.
@@ -91,7 +91,7 @@ export function Why() {
                 >
                   <div className="mb-5 flex items-center justify-between">
                     <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
-                      77 Studio Co
+                      77
                     </span>
                     <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-accent text-black shadow-[0_0_24px_rgba(177,78,255,0.5)]">
                       <Check size={16} strokeWidth={2.5} />

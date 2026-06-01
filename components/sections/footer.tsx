@@ -119,7 +119,7 @@ export function Footer() {
                 href={brand.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="77 Studio Co on Instagram"
+                aria-label="77 on Instagram"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-muted transition-all hover:border-accent hover:text-accent"
               >
                 <Instagram size={16} strokeWidth={1.5} />
@@ -128,7 +128,7 @@ export function Footer() {
                 href={brand.social.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="77 Studio Co on TikTok"
+                aria-label="77 on TikTok"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-muted transition-all hover:border-accent hover:text-accent"
               >
                 <TikTokGlyph />
@@ -137,7 +137,7 @@ export function Footer() {
                 href={brand.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="77 Studio Co on LinkedIn"
+                aria-label="77 on LinkedIn"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-muted transition-all hover:border-accent hover:text-accent"
               >
                 <Linkedin size={16} strokeWidth={1.5} />

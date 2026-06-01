@@ -42,13 +42,13 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://evolvejem.vercel.app"),
   title: {
-    default: "77 Studio Co — Marketing, Evolved.",
-    template: "%s · 77 Studio Co",
+    default: "77 — Marketing, Evolved.",
+    template: "%s · 77",
   },
   description:
     "AI-native creative studio. Done-for-you content and ads for brands that can't afford to guess. Based in Melbourne, working across Australia.",
   keywords: [
-    "77 Studio Co",
+    "77",
     "creative agency Melbourne",
     "AI marketing agency",
     "content agency Australia",
@@ -56,20 +56,20 @@ export const metadata: Metadata = {
     "AI photoshoots",
     "e-commerce marketing",
   ],
-  authors: [{ name: "77 Studio Co" }],
+  authors: [{ name: "77" }],
   openGraph: {
-    title: "77 Studio Co — Marketing, Evolved.",
+    title: "77 — Marketing, Evolved.",
     description:
       "AI-powered, human-directed ads for brands that can't afford to guess.",
     url: "https://evolvejem.vercel.app",
-    siteName: "77 Studio Co",
+    siteName: "77",
     locale: "en_AU",
     type: "website",
-    images: [{ url: "/logo-light.png", width: 1200, height: 630, alt: "77 Studio Co" }],
+    images: [{ url: "/logo-light.png", width: 1200, height: 630, alt: "77" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "77 Studio Co — Marketing, Evolved.",
+    title: "77 — Marketing, Evolved.",
     description: "AI-powered, human-directed ads for brands that can't afford to guess.",
     images: ["/logo-light.png"],
   },
