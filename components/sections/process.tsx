@@ -60,8 +60,11 @@ const STEPS: Step[] = [
 ];
 
 const N = STEPS.length;
-// Pin duration: each step gets ~85vh of scroll. Section height = N*85vh.
-const VH_PER_STEP = 85;
+// Section height tuned so each step gets a FULL viewport of scroll dwell.
+// Pin duration = section_height - 100vh (viewport). We want per-step = 100vh,
+// so section_height = N * 100vh + 100vh (extra viewport so the last step
+// also dwells for a full screen before unpinning).
+const VH_PER_STEP = 100 + 100 / N; // For N=5 → 120vh per step, total 600vh.
 
 export function Process() {
   const ref = useRef<HTMLDivElement>(null);

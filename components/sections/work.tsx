@@ -18,8 +18,10 @@ import {
 } from "@/lib/content";
 
 const FEATURED_TOTAL = workSamplesFeatured.length;
-// Each featured slide gets ~90vh of scroll. Total pin height = N * 90vh.
-const VH_PER_SLIDE = 90;
+// Same dwell formula as Process — each slide gets a full viewport of scroll.
+// section_height = N * VH_PER_SLIDE, pin_duration = section_height - 100vh,
+// per-slide = 100vh, so VH_PER_SLIDE = 100 + 100/N.
+const VH_PER_SLIDE = 100 + 100 / FEATURED_TOTAL; // For N=4 → 125vh, total 500vh.
 
 export function Work() {
   const pinRef = useRef<HTMLDivElement>(null);
