@@ -15,9 +15,11 @@ import { Contact } from "@/components/sections/contact";
 import { Footer } from "@/components/sections/footer";
 import { StickyCta } from "@/components/sections/sticky-cta";
 import { Skiper19Background } from "@/components/v1/skiper19";
+import { SmoothScroll } from "@/components/ui/smooth-scroll";
 
 export default function HomePage() {
   return (
+    <SmoothScroll>
     <main className="relative">
       <CurtainReveal />
       {/* Decorative scroll-driven line drawn across every dark section. */}
@@ -41,5 +43,6 @@ export default function HomePage() {
       <Footer />
       <StickyCta />
     </main>
+    </SmoothScroll>
   );
 }

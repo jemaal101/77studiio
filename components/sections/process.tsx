@@ -6,7 +6,6 @@ import {
   motion,
   useMotionValueEvent,
   useScroll,
-  useSpring,
   useTransform,
 } from "framer-motion";
 import { Mail, Layers, Rocket, BarChart3, Sparkles } from "lucide-react";
@@ -76,24 +75,14 @@ export function Process() {
     offset: ["start start", "end end"],
   });
 
-  // Spring-smoothed scroll progress — softens the index transitions so they
-  // feel like inertia, not on/off thresholds.
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 28,
-    mass: 0.6,
-    restDelta: 0.001,
-  });
-
-  // Map smoothed scroll → active index. Floor with small bias so each step
-  // dwells centred for most of its slice.
-  useMotionValueEvent(smoothProgress, "change", (v) => {
+  // Lenis already smooths the scroll value globally — using scrollYProgress
+  // directly avoids the double-smoothing lag we had with useSpring on top.
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
     const i = Math.min(N - 1, Math.max(0, Math.floor(v * N + 0.0001)));
     if (i !== active) setActive(i);
   });
 
-  // Smoothly-interpolated fill width for the progress rail
-  const railFill = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
+  const railFill = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   const current = STEPS[active];
   const Icon = current.icon;
