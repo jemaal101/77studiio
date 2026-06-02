@@ -7,6 +7,7 @@ import {
   motion,
   useMotionValueEvent,
   useScroll,
+  useSpring,
   useTransform,
 } from "framer-motion";
 import { Reveal } from "@/components/ui/reveal";
@@ -32,7 +33,15 @@ export function Work() {
     offset: ["start start", "end end"],
   });
 
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
+  // Spring-smoothed scroll → softer index transitions and rail fill
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 28,
+    mass: 0.6,
+    restDelta: 0.001,
+  });
+
+  useMotionValueEvent(smoothProgress, "change", (v) => {
     const i = Math.min(
       FEATURED_TOTAL - 1,
       Math.max(0, Math.floor(v * FEATURED_TOTAL + 0.0001))
@@ -40,8 +49,7 @@ export function Work() {
     if (i !== active) setActive(i);
   });
 
-  // Smooth fill width for the progress rail
-  const railFill = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const railFill = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
 
   const sample = workSamplesFeatured[active];
 
@@ -97,14 +105,15 @@ export function Work() {
                 </span>
               </div>
 
-              <AnimatePresence mode="wait">
+              <div className="relative mt-5 min-h-[200px]">
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={sample.n}
                   initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-5 flex flex-col gap-3"
+                  transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 flex flex-col gap-3"
                 >
                   <p className="kicker text-accent/90">{sample.client}</p>
                   <h3 className="font-display text-2xl font-medium tracking-tight text-balance text-ink md:text-3xl">
@@ -115,6 +124,7 @@ export function Work() {
                   </p>
                 </motion.div>
               </AnimatePresence>
+              </div>
 
               {/* Slide list — visual progress (active highlighted) */}
               <ul className="mt-7 space-y-2.5">
@@ -170,13 +180,13 @@ export function Work() {
                   {/* Soft inner glow */}
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(70%_60%_at_50%_50%,rgba(177,78,255,0.08),transparent_70%)]" />
 
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence initial={false}>
                     <motion.div
                       key={sample.n + "-img"}
                       initial={{ opacity: 0, scale: 1.04 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.97 }}
-                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                       className="absolute inset-0 flex items-center justify-center p-3 md:p-4"
                     >
                       {sample.video ? (

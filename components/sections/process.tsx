@@ -6,6 +6,7 @@ import {
   motion,
   useMotionValueEvent,
   useScroll,
+  useSpring,
   useTransform,
 } from "framer-motion";
 import { Mail, Layers, Rocket, BarChart3, Sparkles } from "lucide-react";
@@ -75,15 +76,24 @@ export function Process() {
     offset: ["start start", "end end"],
   });
 
-  // Map scroll → active index. Use Math.floor with a small bias so each step
+  // Spring-smoothed scroll progress — softens the index transitions so they
+  // feel like inertia, not on/off thresholds.
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 80,
+    damping: 28,
+    mass: 0.6,
+    restDelta: 0.001,
+  });
+
+  // Map smoothed scroll → active index. Floor with small bias so each step
   // dwells centred for most of its slice.
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
+  useMotionValueEvent(smoothProgress, "change", (v) => {
     const i = Math.min(N - 1, Math.max(0, Math.floor(v * N + 0.0001)));
     if (i !== active) setActive(i);
   });
 
   // Smoothly-interpolated fill width for the progress rail
-  const railFill = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const railFill = useTransform(smoothProgress, [0, 1], ["0%", "100%"]);
 
   const current = STEPS[active];
   const Icon = current.icon;
@@ -159,15 +169,19 @@ export function Process() {
 
           {/* RIGHT — animated step display */}
           <div className="md:col-span-7">
-            <AnimatePresence mode="wait">
-              <motion.article
-                key={current.n}
-                initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -40, filter: "blur(8px)" }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="rounded-3xl border border-line bg-bg-raised/60 p-7 md:p-10"
-              >
+            {/* Relative + min-height container lets the article live as
+                `absolute inset-0`, which means the outgoing + incoming steps
+                can overlap during transitions (no mode="wait" pause). */}
+            <div className="relative min-h-[440px] md:min-h-[480px]">
+              <AnimatePresence initial={false}>
+                <motion.article
+                  key={current.n}
+                  initial={{ opacity: 0, y: 30, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -30, filter: "blur(6px)" }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 rounded-3xl border border-line bg-bg-raised/60 p-7 md:p-10"
+                >
                 <div className="flex items-start justify-between gap-5">
                   <span className="font-display text-[5.5rem] font-medium leading-[0.85] tracking-tight text-ink md:text-[8rem]">
                     {current.n}
@@ -195,6 +209,7 @@ export function Process() {
                 )}
               </motion.article>
             </AnimatePresence>
+            </div>
 
             {/* Step counter + scroll hint */}
             <div className="mt-6 flex items-center justify-between">
