@@ -1,11 +1,26 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { Mail, Layers, Rocket, BarChart3, Sparkles } from "lucide-react";
-import { Reveal } from "@/components/ui/reveal";
 import { brand } from "@/lib/content";
 
-const STEPS = [
+type Step = {
+  n: string;
+  title: string;
+  when: string;
+  body: string;
+  icon: React.ElementType;
+  cta?: { label: string; href: string };
+};
+
+const STEPS: Step[] = [
   {
     n: "01",
     title: "Contact",
@@ -44,20 +59,46 @@ const STEPS = [
   },
 ];
 
+const N = STEPS.length;
+// Pin duration: each step gets ~85vh of scroll. Section height = N*85vh.
+const VH_PER_STEP = 85;
+
 export function Process() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
+
+  // Map scroll → active index. Use Math.floor with a small bias so each step
+  // dwells centred for most of its slice.
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    const i = Math.min(N - 1, Math.max(0, Math.floor(v * N + 0.0001)));
+    if (i !== active) setActive(i);
+  });
+
+  // Smoothly-interpolated fill width for the progress rail
+  const railFill = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  const current = STEPS[active];
+  const Icon = current.icon;
+
   return (
     <section
       id="process"
       aria-labelledby="process-heading"
-      className="relative border-t border-line py-16 md:py-24"
+      ref={ref}
+      style={{ height: `${N * VH_PER_STEP}vh` }}
+      className="relative border-t border-line bg-bg"
     >
-      <div className="container-edge">
-        {/* Header */}
-        <div className="mx-auto mb-14 max-w-5xl md:mb-20">
-          <Reveal>
+      {/* Pinned stage */}
+      <div className="sticky top-0 flex h-screen w-full items-center overflow-hidden">
+        <div className="container-edge grid w-full gap-10 md:grid-cols-12 md:gap-12">
+          {/* LEFT — heading + step list rail */}
+          <div className="md:col-span-5">
             <p className="kicker mb-4">— Process</p>
-          </Reveal>
-          <Reveal delay={0.05}>
             <h2
               id="process-heading"
               className="font-display text-display-lg font-medium tracking-tight text-balance text-ink"
@@ -67,106 +108,111 @@ export function Process() {
                 works.
               </span>
             </h2>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <p className="mt-5 max-w-2xl text-pretty text-body-lg text-ink-muted">
-              Five steps. Read in order. No mystery, no slide decks, no surprises.
+            <p className="mt-5 max-w-sm text-pretty text-body-lg text-ink-muted">
+              Scroll. One step at a time.
             </p>
-          </Reveal>
-        </div>
 
-        {/* Steps — numbered cards, connected by an accent rail */}
-        <div className="relative">
-          {/* Rail behind the cards */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-6 top-0 hidden h-full w-px bg-gradient-to-b from-accent/60 via-line-bright to-transparent md:left-1/2 md:block"
-          />
+            {/* Vertical step rail */}
+            <ol className="mt-10 space-y-3 border-l border-line pl-6 md:mt-14">
+              {STEPS.map((s, i) => {
+                const isActive = i === active;
+                const isPast = i < active;
+                return (
+                  <li
+                    key={s.n}
+                    className="relative flex items-center gap-3 transition-opacity duration-500"
+                    style={{ opacity: isActive ? 1 : isPast ? 0.6 : 0.35 }}
+                  >
+                    {/* Node dot on the rail */}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -left-[31px] inline-block h-2.5 w-2.5 rounded-full transition-all duration-500 ${
+                        isActive
+                          ? "scale-150 bg-accent shadow-[0_0_18px_rgba(177,78,255,0.8)]"
+                          : isPast
+                            ? "bg-accent/70"
+                            : "bg-line-bright"
+                      }`}
+                    />
+                    <span
+                      className={`font-mono text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                        isActive ? "text-accent" : "text-ink-muted"
+                      }`}
+                    >
+                      {s.n}
+                    </span>
+                    <span
+                      className={`font-display text-base transition-colors ${
+                        isActive ? "text-ink" : "text-ink-muted"
+                      }`}
+                    >
+                      {s.title}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
 
-          <ol className="space-y-5 md:space-y-7">
-            {STEPS.map((s, i) => (
-              <StepCard key={s.n} step={s} index={i} flipped={i % 2 === 1} />
-            ))}
-          </ol>
+          {/* RIGHT — animated step display */}
+          <div className="md:col-span-7">
+            <AnimatePresence mode="wait">
+              <motion.article
+                key={current.n}
+                initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -40, filter: "blur(8px)" }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="rounded-3xl border border-line bg-bg-raised/60 p-7 md:p-10"
+              >
+                <div className="flex items-start justify-between gap-5">
+                  <span className="font-display text-[5.5rem] font-medium leading-[0.85] tracking-tight text-ink md:text-[8rem]">
+                    {current.n}
+                  </span>
+                  <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-accent/60 bg-accent/[0.06] text-accent md:h-14 md:w-14">
+                    <Icon size={22} strokeWidth={1.5} />
+                  </span>
+                </div>
+
+                <p className="kicker mt-4">{current.when}</p>
+                <h3 className="mt-2 font-display text-display-md font-medium tracking-tight text-balance text-ink">
+                  {current.title}
+                </h3>
+                <p className="mt-5 max-w-xl text-pretty text-body-lg leading-relaxed text-ink-muted">
+                  {current.body}
+                </p>
+
+                {current.cta && (
+                  <a
+                    href={current.cta.href}
+                    className="mt-7 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-black transition-all hover:bg-accent-hover hover:shadow-[0_0_30px_rgba(177,78,255,0.45)]"
+                  >
+                    {current.cta.label}
+                  </a>
+                )}
+              </motion.article>
+            </AnimatePresence>
+
+            {/* Step counter + scroll hint */}
+            <div className="mt-6 flex items-center justify-between">
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-muted">
+                {String(active + 1).padStart(2, "0")} / {String(N).padStart(2, "0")}
+              </p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-dim">
+                Scroll ↓
+              </p>
+            </div>
+
+            {/* Bottom progress rail (full section) */}
+            <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-line">
+              <motion.span
+                style={{ width: railFill }}
+                className="block h-full rounded-full bg-gradient-to-r from-accent to-accent-hover"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>
-  );
-}
-
-type Step = {
-  n: string;
-  title: string;
-  when: string;
-  body: string;
-  icon: React.ElementType;
-  cta?: { label: string; href: string };
-};
-
-function StepCard({
-  step,
-  index,
-  flipped,
-}: {
-  step: Step;
-  index: number;
-  flipped: boolean;
-}) {
-  const Icon = step.icon;
-  return (
-    <motion.li
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10% 0px" }}
-      transition={{ duration: 0.7, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-      className="relative grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-12"
-    >
-      {/* Node dot */}
-      <span
-        aria-hidden="true"
-        className="absolute left-6 top-7 hidden -translate-x-1/2 md:left-1/2 md:block"
-      >
-        <span className="block h-3 w-3 rounded-full bg-accent shadow-[0_0_18px_rgba(177,78,255,0.7)]" />
-      </span>
-
-      <div
-        className={`group relative overflow-hidden rounded-3xl border border-line bg-bg-raised/60 p-7 transition-all duration-500 hover:border-line-bright hover:bg-bg-raised md:p-9 ${
-          flipped ? "md:col-start-2" : "md:col-start-1"
-        }`}
-      >
-        {/* Step number — huge, deco */}
-        <div className="mb-6 flex items-start justify-between gap-5">
-          <span className="font-display text-[5rem] font-medium leading-[0.85] tracking-tight text-ink-dim/50 transition-colors duration-500 group-hover:text-accent/60 md:text-[6.5rem]">
-            {step.n}
-          </span>
-          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line-bright text-ink-muted transition-all duration-500 group-hover:border-accent group-hover:bg-accent/[0.06] group-hover:text-accent md:h-12 md:w-12">
-            <Icon size={20} strokeWidth={1.5} />
-          </span>
-        </div>
-
-        <p className="kicker mb-2">{step.when}</p>
-        <h3 className="font-display text-2xl font-semibold tracking-tight text-ink md:text-3xl">
-          {step.title}
-        </h3>
-        <p className="mt-4 max-w-md text-pretty text-base leading-relaxed text-ink-muted">
-          {step.body}
-        </p>
-
-        {step.cta && (
-          <a
-            href={step.cta.href}
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-black transition-all hover:bg-accent-hover hover:shadow-[0_0_30px_rgba(177,78,255,0.45)]"
-          >
-            {step.cta.label}
-          </a>
-        )}
-
-        {/* Hover underline */}
-        <span
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-gradient-to-r from-accent via-accent/70 to-transparent transition-transform duration-700 group-hover:scale-x-100"
-        />
-      </div>
-    </motion.li>
   );
 }

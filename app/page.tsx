@@ -14,12 +14,14 @@ import { Manifesto } from "@/components/sections/manifesto";
 import { Contact } from "@/components/sections/contact";
 import { Footer } from "@/components/sections/footer";
 import { StickyCta } from "@/components/sections/sticky-cta";
-import { Skiper19 } from "@/components/v1/skiper19";
+import { Skiper19Background } from "@/components/v1/skiper19";
 
 export default function HomePage() {
   return (
     <main className="relative">
       <CurtainReveal />
+      {/* Decorative scroll-driven line drawn across every dark section. */}
+      <Skiper19Background />
       <ScrollProgress />
       <Nav />
       <Hero />
@@ -34,8 +36,6 @@ export default function HomePage() {
       <Process />
       <Pricing />
       <Why />
-      {/* Skiper19 — scroll-driven LinePath. Decorative bridge into the Manifesto. */}
-      <Skiper19 />
       <Manifesto />
       <Contact />
       <Footer />
