@@ -24,8 +24,10 @@ export function Skiper19Background() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[1] overflow-hidden"
-      style={{ mixBlendMode: "screen" }}
+      // z-[-1] sits in <main>'s negative-z slot — painted AFTER body bg but
+      // BEFORE any in-flow section content. So as long as sections are
+      // transparent (no opaque bg), the line shows behind them.
+      className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden"
     >
       <svg
         viewBox="0 0 1278 2319"

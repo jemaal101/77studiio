@@ -63,7 +63,7 @@ export function BeforeAfter() {
     <section
       id="case-studies"
       aria-labelledby="ba-heading"
-      className="relative border-t border-line bg-bg py-16 md:py-24"
+      className="relative border-t border-line py-16 md:py-24"
     >
       <div className="container-edge">
         {/* Header */}

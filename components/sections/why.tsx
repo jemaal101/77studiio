@@ -15,7 +15,7 @@ export function Why() {
     <section
       id="why"
       aria-labelledby="why-heading"
-      className="relative border-t border-line bg-bg py-14 md:py-20"
+      className="relative border-t border-line py-14 md:py-20"
     >
       <div className="container-edge">
         {/* Header — concise */}

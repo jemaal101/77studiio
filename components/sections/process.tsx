@@ -94,7 +94,7 @@ export function Process() {
       aria-labelledby="process-heading"
       ref={ref}
       style={{ height: `${N * VH_PER_STEP}vh` }}
-      className="relative border-t border-line bg-bg"
+      className="relative border-t border-line"
     >
       {/* Pinned stage */}
       <div className="sticky top-0 flex h-screen w-full items-center overflow-hidden">

@@ -52,7 +52,7 @@ export function Hero() {
           No full-bleed background video (that's what was lagging on phones).
           Hidden at md and up.
       ════════════════════════════════════════════════════════════════ */}
-      <section className="relative flex flex-col bg-bg pb-12 pt-28 md:hidden">
+      <section className="relative flex flex-col pb-12 pt-28 md:hidden">
         {/* Atmospheric glow */}
         <div
           aria-hidden="true"
@@ -144,7 +144,7 @@ export function Hero() {
           DESKTOP HERO — UNCHANGED. Full-bleed background video, overlaid
           text. Only difference vs before: hidden on mobile (hidden md:flex).
       ════════════════════════════════════════════════════════════════ */}
-      <section className="relative isolate hidden min-h-[100svh] w-full items-end overflow-hidden bg-bg pb-20 pt-32 md:flex md:pb-28 md:pt-40">
+      <section className="relative isolate hidden min-h-[100svh] w-full items-end overflow-hidden pb-20 pt-32 md:flex md:pb-28 md:pt-40">
         {/* Background video — full bleed, behind everything (pauses when scrolled past) */}
         <GatedVideo
           src="/hero/hero.mp4"

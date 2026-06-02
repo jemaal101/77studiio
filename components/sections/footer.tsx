@@ -28,7 +28,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative border-t border-line bg-bg pt-20 md:pt-32">
+    <footer className="relative border-t border-line pt-20 md:pt-32">
       <div className="container-edge">
         {/* Oversized wordmark — final cinematic exhale */}
         <motion.div

@@ -11,7 +11,7 @@ export function Pricing() {
     <section
       id="pricing"
       aria-labelledby="pricing-heading"
-      className="relative border-t border-line bg-bg py-14 md:py-20"
+      className="relative border-t border-line py-14 md:py-20"
     >
       {/* Subtle bloom */}
       <div

@@ -49,7 +49,7 @@ export function Work() {
     <section
       id="work"
       aria-labelledby="work-heading"
-      className="relative border-t border-line bg-bg"
+      className="relative border-t border-line"
     >
       {/* Section header (above the pin) */}
       <div className="container-edge pt-14 md:pt-20">
