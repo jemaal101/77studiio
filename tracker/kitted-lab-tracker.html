@@ -1,0 +1,1990 @@
+<title>Kitted Lab Tracker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style id="app-css">
+:root{
+  --bg:#EBEFF3; --panel:#FFFFFF; --panel-2:#F5F8FA; --panel-3:#EEF3F7;
+  --ink:#0E151C; --ink-2:#3E4C5A; --muted:#6B7C8C;
+  --line:#D3DCE4; --line-2:#E5ECF2;
+  --accent:#1B4FD1; --accent-ink:#FFFFFF; --accent-soft:#E3EAFB; --accent-line:#B9CBF3;
+  --good:#0B7048; --good-soft:#DCF1E8; --good-line:#A9DCC7;
+  --warn:#9C4E0C; --warn-soft:#FAEADA; --warn-line:#EFCCA5;
+  --bad:#A82A22; --bad-soft:#FAE3E1; --bad-line:#EEBAB5;
+  --shadow:0 1px 2px rgba(14,30,48,.07), 0 10px 30px -16px rgba(14,30,48,.30);
+  --radius:10px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1117; --panel:#141D26; --panel-2:#1A242F; --panel-3:#1F2B37;
+    --ink:#E7EEF5; --ink-2:#B4C2D0; --muted:#8395A6;
+    --line:#26333F; --line-2:#1D2833;
+    --accent:#7AA2FF; --accent-ink:#071020; --accent-soft:#182842; --accent-line:#2C4570;
+    --good:#46CE97; --good-soft:#0F2A20; --good-line:#1F4A38;
+    --warn:#E5A45C; --warn-soft:#2E2114; --warn-line:#553D22;
+    --bad:#F0817A; --bad-soft:#301A19; --bad-line:#5A2E2B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -18px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1117; --panel:#141D26; --panel-2:#1A242F; --panel-3:#1F2B37;
+  --ink:#E7EEF5; --ink-2:#B4C2D0; --muted:#8395A6;
+  --line:#26333F; --line-2:#1D2833;
+  --accent:#7AA2FF; --accent-ink:#071020; --accent-soft:#182842; --accent-line:#2C4570;
+  --good:#46CE97; --good-soft:#0F2A20; --good-line:#1F4A38;
+  --warn:#E5A45C; --warn-soft:#2E2114; --warn-line:#553D22;
+  --bad:#F0817A; --bad-soft:#301A19; --bad-line:#5A2E2B;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.num,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100vh}
+.rail{display:none}
+.main{min-width:0;padding-bottom:84px}
+@media (min-width:1000px){
+  .shell{grid-template-columns:232px minmax(0,1fr)}
+  .rail{display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh;padding:18px 12px;
+        background:var(--panel);border-right:1px solid var(--line)}
+  .main{padding-bottom:0}
+  .tabbar{display:none}
+}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 10px 18px}
+.brand-mark{width:30px;height:30px;border-radius:8px;background:var(--ink);color:var(--bg);
+  display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px;letter-spacing:-.04em;flex:none}
+.brand-name{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:16px;line-height:1.15}
+.brand-sub{font-size:11px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;font-weight:500}
+.navbtn{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;border:0;background:transparent;
+  color:var(--ink-2);cursor:pointer;text-align:left;font-weight:500;font-size:14.5px;width:100%;transition:background .12s}
+.navbtn:hover{background:var(--panel-2)}
+.navbtn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.navbtn svg{width:17px;height:17px;flex:none}
+.navbtn .pip{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  background:var(--bad);color:#fff;border-radius:20px;padding:1px 6px;line-height:1.5}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line-2)}
+
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);
+  background:var(--panel);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.tabbtn{border:0;background:transparent;min-width:0;overflow:hidden;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 2px;border-radius:8px;cursor:pointer;font-size:10.5px;font-weight:600;letter-spacing:.02em;position:relative}
+.tabbtn svg{width:19px;height:19px}
+.tabbtn[aria-current="page"]{color:var(--accent)}
+.tabbtn .pip{position:absolute;top:2px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:var(--bad)}
+/* declared after .tabbar's own display so the desktop rail wins the cascade */
+@media (min-width:1000px){.tabbar{display:none}}
+
+/* ---------- topbar ---------- */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+@media (min-width:1000px){.top{padding:14px 26px}}
+.top h1{font-size:20px}
+.top .spacer{flex:1}
+.savechip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);
+  font-weight:500;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);flex:none}
+.dot.pending{background:var(--warn)}
+.dot.off{background:var(--muted)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);
+  color:var(--ink);padding:7px 13px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13.5px;
+  white-space:nowrap;transition:background .12s,border-color .12s}
+.btn:hover{background:var(--panel-2);border-color:var(--muted)}
+.btn svg{width:15px;height:15px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--panel-2)}
+.btn.danger{color:var(--bad);border-color:var(--bad-line);background:var(--bad-soft)}
+.btn.sm{padding:4px 9px;font-size:12.5px;border-radius:7px}
+.btn.icon{padding:6px;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ---------- layout blocks ---------- */
+.wrap{padding:16px}
+@media (min-width:1000px){.wrap{padding:22px 26px 60px}}
+.stack{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line-2);min-width:0}
+.card-h h3{font-size:15px;min-width:0;overflow-wrap:anywhere}
+.card-h>svg{width:17px;height:17px;flex:none;color:var(--muted)}
+.banner>svg{width:17px;height:17px;flex:none}
+.row>svg{width:16px;height:16px;flex:none;color:var(--muted)}
+.card-h .spacer{flex:1}
+.card-b{padding:15px}
+.card-b.flush{padding:0}
+.eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.grid{display:grid;gap:14px;min-width:0;align-items:start}
+.g2{grid-template-columns:minmax(0,1fr)}
+@media (min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:860px){.g3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* ---------- KPI ---------- */
+.kpis{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0}
+@media (min-width:760px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1240px){.kpis{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;
+  display:flex;flex-direction:column;gap:5px;box-shadow:var(--shadow)}
+.kpi .lab{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kpi .val{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:24px;
+  font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.kpi .sub{font-size:12px;color:var(--muted)}
+.kpi.hero{grid-column:span 2}
+@media (min-width:1240px){.kpi.hero{grid-column:span 2}}
+.kpi.hero .val{font-size:34px}
+.pos{color:var(--good)} .neg{color:var(--bad)} .amb{color:var(--warn)}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--panel-2)}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--panel-2)}
+td.r,th.r{text-align:right}
+th.wcol{width:26%}
+td.num,th.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.rowtitle{font-weight:600}
+.rowsub{font-size:12px;color:var(--muted)}
+.sku{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);letter-spacing:-.02em}
+.acts{display:flex;gap:4px;justify-content:flex-end}
+@media (max-width:719px){
+  .responsive thead{display:none}
+  .responsive tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;padding:12px;
+    border-bottom:1px solid var(--line-2)}
+  .responsive tbody tr:hover{background:transparent}
+  .responsive tbody td{display:flex;justify-content:space-between;gap:12px;padding:2px 0;border:0;text-align:left}
+  .responsive tbody td.num{text-align:right;justify-content:space-between}
+  .responsive tbody td[data-l]::before{content:attr(data-l);font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;font-family:"IBM Plex Sans",sans-serif;flex:none}
+  .responsive tbody td.wide{grid-column:1/-1;display:block;padding-bottom:6px}
+  .responsive tbody td.wide::before{display:none}
+  .responsive tbody td.actcell{grid-column:1/-1;padding-top:10px}
+  .toolbar .search{flex:1 1 100%}
+  .toolbar .seg{flex:1 1 100%;justify-content:center}
+  .responsive tbody td.actcell .acts{justify-content:flex-start}
+}
+
+/* ---------- chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2.5px 8px;
+  border-radius:20px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-2);white-space:nowrap}
+.chip.good{background:var(--good-soft);border-color:var(--good-line);color:var(--good)}
+.chip.warn{background:var(--warn-soft);border-color:var(--warn-line);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);border-color:var(--bad-line);color:var(--bad)}
+.chip.acc{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+
+/* ---------- bars ---------- */
+.bars{display:flex;align-items:flex-end;gap:8px;height:132px;padding-top:6px}
+.barcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.barstack{width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;height:104px}
+.bar{width:44%;max-width:22px;border-radius:3px 3px 0 0;background:var(--accent-line);min-height:2px}
+.bar.b2{background:var(--good)}
+.bar.b2.neg{background:var(--bad)}
+.barlab{font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px}
+.meter{height:6px;border-radius:4px;background:var(--panel-3);overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--accent);border-radius:4px}
+
+/* ---------- lists ---------- */
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:11px 15px;border-bottom:1px solid var(--line-2)}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0}
+.row .t{font-weight:600;font-size:14px}
+.row .s{font-size:12px;color:var(--muted)}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- inputs ---------- */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.inp{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:14.5px}
+.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+textarea.inp{min-height:76px;resize:vertical;font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.6}
+.hint{font-size:12px;color:var(--muted)}
+.search{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:8px;padding:0 11px;flex:1;min-width:0}
+.search input{border:0;background:transparent;padding:9px 0;width:100%;font-size:14.5px}
+.search input:focus{outline:none}
+.search svg{width:15px;height:15px;color:var(--muted);flex:none}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 11px;border-radius:6px;cursor:pointer;font-size:13px;
+  font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(8,16,24,.5);backdrop-filter:blur(2px);
+  display:flex;justify-content:flex-end;animation:fade .16s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.drawer{background:var(--panel);width:min(560px,100%);height:100%;display:flex;flex-direction:column;
+  box-shadow:-20px 0 60px -30px rgba(0,0,0,.6);animation:slide .2s cubic-bezier(.2,.8,.3,1)}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (max-width:640px){
+  .scrim{align-items:flex-end}
+  .drawer{width:100%;height:min(94vh,100%);border-radius:16px 16px 0 0;animation:up .22s cubic-bezier(.2,.8,.3,1)}
+  @keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
+}
+.drawer-h{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}
+.drawer-h h3{font-size:17px;flex:1}
+.drawer-b{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+.drawer-f{display:flex;gap:9px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel-2)}
+.drawer-f .spacer{flex:1}
+.fgrid{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.fgrid .full{grid-column:1/-1}
+@media (max-width:520px){.fgrid{grid-template-columns:minmax(0,1fr)}.fgrid .half{grid-column:auto}}
+
+/* ---------- misc ---------- */
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty h3{color:var(--ink);margin-bottom:6px;font-size:17px}
+.empty p{margin:0 auto 16px;max-width:44ch;font-size:14px}
+.banner{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius);
+  border:1px solid var(--accent-line);background:var(--accent-soft);color:var(--accent);font-size:13.5px;font-weight:500}
+.banner .spacer{flex:1}
+.banner.warn{border-color:var(--warn-line);background:var(--warn-soft);color:var(--warn)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:80;background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:9px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow);animation:fade .15s}
+@media (min-width:1000px){.toast{bottom:26px}}
+.linkrow{display:flex;flex-wrap:wrap;gap:8px}
+.linkrow a{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;text-decoration:none;
+  border:1px solid var(--line);border-radius:7px;padding:5px 10px;background:var(--panel-2);color:var(--ink-2)}
+.linkrow a:hover{border-color:var(--accent);color:var(--accent)}
+.linkrow a svg{width:14px;height:14px}
+.itemline{display:grid;grid-template-columns:minmax(0,1fr) 74px 96px auto;gap:8px;align-items:center}
+@media (max-width:520px){.itemline{grid-template-columns:repeat(2,minmax(0,1fr));}.itemline .full2{grid-column:1/-1}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+
+<script type="application/json" id="app-data">{"v":1,"seed":true}</script>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Sections"></nav>
+  <div class="main">
+    <header class="top" id="top"></header>
+    <main id="app" class="wrap"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+<div id="layer"></div>
+<div id="toasts"></div>
+
+<script id="app-js">
+/* =========================================================================
+   Kitted Lab Tracker — single-file operations tracker for a car parts business
+   Stock · Incoming shipments · Sales · Money out (incl. ads) · Suppliers
+   ========================================================================= */
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------------- icons */
+  var I = {
+    gauge:'<path d="M12 14l3.5-3.5"/><circle cx="12" cy="14" r="7.5"/><path d="M12 6.5V4M4.5 14H3m18 0h-1.5M6 8.4 4.9 7.3M18 8.4l1.1-1.1"/>',
+    box:'<path d="M20.5 7.5 12 3 3.5 7.5v9L12 21l8.5-4.5v-9Z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
+    truck:'<path d="M2.5 6.5h11v9h-11z"/><path d="M13.5 9.5h4l3 3v3h-7z"/><circle cx="6.5" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/>',
+    tag:'<path d="M3.5 11V4.5H10L20 14.5 13.5 21 3.5 11Z"/><circle cx="7.2" cy="8.2" r="1.2"/>',
+    wallet:'<path d="M3.5 7.5v11h17v-9h-13a2 2 0 0 1 0-4h11v2"/><circle cx="16.5" cy="14" r="1.1"/>',
+    users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 5.4a3.2 3.2 0 0 1 0 5.2M17.5 14.9c2.1.6 3.5 2.4 3.5 5.1"/>',
+    cog:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.2M12 19.3v2.2M21.5 12h-2.2M4.7 12H2.5M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6M18.7 18.7l-1.6-1.6M6.9 6.9 5.3 5.3"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/>',
+    pencil:'<path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/>',
+    trash:'<path d="M4 6.5h16M9.5 6.5V4h5v2.5M6.5 6.5 7.5 21h9l1-14.5"/>',
+    down:'<path d="M12 3.5v12M7 11l5 5 5-5M4 20.5h16"/>',
+    up:'<path d="M12 20.5v-12M7 13l5-5 5 5M4 3.5h16"/>',
+    check:'<path d="m4.5 12.5 5 5 10-11"/>',
+    x:'<path d="M6 6l12 12M18 6 6 18"/>',
+    left:'<path d="m14.5 5-7 7 7 7"/>',
+    right:'<path d="m9.5 5 7 7-7 7"/>',
+    phone:'<path d="M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6L16.5 13l4 1.5v3a2 2 0 0 1-2.2 2C10.4 18.8 5.2 13.6 4.5 5.7a2 2 0 0 1 2-2.2Z"/>',
+    mail:'<path d="M3.5 6.5h17v11h-17z"/><path d="m3.5 7.5 8.5 6 8.5-6"/>',
+    globe:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c4.5 5 4.5 12 0 17-4.5-5-4.5-12 0-17Z"/>',
+    chat:'<path d="M20.5 12c0 4.1-3.8 7.5-8.5 7.5-1 0-2-.2-2.9-.5L4 20.5l1.6-4A7 7 0 0 1 3.5 12C3.5 7.9 7.3 4.5 12 4.5s8.5 3.4 8.5 7.5Z"/>',
+    alert:'<path d="M12 4.5 21 20H3l9-15.5Z"/><path d="M12 10v4.2M12 17.2v.1"/>',
+    clip:'<path d="M8 4.5h8v3H8z"/><path d="M8 6H5.5v14.5h13V6H16"/><path d="M8.5 11h7M8.5 14.5h7M8.5 18h4"/>'
+  };
+  function ico(n, cls) {
+    // width/height as attributes so an icon is never unsized; CSS rules still win
+    return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (cls ? ' class="' + cls + '"' : '') + '>' + I[n] + '</svg>';
+  }
+
+  /* -------------------------------------------------------------- helpers */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function uid(p) { return (p || 'x') + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4); }
+  function n(v) { var x = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')); return isFinite(x) ? x : 0; }
+  function cur() { return (S.meta && S.meta.currency) || '$'; }
+  function money(v, dp) {
+    var d = dp == null ? 2 : dp, x = n(v), sign = x < 0 ? '-' : '';
+    return sign + cur() + Math.abs(x).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+  function money0(v) { return money(v, 0); }
+  function pct(v) { return (isFinite(v) ? (Math.round(v * 10) / 10).toFixed(1) : '0.0') + '%'; }
+  function signCls(v) { return v > 0 ? 'pos' : v < 0 ? 'neg' : ''; }
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function pad(x) { return x < 10 ? '0' + x : '' + x; }
+  function mKey(iso) { return (iso || '').slice(0, 7); }
+  function curMonth() { return todayISO().slice(0, 7); }
+  function shiftMonth(key, delta) {
+    var y = +key.slice(0, 4), m = +key.slice(5, 7) - 1 + delta;
+    var d = new Date(y, m, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+  }
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function mLabel(key, longYear) {
+    var m = +key.slice(5, 7) - 1;
+    return MON[m] + ' ' + (longYear ? key.slice(0, 4) : key.slice(2, 4));
+  }
+  function dLabel(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-'); if (p.length < 3) return iso;
+    return +p[2] + ' ' + MON[+p[1] - 1];
+  }
+  function daysFromToday(iso) {
+    if (!iso) return null;
+    var a = new Date(todayISO() + 'T00:00:00'), b = new Date(iso + 'T00:00:00');
+    return Math.round((b - a) / 86400000);
+  }
+  function relDays(d) {
+    if (d == null) return 'No ETA';
+    if (d === 0) return 'Today';
+    if (d === 1) return 'Tomorrow';
+    if (d > 0) return 'in ' + d + ' days';
+    return Math.abs(d) + ' days late';
+  }
+  function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+  function sortBy(arr, fn, dir) {
+    return arr.slice().sort(function (a, b) {
+      var x = fn(a), y = fn(b);
+      if (x === y) return 0; return (x > y ? 1 : -1) * (dir === 'desc' ? -1 : 1);
+    });
+  }
+  function marginPct(rev, cost) { return rev > 0 ? ((rev - cost) / rev) * 100 : 0; }
+
+  /* ------------------------------------------------------------ constants */
+  var SHIP_STATUS = ['Ordered', 'Paid', 'In production', 'In transit', 'At customs', 'Received', 'Cancelled'];
+  var OPEN_STATUS = ['Ordered', 'Paid', 'In production', 'In transit', 'At customs'];
+  var EXP_CATS = ['Ads', 'Freight & duty', 'Packaging', 'Platform fees', 'Software', 'Tools & equipment', 'Rent', 'Wages', 'Other'];
+  var AD_PLATFORMS = ['Meta', 'Google', 'TikTok', 'Instagram', 'YouTube', 'Other'];
+  var CHANNELS = ['Website', 'Instagram', 'Facebook', 'eBay', 'Gumtree', 'In person', 'Wholesale', 'Other'];
+  var CATEGORIES = ['Body kit', 'Bumper', 'Spoiler', 'Wheels', 'Exhaust', 'Suspension', 'Lighting', 'Interior', 'Engine', 'Accessories'];
+  var LS = 'kittedlab.tracker.v1';
+
+  /* ---------------------------------------------------------------- state */
+  var S, UI, DIRTY = false, ARTIFACT = null, DOWNLOADS = null, READONLY = false, EMBEDDED_STAMP = 0;
+
+  function emptyState() {
+    return {
+      v: 1, stamp: 0,
+      meta: { business: 'Kitted Lab', currency: '$', sample: false },
+      suppliers: [], products: [], shipments: [], sales: [], expenses: []
+    };
+  }
+
+  function readEmbedded() {
+    var el = document.getElementById('app-data');
+    try { return JSON.parse(el.textContent); } catch (e) { return null; }
+  }
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { return null; }
+  }
+  function writeLocal() {
+    try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { /* private mode */ }
+  }
+
+  function loadState() {
+    var emb = readEmbedded(), local = readLocal();
+    if (emb && emb.seed) { emb = sampleData(); emb.stamp = 0; }
+    if (!emb || !emb.v) emb = emptyState();
+    EMBEDDED_STAMP = emb.stamp || 0;
+    if (local && local.v && (local.stamp || 0) > EMBEDDED_STAMP) {
+      S = local; DIRTY = true;
+    } else {
+      S = emb; DIRTY = false;
+      if (local) { try { localStorage.removeItem(LS); } catch (e) {} }
+    }
+    // shape guard — a hand-edited or partial import should never break the app
+    ['suppliers', 'products', 'shipments', 'sales', 'expenses'].forEach(function (k) {
+      if (!Array.isArray(S[k])) S[k] = [];
+    });
+    if (!S.meta) S.meta = emptyState().meta;
+  }
+
+  /** Mark data changed: stamp it, mirror to this device, refresh the save chip. */
+  function touch() {
+    S.stamp = Date.now();
+    DIRTY = true;
+    writeLocal();
+    renderChrome();
+  }
+
+  /* ------------------------------------------------------- self-publishing */
+  var BODY_MARKUP =
+    '<div class="shell">\n' +
+    '  <nav class="rail" id="rail" aria-label="Sections"></nav>\n' +
+    '  <div class="main">\n' +
+    '    <header class="top" id="top"></header>\n' +
+    '    <main id="app" class="wrap"></main>\n' +
+    '  </div>\n' +
+    '</div>\n' +
+    '<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>\n' +
+    '<div id="layer"></div>\n' +
+    '<div id="toasts"></div>';
+
+  var FONT_LINK =
+    '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600' +
+    '&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">';
+
+  /** Rebuild this whole page from its own stylesheet, script and current data. */
+  function serialize() {
+    var css = document.getElementById('app-css').outerHTML;
+    var js = document.getElementById('app-js').textContent;
+    var data = JSON.stringify(S).replace(/</g, '\\u003c');
+    return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
+      '<title>Kitted Lab Tracker</title>\n' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      FONT_LINK + '\n' + css + '\n</head>\n<body>\n' +
+      '<' + 'script type="application/json" id="app-data">' + data + '<\/script>\n' +
+      BODY_MARKUP + '\n' +
+      '<' + 'script id="app-js">' + js + '<\/script>\n' +
+      '</body>\n</html>';
+  }
+
+  var saving = false;
+  function save() {
+    if (saving) return;
+    if (!ARTIFACT) { toast('Saved on this device only — cloud saving is off here.'); return; }
+    if (READONLY) { toast('This is a read-only view.'); return; }
+    saving = true; renderChrome();
+    S.stamp = Date.now();
+    writeLocal();
+    try { sessionStorage.setItem('kl.ui', JSON.stringify(UI)); } catch (e) {}
+    ARTIFACT.publish(serialize()).then(function () {
+      // the view reloads to the new version from here
+    }).catch(function (err) {
+      saving = false;
+      var code = err && err.code;
+      if (code === 'conflict') { toast('Someone else saved first — reloading their version.'); return; }
+      if (code === 'not_writer' || code === 'not_granted' || code === 'not_declared' || code === 'consent_required') {
+        READONLY = true; toast('This view is read-only. Your changes stay on this device.');
+      } else if (code === 'rate_limited') {
+        toast('Saving too often — wait a moment and press Save again.');
+      } else if (code === 'too_large') {
+        toast('Too much data to save in one go. Export a backup and archive old rows.');
+      } else {
+        toast('Save failed. Your data is safe on this device — try Save again.');
+      }
+      renderChrome();
+    });
+  }
+
+  /* ----------------------------------------------------------- sample data */
+  function sampleData() {
+    var st = emptyState();
+    st.meta.sample = true;
+    var t = new Date(), iso = function (off) {
+      var d = new Date(t.getTime() + off * 86400000);
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    };
+    var sup = [
+      { id: 'sup1', name: 'Guangzhou Ryde Auto Parts', contact: 'Lily Chen', email: 'lily@rydeautoparts.cn', phone: '+86 138 0000 1122', whatsapp: '+86 138 0000 1122', country: 'China', website: 'rydeautoparts.cn', leadTime: 35, terms: '30% deposit, 70% before shipping', rating: 'Reliable', notes: 'Best pricing on full kits. Always ask for QC photos before they ship.' },
+      { id: 'sup2', name: 'Osaka JDM Direct', contact: 'Kenji Mori', email: 'kenji@osakajdm.jp', phone: '+81 6 6000 4411', whatsapp: '', country: 'Japan', leadTime: 21, terms: '100% up front', website: 'osakajdm.jp', rating: 'Reliable', notes: 'Genuine JDM only. Slow to reply on weekends.' },
+      { id: 'sup3', name: 'Melbourne Wheel Warehouse', contact: 'Dave Petrakis', email: 'dave@mwwheels.com.au', phone: '03 9000 7788', whatsapp: '', country: 'Australia', leadTime: 3, terms: 'Net 14', website: 'mwwheels.com.au', rating: 'Backup', notes: 'Local. More expensive but next-day when we are stuck.' }
+    ];
+    var prod = [
+      { id: 'p1', sku: 'BK-GR86-WB', name: 'GR86 wide body kit', category: 'Body kit', supplierId: 'sup1', cost: 1180, price: 2450, qty: 4, reorder: 2, location: 'Rack A1', notes: 'Fibreglass. Ships in 3 boxes.' },
+      { id: 'p2', sku: 'SP-CIVIC-DK', name: 'Civic FK8 ducktail spoiler', category: 'Spoiler', supplierId: 'sup1', cost: 210, price: 549, qty: 11, reorder: 4, location: 'Rack A3', notes: '' },
+      { id: 'p3', sku: 'WH-VOLK-18', name: 'Volk TE37 style 18" (set of 4)', category: 'Wheels', supplierId: 'sup3', cost: 1290, price: 2190, qty: 1, reorder: 2, location: 'Floor B', notes: 'Replica. Bronze sells fastest.' },
+      { id: 'p4', sku: 'EX-WRX-CB', name: 'WRX catback exhaust', category: 'Exhaust', supplierId: 'sup2', cost: 640, price: 1290, qty: 0, reorder: 2, location: 'Rack C2', notes: 'Out of stock — reorder placed.' },
+      { id: 'p5', sku: 'LT-S15-DEMON', name: 'S15 demon eye headlights (pair)', category: 'Lighting', supplierId: 'sup2', cost: 385, price: 850, qty: 6, reorder: 3, location: 'Shelf D1', notes: '' },
+      { id: 'p6', sku: 'BP-M3-FRONT', name: 'M3 G80 front bumper', category: 'Bumper', supplierId: 'sup1', cost: 720, price: 1590, qty: 2, reorder: 2, location: 'Rack A2', notes: '' }
+    ];
+    var ship = [
+      { id: 'sh1', ref: 'KL-024', supplierId: 'sup1', status: 'In transit', ordered: iso(-26), eta: iso(9), arrived: '', freight: 1450, duties: 620, tracking: 'MSCU7742199', carrier: 'MSC — sea freight', applied: false, notes: 'Container shared with another buyer.', items: [{ productId: 'p1', qty: 3, cost: 1180 }, { productId: 'p6', qty: 4, cost: 720 }] },
+      { id: 'sh2', ref: 'KL-025', supplierId: 'sup2', status: 'At customs', ordered: iso(-19), eta: iso(-2), arrived: '', freight: 480, duties: 210, tracking: 'JP884120033', carrier: 'DHL air', applied: false, notes: 'Held for paperwork — chase the broker.', items: [{ productId: 'p4', qty: 4, cost: 640 }] },
+      { id: 'sh3', ref: 'KL-026', supplierId: 'sup1', status: 'Ordered', ordered: iso(-4), eta: iso(38), arrived: '', freight: 0, duties: 0, tracking: '', carrier: '', applied: false, notes: 'Deposit paid, waiting on production slot.', items: [{ productId: 'p2', qty: 20, cost: 205 }] }
+    ];
+    var sales = [
+      { id: 'sl1', date: iso(-1), productId: 'p2', qty: 1, price: 549, cost: 210, fees: 16, shipCost: 24, channel: 'Website', customer: 'J. Nguyen', notes: '' },
+      { id: 'sl2', date: iso(-3), productId: 'p1', qty: 1, price: 2450, cost: 1180, fees: 0, shipCost: 180, channel: 'Instagram', customer: 'Marcus T.', notes: 'Pickup arranged, then changed to freight.' },
+      { id: 'sl3', date: iso(-6), productId: 'p5', qty: 2, price: 850, cost: 385, fees: 42, shipCost: 30, channel: 'eBay', customer: 'S. Whitely', notes: '' },
+      { id: 'sl4', date: iso(-9), productId: 'p3', qty: 1, price: 2190, cost: 1290, fees: 0, shipCost: 0, channel: 'In person', customer: 'Walk-in', notes: 'Fitted same day.' },
+      { id: 'sl5', date: iso(-12), productId: 'p2', qty: 2, price: 529, cost: 210, fees: 31, shipCost: 48, channel: 'Website', customer: 'Bayside Performance', notes: 'Small trade discount.' }
+    ];
+    var exp = [
+      { id: 'e1', date: iso(-2), category: 'Ads', platform: 'Meta', amount: 640, vendor: 'Meta', campaign: 'GR86 kit — retarget', notes: '' },
+      { id: 'e2', date: iso(-8), category: 'Ads', platform: 'TikTok', amount: 310, vendor: 'TikTok', campaign: 'Spoiler reel — cold', notes: 'Cheap clicks, weak checkout.' },
+      { id: 'e3', date: iso(-11), category: 'Ads', platform: 'Google', amount: 275, vendor: 'Google', campaign: 'Brand search', notes: '' },
+      { id: 'e4', date: iso(-5), category: 'Packaging', platform: '', amount: 145, vendor: 'BoxCo', campaign: '', notes: 'Bubble wrap + heavy cartons.' },
+      { id: 'e5', date: iso(-14), category: 'Software', platform: '', amount: 89, vendor: 'Shopify', campaign: '', notes: '' },
+      { id: 'e6', date: iso(-16), category: 'Rent', platform: '', amount: 1100, vendor: 'Unit 4 Kew East', campaign: '', notes: 'Workshop.' }
+    ];
+    st.suppliers = sup; st.products = prod; st.shipments = ship; st.sales = sales; st.expenses = exp;
+    return st;
+  }
+
+  /* ------------------------------------------------------------- derived */
+  function supName(id) { var s = byId(S.suppliers, id); return s ? s.name : '—'; }
+  function prod(id) { return byId(S.products, id); }
+  function prodName(id) { var p = prod(id); return p ? p.name : 'Deleted item'; }
+  function isOpen(sh) { return OPEN_STATUS.indexOf(sh.status) >= 0; }
+
+  function incomingQty(productId) {
+    var total = 0;
+    S.shipments.forEach(function (sh) {
+      if (!isOpen(sh)) return;
+      (sh.items || []).forEach(function (it) { if (it.productId === productId) total += n(it.qty); });
+    });
+    return total;
+  }
+  function shipGoods(sh) {
+    return (sh.items || []).reduce(function (a, it) { return a + n(it.qty) * n(it.cost); }, 0);
+  }
+  function shipUnits(sh) {
+    return (sh.items || []).reduce(function (a, it) { return a + n(it.qty); }, 0);
+  }
+  function shipTotal(sh) { return shipGoods(sh) + n(sh.freight) + n(sh.duties); }
+  function shipLate(sh) { var d = daysFromToday(sh.eta); return isOpen(sh) && d != null && d < 0; }
+
+  function saleRev(s) { return n(s.qty) * n(s.price); }
+  function saleCogs(s) { return n(s.qty) * n(s.cost); }
+  function saleProfit(s) { return saleRev(s) - saleCogs(s) - n(s.fees) - n(s.shipCost); }
+
+  function lowStock() {
+    return S.products.filter(function (p) { return n(p.qty) <= n(p.reorder); });
+  }
+  function lateShipments() { return S.shipments.filter(shipLate); }
+
+  function stockValue() {
+    var cost = 0, retail = 0, units = 0;
+    S.products.forEach(function (p) {
+      units += n(p.qty); cost += n(p.qty) * n(p.cost); retail += n(p.qty) * n(p.price);
+    });
+    return { units: units, cost: cost, retail: retail, profit: retail - cost };
+  }
+
+  function monthStats(key) {
+    var r = { revenue: 0, cogs: 0, fees: 0, ship: 0, units: 0, orders: 0, ads: 0, other: 0 };
+    S.sales.forEach(function (s) {
+      if (mKey(s.date) !== key) return;
+      r.revenue += saleRev(s); r.cogs += saleCogs(s); r.fees += n(s.fees);
+      r.ship += n(s.shipCost); r.units += n(s.qty); r.orders++;
+    });
+    S.expenses.forEach(function (e) {
+      if (mKey(e.date) !== key) return;
+      if (e.category === 'Ads') r.ads += n(e.amount); else r.other += n(e.amount);
+    });
+    r.gross = r.revenue - r.cogs - r.fees - r.ship;
+    r.spend = r.ads + r.other;
+    r.net = r.gross - r.spend;
+    r.margin = marginPct(r.revenue, r.revenue - r.net);
+    r.grossMargin = marginPct(r.revenue, r.cogs);
+    r.roas = r.ads > 0 ? r.revenue / r.ads : 0;
+    return r;
+  }
+
+  function lastMonths(count) {
+    var out = [], k = curMonth();
+    for (var i = count - 1; i >= 0; i--) out.push(shiftMonth(k, -i));
+    return out;
+  }
+
+  /* --------------------------------------------------------------- toasts */
+  function toast(msg) {
+    var host = document.getElementById('toasts');
+    var el = document.createElement('div');
+    el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg;
+    host.appendChild(el);
+    setTimeout(function () { el.remove(); }, 3400);
+  }
+
+  /* ---------------------------------------------------------------- chrome */
+  var TABS = [
+    { id: 'dash', label: 'Dashboard', short: 'Home', icon: 'gauge' },
+    { id: 'stock', label: 'Stock', short: 'Stock', icon: 'box' },
+    { id: 'incoming', label: 'Incoming', short: 'Incoming', icon: 'truck' },
+    { id: 'sales', label: 'Sales', short: 'Sales', icon: 'tag' },
+    { id: 'money', label: 'Money out', short: 'Money', icon: 'wallet' },
+    { id: 'suppliers', label: 'Suppliers', short: 'Supply', icon: 'users' },
+    { id: 'settings', label: 'Settings', short: 'Setup', icon: 'cog' }
+  ];
+
+  function tabAlerts(id) {
+    if (id === 'stock') return lowStock().length;
+    if (id === 'incoming') return lateShipments().length;
+    return 0;
+  }
+
+  function renderChrome() {
+    var rail = document.getElementById('rail');
+    rail.innerHTML =
+      '<div class="brand"><div class="brand-mark">KL</div><div>' +
+      '<div class="brand-name">' + esc(S.meta.business || 'Kitted Lab') + '</div>' +
+      '<div class="brand-sub">Tracker</div></div></div>' +
+      TABS.map(function (t) {
+        var a = tabAlerts(t.id);
+        return '<button class="navbtn" data-tab="' + t.id + '"' + (UI.tab === t.id ? ' aria-current="page"' : '') + '>' +
+          ico(t.icon) + '<span>' + t.label + '</span>' + (a ? '<span class="pip">' + a + '</span>' : '') + '</button>';
+      }).join('') +
+      '<div class="rail-foot">' + saveBlock(true) + '</div>';
+
+    document.getElementById('tabbar').innerHTML = TABS.map(function (t) {
+      var a = tabAlerts(t.id);
+      return '<button class="tabbtn" data-tab="' + t.id + '"' + (UI.tab === t.id ? ' aria-current="page"' : '') + '>' +
+        ico(t.icon) + '<span>' + t.short + '</span>' + (a ? '<span class="pip"></span>' : '') + '</button>';
+    }).join('');
+
+    var t = TABS.filter(function (x) { return x.id === UI.tab; })[0] || TABS[0];
+    document.getElementById('top').innerHTML =
+      '<h1>' + t.label + '</h1><div class="spacer"></div>' +
+      '<div style="display:flex;align-items:center;gap:9px">' + saveBlock(false) + '</div>';
+  }
+
+  function saveBlock(rail) {
+    var chip, cls, txt;
+    if (READONLY) { cls = 'off'; txt = 'Read-only view'; }
+    else if (saving) { cls = 'pending'; txt = 'Saving…'; }
+    else if (DIRTY) { cls = 'pending'; txt = 'Unsaved changes'; }
+    else if (!ARTIFACT) { cls = 'off'; txt = 'This device only'; }
+    else { cls = ''; txt = 'All saved'; }
+    chip = '<span class="savechip"><i class="dot ' + cls + '"></i>' + txt + '</span>';
+    var btn = (READONLY || !ARTIFACT) ? '' :
+      '<button class="btn ' + (DIRTY ? 'primary' : '') + '" data-act="save"' + (DIRTY && !saving ? '' : ' disabled') + '>' +
+      ico('check') + 'Save</button>';
+    return rail
+      ? '<div style="display:flex;flex-direction:column;gap:8px;padding:0 4px">' + chip + btn + '</div>'
+      : chip + btn;
+  }
+
+  /* ================================ DASHBOARD ============================ */
+  function monthNav(month) {
+    return '<div class="toolbar" style="margin-bottom:0">' +
+      '<div class="seg">' +
+      '<button data-act="month" data-d="-1" aria-label="Previous month">' + ico('left') + '</button>' +
+      '<button aria-pressed="true" style="min-width:96px">' + mLabel(month, true) + '</button>' +
+      '<button data-act="month" data-d="1" aria-label="Next month">' + ico('right') + '</button>' +
+      '</div>' +
+      (month !== curMonth() ? '<button class="btn ghost sm" data-act="month-now">Back to this month</button>' : '') +
+      '</div>';
+  }
+
+  function viewDash() {
+    var m = UI.month, r = monthStats(m), sv = stockValue();
+    var open = S.shipments.filter(isOpen);
+    var late = lateShipments(), low = lowStock();
+    var h = '';
+
+    if (S.meta.sample) {
+      h += '<div class="banner" style="margin-bottom:16px">' + ico('alert') +
+        '<span class="spacer">This is sample data so you can see how everything works. Clear it when you\'re ready to put your own numbers in.</span>' +
+        '<button class="btn sm" data-act="clear-sample">Clear sample data</button></div>';
+    }
+
+    h += monthNav(m);
+
+    h += '<div class="kpis" style="margin:14px 0 16px">' +
+      kpi('Net profit', money0(r.net), mLabel(m, true) + ' · after everything', 'hero', r.net >= 0 ? 'pos' : 'neg') +
+      kpi('Margin', pct(r.margin), 'Gross margin ' + pct(r.grossMargin), '', r.margin >= 20 ? 'pos' : r.margin >= 0 ? 'amb' : 'neg') +
+      kpi('Revenue', money0(r.revenue), r.orders + ' sale' + (r.orders === 1 ? '' : 's') + ' · ' + r.units + ' units') +
+      kpi('Cost of goods', money0(r.cogs), 'Fees + postage ' + money0(r.fees + r.ship)) +
+      kpi('Money out', money0(r.spend), 'Ads ' + money0(r.ads) + ' · other ' + money0(r.other)) +
+      '</div>';
+
+    h += '<div class="grid g2">';
+
+    /* ---- incoming ---- */
+    var soon = sortBy(open, function (s) { return s.eta || '9999'; }).slice(0, 6);
+    h += '<section class="card"><div class="card-h">' + ico('truck') + '<h3>On the way</h3><div class="spacer"></div>' +
+      '<span class="chip">' + open.length + ' open · ' + money0(open.reduce(function (a, s) { return a + shipTotal(s); }, 0)) + '</span>' +
+      '</div><div class="card-b flush">';
+    if (!soon.length) {
+      h += '<div class="empty"><p>Nothing on order right now.</p><button class="btn primary" data-act="new-shipment">' + ico('plus') + 'Add a shipment</button></div>';
+    } else {
+      h += '<div class="rows">' + soon.map(function (s) {
+        var d = daysFromToday(s.eta), lateOne = shipLate(s);
+        return '<div class="row" data-act="edit-shipment" data-id="' + s.id + '" style="cursor:pointer">' +
+          '<div class="grow"><div class="t truncate">' + esc(s.ref || 'Shipment') + ' · ' + esc(supName(s.supplierId)) + '</div>' +
+          '<div class="s truncate">' + shipUnits(s) + ' units · ' + (s.items || []).length + ' line' + ((s.items || []).length === 1 ? '' : 's') +
+          ' · ' + money0(shipTotal(s)) + ' landed</div></div>' +
+          '<div style="text-align:right;flex:none"><div class="chip ' + (lateOne ? 'bad' : d != null && d <= 7 ? 'warn' : 'acc') + '">' + esc(s.status) + '</div>' +
+          '<div class="s num" style="margin-top:4px">' + esc(relDays(d)) + '</div></div></div>';
+      }).join('') + '</div>';
+    }
+    h += '<div style="padding:11px 15px;border-top:1px solid var(--line-2)" class="hint">Freight and duty shown here is landed cost. Log the invoice under Money out if you want it to hit profit.</div>';
+    h += '</div></section>';
+
+    /* ---- needs attention ---- */
+    h += '<section class="card"><div class="card-h">' + ico('alert') + '<h3>Needs you</h3><div class="spacer"></div>' +
+      '<span class="chip ' + (low.length + late.length ? 'warn' : 'good') + '">' + (low.length + late.length) + '</span></div><div class="card-b flush">';
+    if (!low.length && !late.length) {
+      h += '<div class="empty"><h3>All clear</h3><p>Nothing low on stock and nothing running late.</p></div>';
+    } else {
+      h += '<div class="rows">';
+      h += late.map(function (s) {
+        return '<div class="row" data-act="edit-shipment" data-id="' + s.id + '" style="cursor:pointer">' +
+          '<div class="grow"><div class="t truncate">' + esc(s.ref || 'Shipment') + ' is late</div>' +
+          '<div class="s truncate">' + esc(supName(s.supplierId)) + ' · ETA was ' + dLabel(s.eta) + (s.tracking ? ' · ' + esc(s.tracking) : '') + '</div></div>' +
+          '<span class="chip bad">' + Math.abs(daysFromToday(s.eta)) + 'd late</span></div>';
+      }).join('');
+      h += low.map(function (p) {
+        var inc = incomingQty(p.id);
+        return '<div class="row" data-act="edit-product" data-id="' + p.id + '" style="cursor:pointer">' +
+          '<div class="grow"><div class="t truncate">' + esc(p.name) + '</div>' +
+          '<div class="s truncate"><span class="sku">' + esc(p.sku || '—') + '</span> · ' + esc(supName(p.supplierId)) +
+          (inc ? ' · ' + inc + ' on the way' : ' · nothing on order') + '</div></div>' +
+          '<span class="chip ' + (n(p.qty) <= 0 ? 'bad' : 'warn') + '">' + (n(p.qty) <= 0 ? 'Out of stock' : n(p.qty) + ' left') + '</span></div>';
+      }).join('');
+      h += '</div>';
+    }
+    h += '</div></section>';
+    h += '</div>';
+
+    /* ---- trend + stock ---- */
+    h += '<div class="grid g2" style="margin-top:14px">';
+    h += trendCard();
+    h += '<section class="card"><div class="card-h">' + ico('box') + '<h3>Stock on hand</h3></div><div class="card-b">' +
+      '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">' +
+      miniStat('Units', sv.units.toLocaleString()) +
+      miniStat('Cost value', money0(sv.cost)) +
+      miniStat('Retail value', money0(sv.retail)) +
+      miniStat('Profit sitting in stock', money0(sv.profit), 'pos') +
+      '</div>' + topSellers(m) + '</div></section>';
+    h += '</div>';
+    return h;
+  }
+
+  function kpi(label, val, sub, extraCls, valCls) {
+    return '<div class="kpi ' + (extraCls || '') + '"><div class="lab">' + esc(label) + '</div>' +
+      '<div class="val ' + (valCls || '') + '">' + esc(val) + '</div>' +
+      (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + '</div>';
+  }
+  function miniStat(label, val, cls) {
+    return '<div><div class="eyebrow">' + esc(label) + '</div>' +
+      '<div class="num ' + (cls || '') + '" style="font-size:19px;font-weight:600;margin-top:2px">' + esc(val) + '</div></div>';
+  }
+
+  function trendCard() {
+    var months = lastMonths(6);
+    var data = months.map(function (k) { var s = monthStats(k); return { k: k, rev: s.revenue, net: s.net }; });
+    var max = 1;
+    data.forEach(function (d) { max = Math.max(max, d.rev, Math.abs(d.net)); });
+    var bars = data.map(function (d) {
+      var isNow = d.k === UI.month;
+      return '<div class="barcol"><div class="barstack">' +
+        '<div class="bar" style="height:' + Math.max(2, (d.rev / max) * 100) + '%;opacity:' + (isNow ? 1 : .6) + '" title="Revenue ' + money0(d.rev) + '"></div>' +
+        '<div class="bar b2 ' + (d.net < 0 ? 'neg' : '') + '" style="height:' + Math.max(2, (Math.abs(d.net) / max) * 100) + '%;opacity:' + (isNow ? 1 : .6) + '" title="Net profit ' + money0(d.net) + '"></div>' +
+        '</div><div class="barlab">' + mLabel(d.k) + '</div></div>';
+    }).join('');
+    return '<section class="card"><div class="card-h">' + ico('gauge') + '<h3>Last 6 months</h3></div><div class="card-b">' +
+      '<div class="bars">' + bars + '</div>' +
+      '<div class="legend" style="margin-top:10px"><span><i style="background:var(--accent-line)"></i>Revenue</span>' +
+      '<span><i style="background:var(--good)"></i>Net profit</span></div></div></section>';
+  }
+
+  function topSellers(month) {
+    var agg = {};
+    S.sales.forEach(function (s) {
+      if (mKey(s.date) !== month) return;
+      var a = agg[s.productId] || (agg[s.productId] = { rev: 0, profit: 0, units: 0 });
+      a.rev += saleRev(s); a.profit += saleProfit(s); a.units += n(s.qty);
+    });
+    var list = Object.keys(agg).map(function (id) { var a = agg[id]; a.id = id; return a; });
+    if (!list.length) return '<div class="hint" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)">No sales logged for ' + esc(mLabel(month, true)) + ' yet.</div>';
+    list = sortBy(list, function (a) { return a.profit; }, 'desc').slice(0, 4);
+    var max = Math.max.apply(null, list.map(function (a) { return Math.abs(a.profit); })) || 1;
+    return '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line-2)">' +
+      '<div class="eyebrow" style="margin-bottom:10px">Best earners this month</div>' +
+      list.map(function (a) {
+        return '<div style="margin-bottom:11px"><div style="display:flex;gap:10px;font-size:13.5px">' +
+          '<span class="truncate" style="flex:1;font-weight:600">' + esc(prodName(a.id)) + '</span>' +
+          '<span class="num ' + signCls(a.profit) + '">' + money0(a.profit) + '</span></div>' +
+          '<div class="meter" style="margin-top:5px"><i style="width:' + Math.max(3, (Math.abs(a.profit) / max) * 100) + '%;background:' + (a.profit < 0 ? 'var(--bad)' : 'var(--accent)') + '"></i></div>' +
+          '<div class="hint" style="margin-top:3px">' + a.units + ' units · ' + money0(a.rev) + ' revenue</div></div>';
+      }).join('') + '</div>';
+  }
+
+  /* ================================== STOCK ============================== */
+  function searchBar(placeholder) {
+    return '<div class="search">' + ico('search') +
+      '<input type="search" id="q" placeholder="' + esc(placeholder) + '" value="' + esc(UI.q) + '" autocomplete="off"></div>';
+  }
+  function seg(name, options, active) {
+    return '<div class="seg">' + options.map(function (o) {
+      return '<button data-act="' + name + '" data-v="' + esc(o.v) + '" aria-pressed="' + (active === o.v) + '">' +
+        esc(o.l) + (o.n != null ? ' <span class="num">' + o.n + '</span>' : '') + '</button>';
+    }).join('') + '</div>';
+  }
+  function matches(text) {
+    var q = UI.q.trim().toLowerCase();
+    if (!q) return true;
+    return String(text).toLowerCase().indexOf(q) >= 0;
+  }
+
+  function viewStock() {
+    var low = lowStock();
+    var out = S.products.filter(function (p) { return n(p.qty) <= 0; });
+    var list = S.products.filter(function (p) {
+      if (UI.stockFilter === 'low' && n(p.qty) > n(p.reorder)) return false;
+      if (UI.stockFilter === 'out' && n(p.qty) > 0) return false;
+      return matches([p.name, p.sku, p.category, supName(p.supplierId), p.location].join(' '));
+    });
+    list = sortBy(list, function (p) { return (p.name || '').toLowerCase(); });
+
+    var h = '<div class="toolbar">' + searchBar('Search stock, SKU, supplier…') +
+      seg('stock-filter', [
+        { v: 'all', l: 'All', n: S.products.length },
+        { v: 'low', l: 'Low', n: low.length },
+        { v: 'out', l: 'Out', n: out.length }
+      ], UI.stockFilter) +
+      '<button class="btn primary" data-act="new-product">' + ico('plus') + 'Add item</button>' +
+      '<button class="btn" data-act="paste" data-kind="products">' + ico('clip') + 'Paste in list</button>' +
+      '<button class="btn icon" data-act="export" data-kind="products" title="Export stock as CSV" aria-label="Export stock as CSV">' + ico('down') + '</button>' +
+      '</div>';
+
+    if (!S.products.length) {
+      return h + emptyBox('No stock yet', 'Add your first part, or paste a whole list straight out of a spreadsheet.',
+        '<button class="btn primary" data-act="new-product">' + ico('plus') + 'Add item</button>' +
+        '<button class="btn" data-act="paste" data-kind="products">' + ico('clip') + 'Paste in list</button>');
+    }
+    if (!list.length) return h + emptyBox('Nothing matches', 'Try a different search or filter.', '');
+
+    var sv = stockValue();
+    h += '<div class="kpis" style="margin-bottom:14px">' +
+      kpi('Items', S.products.length + '', sv.units + ' units on hand') +
+      kpi('Cost value', money0(sv.cost), 'What it owes you') +
+      kpi('Retail value', money0(sv.retail), 'If it all sold at list') +
+      kpi('Profit in stock', money0(sv.profit), pct(marginPct(sv.retail, sv.cost)) + ' margin', '', 'pos') +
+      kpi('Low or out', low.length + '', out.length + ' completely out', '', low.length ? 'amb' : '') +
+      kpi('On the way', S.products.reduce(function (a, p) { return a + incomingQty(p.id); }, 0) + '', 'units inbound') +
+      '</div>';
+
+    h += '<section class="card"><div class="tablewrap"><table class="responsive"><thead><tr>' +
+      '<th class="wcol">Item</th><th>Category</th><th>Supplier</th><th class="num">In stock</th><th class="num">Coming</th>' +
+      '<th class="num">Cost</th><th class="num">Sell</th><th class="num">Margin</th><th class="num">Value</th><th></th>' +
+      '</tr></thead><tbody>' +
+      list.map(function (p) {
+        var q = n(p.qty), inc = incomingQty(p.id), mg = marginPct(n(p.price), n(p.cost));
+        var qCls = q <= 0 ? 'bad' : q <= n(p.reorder) ? 'warn' : '';
+        return '<tr>' +
+          '<td class="wide"><div class="rowtitle">' + esc(p.name) + '</div>' +
+          '<div class="rowsub"><span class="sku">' + esc(p.sku || 'no SKU') + '</span>' + (p.location ? ' · ' + esc(p.location) : '') + '</div></td>' +
+          '<td data-l="Category">' + (p.category ? '<span class="chip">' + esc(p.category) + '</span>' : '—') + '</td>' +
+          '<td data-l="Supplier" class="truncate">' + esc(supName(p.supplierId)) + '</td>' +
+          '<td class="num" data-l="In stock">' + (qCls ? '<span class="chip ' + qCls + '">' + q + '</span>' : q) + '</td>' +
+          '<td class="num" data-l="Coming">' + (inc ? '<span class="chip acc">+' + inc + '</span>' : '—') + '</td>' +
+          '<td class="num" data-l="Cost">' + money(p.cost) + '</td>' +
+          '<td class="num" data-l="Sell">' + money(p.price) + '</td>' +
+          '<td class="num ' + (mg >= 30 ? 'pos' : mg >= 10 ? 'amb' : 'neg') + '" data-l="Margin">' + pct(mg) + '</td>' +
+          '<td class="num" data-l="Value">' + money0(q * n(p.cost)) + '</td>' +
+          '<td class="actcell"><div class="acts">' +
+          '<button class="btn sm" data-act="adjust" data-id="' + p.id + '">± Stock</button>' +
+          '<button class="btn icon sm" data-act="edit-product" data-id="' + p.id + '" aria-label="Edit ' + esc(p.name) + '">' + ico('pencil') + '</button>' +
+          '<button class="btn icon sm" data-act="del" data-kind="products" data-id="' + p.id + '" aria-label="Delete ' + esc(p.name) + '">' + ico('trash') + '</button>' +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div></section>';
+    return h;
+  }
+
+  function emptyBox(title, body, actions) {
+    return '<section class="card"><div class="empty"><h3>' + esc(title) + '</h3><p>' + esc(body) + '</p>' +
+      '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">' + (actions || '') + '</div></div></section>';
+  }
+
+  /* ================================ INCOMING ============================= */
+  function viewIncoming() {
+    var open = S.shipments.filter(isOpen), late = lateShipments();
+    var list = S.shipments.filter(function (s) {
+      if (UI.shipFilter === 'open' && !isOpen(s)) return false;
+      if (UI.shipFilter === 'late' && !shipLate(s)) return false;
+      if (UI.shipFilter === 'done' && s.status !== 'Received') return false;
+      return matches([s.ref, supName(s.supplierId), s.status, s.tracking, s.carrier,
+      (s.items || []).map(function (i) { return prodName(i.productId); }).join(' ')].join(' '));
+    });
+    list = sortBy(list, function (s) { return (isOpen(s) ? '0' : '1') + (s.eta || '9999-99-99'); });
+
+    var h = '<div class="toolbar">' + searchBar('Search reference, supplier, tracking…') +
+      seg('ship-filter', [
+        { v: 'open', l: 'On the way', n: open.length },
+        { v: 'late', l: 'Late', n: late.length },
+        { v: 'done', l: 'Received', n: S.shipments.filter(function (s) { return s.status === 'Received'; }).length },
+        { v: 'all', l: 'All', n: S.shipments.length }
+      ], UI.shipFilter) +
+      '<button class="btn primary" data-act="new-shipment">' + ico('plus') + 'Add shipment</button>' +
+      '<button class="btn icon" data-act="export" data-kind="shipments" title="Export shipments as CSV" aria-label="Export shipments as CSV">' + ico('down') + '</button>' +
+      '</div>';
+
+    if (!S.shipments.length) {
+      return h + emptyBox('Nothing on order', 'Add a shipment as soon as you place an order, so you always know what is coming and when.',
+        '<button class="btn primary" data-act="new-shipment">' + ico('plus') + 'Add shipment</button>');
+    }
+
+    var committed = open.reduce(function (a, s) { return a + shipTotal(s); }, 0);
+    var unitsIn = open.reduce(function (a, s) { return a + shipUnits(s); }, 0);
+    var nextEta = sortBy(open.filter(function (s) { return s.eta; }), function (s) { return s.eta; })[0];
+    h += '<div class="kpis" style="margin-bottom:14px">' +
+      kpi('Open shipments', open.length + '', unitsIn + ' units inbound') +
+      kpi('Cash committed', money0(committed), 'Goods + freight + duty') +
+      kpi('Next arrival', nextEta ? dLabel(nextEta.eta) : '—', nextEta ? esc(nextEta.ref) + ' · ' + relDays(daysFromToday(nextEta.eta)) : 'Nothing scheduled') +
+      kpi('Running late', late.length + '', late.length ? 'Chase these today' : 'All on schedule', '', late.length ? 'neg' : 'pos') +
+      '</div>';
+
+    if (!list.length) return h + emptyBox('Nothing matches', 'Try a different search or filter.', '');
+
+    h += list.map(shipmentCard).join('');
+    return h;
+  }
+
+  function statusChip(s) {
+    var cls = s.status === 'Received' ? 'good' : s.status === 'Cancelled' ? '' : shipLate(s) ? 'bad' : 'acc';
+    return '<span class="chip ' + cls + '">' + esc(s.status) + '</span>';
+  }
+
+  function shipmentCard(s) {
+    var d = daysFromToday(s.eta), items = s.items || [];
+    return '<section class="card" style="margin-bottom:14px"><div class="card-h">' +
+      '<div style="min-width:0"><h3 class="truncate">' + esc(s.ref || 'Shipment') + ' <span style="color:var(--muted);font-weight:600">· ' + esc(supName(s.supplierId)) + '</span></h3>' +
+      '<div class="hint">Ordered ' + dLabel(s.ordered) + (s.carrier ? ' · ' + esc(s.carrier) : '') + (s.tracking ? ' · <span class="mono">' + esc(s.tracking) + '</span>' : '') + '</div></div>' +
+      '<div class="spacer"></div>' + statusChip(s) +
+      '<button class="btn icon sm" data-act="edit-shipment" data-id="' + s.id + '" aria-label="Edit shipment">' + ico('pencil') + '</button>' +
+      '<button class="btn icon sm" data-act="del" data-kind="shipments" data-id="' + s.id + '" aria-label="Delete shipment">' + ico('trash') + '</button>' +
+      '</div><div class="card-b">' +
+      '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;margin-bottom:14px">' +
+      miniStat('ETA', s.status === 'Received' ? dLabel(s.arrived || s.eta) : dLabel(s.eta), '') +
+      miniStat(s.status === 'Received' ? 'Arrived' : 'Timing', s.status === 'Received' ? 'Done' : relDays(d), shipLate(s) ? 'neg' : '') +
+      miniStat('Goods', money0(shipGoods(s))) +
+      miniStat('Landed total', money0(shipTotal(s))) +
+      '</div>' +
+      (items.length ? '<div class="tablewrap"><table class="responsive"><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit cost</th><th class="num">Line total</th></tr></thead><tbody>' +
+        items.map(function (it) {
+          return '<tr><td class="wide"><div class="rowtitle">' + esc(prodName(it.productId)) + '</div></td>' +
+            '<td class="num" data-l="Qty">' + n(it.qty) + '</td>' +
+            '<td class="num" data-l="Unit cost">' + money(it.cost) + '</td>' +
+            '<td class="num" data-l="Line total">' + money0(n(it.qty) * n(it.cost)) + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="hint">No line items yet — edit the shipment to add what is in it.</div>') +
+      (n(s.freight) || n(s.duties) ? '<div class="hint" style="margin-top:10px">Freight ' + money0(s.freight) + ' · duty & clearing ' + money0(s.duties) + '</div>' : '') +
+      (s.notes ? '<div class="hint" style="margin-top:10px">' + esc(s.notes) + '</div>' : '') +
+      (s.status !== 'Received' && s.status !== 'Cancelled' && items.length ?
+        '<div style="margin-top:14px"><button class="btn primary" data-act="receive" data-id="' + s.id + '">' + ico('check') + 'Mark received &amp; add to stock</button></div>' : '') +
+      '</div></section>';
+  }
+
+  /* ================================== SALES ============================== */
+  function viewSales() {
+    var m = UI.month;
+    var list = S.sales.filter(function (s) {
+      if (UI.salesAll !== true && mKey(s.date) !== m) return false;
+      return matches([prodName(s.productId), s.customer, s.channel, s.notes].join(' '));
+    });
+    list = sortBy(list, function (s) { return s.date || ''; }, 'desc');
+    var r = monthStats(m);
+
+    var h = '<div class="toolbar">' + searchBar('Search item, customer, channel…') +
+      seg('sales-scope', [{ v: 'month', l: mLabel(m, true) }, { v: 'all', l: 'All time', n: S.sales.length }], UI.salesAll ? 'all' : 'month') +
+      (UI.salesAll ? '' : '<button class="btn icon" data-act="month" data-d="-1" aria-label="Previous month">' + ico('left') + '</button>' +
+        '<button class="btn icon" data-act="month" data-d="1" aria-label="Next month">' + ico('right') + '</button>') +
+      '<button class="btn primary" data-act="new-sale">' + ico('plus') + 'Log a sale</button>' +
+      '<button class="btn" data-act="paste" data-kind="sales">' + ico('clip') + 'Paste in list</button>' +
+      '<button class="btn icon" data-act="export" data-kind="sales" title="Export sales as CSV" aria-label="Export sales as CSV">' + ico('down') + '</button>' +
+      '</div>';
+
+    if (!S.sales.length) {
+      return h + emptyBox('No sales logged', 'Log a sale and it comes straight off your stock count and into this month\'s profit.',
+        '<button class="btn primary" data-act="new-sale">' + ico('plus') + 'Log a sale</button>');
+    }
+
+    h += '<div class="kpis" style="margin-bottom:14px">' +
+      kpi('Revenue', money0(r.revenue), r.orders + ' sales · ' + r.units + ' units') +
+      kpi('Gross profit', money0(r.gross), 'After cost, fees, postage', '', r.gross >= 0 ? 'pos' : 'neg') +
+      kpi('Gross margin', pct(r.grossMargin), 'On cost of goods only') +
+      kpi('Average sale', money0(r.orders ? r.revenue / r.orders : 0), 'Per transaction') +
+      kpi('Fees & postage', money0(r.fees + r.ship), 'Comes out of every sale') +
+      kpi('Net after ads', money0(r.net), 'Ads ' + money0(r.ads), '', r.net >= 0 ? 'pos' : 'neg') +
+      '</div>';
+
+    if (!list.length) return h + emptyBox('Nothing in ' + mLabel(m, true), 'No sales logged for this month yet.',
+      '<button class="btn primary" data-act="new-sale">' + ico('plus') + 'Log a sale</button>');
+
+    h += '<section class="card"><div class="tablewrap"><table class="responsive"><thead><tr>' +
+      '<th>Date</th><th class="wcol">Item</th><th>Channel</th><th class="num">Qty</th><th class="num">Price</th>' +
+      '<th class="num">Revenue</th><th class="num">Cost</th><th class="num">Fees + post</th><th class="num">Profit</th><th class="num">Margin</th><th></th>' +
+      '</tr></thead><tbody>' +
+      list.map(function (s) {
+        var rev = saleRev(s), pf = saleProfit(s), mg = rev > 0 ? (pf / rev) * 100 : 0;
+        return '<tr>' +
+          '<td class="num" data-l="Date" style="text-align:left">' + dLabel(s.date) + '</td>' +
+          '<td class="wide"><div class="rowtitle">' + esc(prodName(s.productId)) + '</div>' +
+          (s.customer ? '<div class="rowsub">' + esc(s.customer) + '</div>' : '') + '</td>' +
+          '<td data-l="Channel">' + (s.channel ? '<span class="chip">' + esc(s.channel) + '</span>' : '—') + '</td>' +
+          '<td class="num" data-l="Qty">' + n(s.qty) + '</td>' +
+          '<td class="num" data-l="Price">' + money(s.price) + '</td>' +
+          '<td class="num" data-l="Revenue">' + money0(rev) + '</td>' +
+          '<td class="num" data-l="Cost">' + money0(saleCogs(s)) + '</td>' +
+          '<td class="num" data-l="Fees + post">' + money0(n(s.fees) + n(s.shipCost)) + '</td>' +
+          '<td class="num ' + signCls(pf) + '" data-l="Profit">' + money0(pf) + '</td>' +
+          '<td class="num ' + (mg >= 30 ? 'pos' : mg >= 10 ? 'amb' : 'neg') + '" data-l="Margin">' + pct(mg) + '</td>' +
+          '<td class="actcell"><div class="acts">' +
+          '<button class="btn icon sm" data-act="edit-sale" data-id="' + s.id + '" aria-label="Edit sale">' + ico('pencil') + '</button>' +
+          '<button class="btn icon sm" data-act="del" data-kind="sales" data-id="' + s.id + '" aria-label="Delete sale">' + ico('trash') + '</button>' +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div></section>';
+    return h;
+  }
+
+  /* ================================== MONEY ============================== */
+  function viewMoney() {
+    var m = UI.month, r = monthStats(m);
+    var list = S.expenses.filter(function (e) {
+      if (UI.moneyAll !== true && mKey(e.date) !== m) return false;
+      return matches([e.category, e.platform, e.vendor, e.campaign, e.notes].join(' '));
+    });
+    list = sortBy(list, function (e) { return e.date || ''; }, 'desc');
+
+    var h = '<div class="toolbar">' + searchBar('Search category, platform, campaign…') +
+      seg('money-scope', [{ v: 'month', l: mLabel(m, true) }, { v: 'all', l: 'All time', n: S.expenses.length }], UI.moneyAll ? 'all' : 'month') +
+      (UI.moneyAll ? '' : '<button class="btn icon" data-act="month" data-d="-1" aria-label="Previous month">' + ico('left') + '</button>' +
+        '<button class="btn icon" data-act="month" data-d="1" aria-label="Next month">' + ico('right') + '</button>') +
+      '<button class="btn primary" data-act="new-expense">' + ico('plus') + 'Add spend</button>' +
+      '<button class="btn" data-act="paste" data-kind="expenses">' + ico('clip') + 'Paste in list</button>' +
+      '<button class="btn icon" data-act="export" data-kind="expenses" title="Export spend as CSV" aria-label="Export spend as CSV">' + ico('down') + '</button>' +
+      '</div>';
+
+    if (!S.expenses.length) {
+      return h + emptyBox('Nothing logged yet', 'Track every dollar going out — ad spend, freight invoices, packaging, software, rent.',
+        '<button class="btn primary" data-act="new-expense">' + ico('plus') + 'Add spend</button>');
+    }
+
+    h += '<div class="kpis" style="margin-bottom:14px">' +
+      kpi('Total out', money0(r.spend), mLabel(m, true), 'hero') +
+      kpi('Ad spend', money0(r.ads), r.spend ? pct((r.ads / r.spend) * 100) + ' of spend' : '') +
+      kpi('ROAS', r.ads ? r.roas.toFixed(2) + 'x' : '—', r.ads ? money0(r.revenue) + ' back on ' + money0(r.ads) : 'No ad spend', '', r.roas >= 3 ? 'pos' : r.roas >= 1.5 ? 'amb' : r.ads ? 'neg' : '') +
+      kpi('Ad cost per sale', r.orders ? money0(r.ads / r.orders) : '—', r.orders + ' sales this month') +
+      '</div>';
+
+    h += '<div class="grid g2" style="margin-bottom:14px">' + breakdownCard('Where it went', catBreak(m), r.spend) + adCard(m, r) + '</div>';
+
+    if (!list.length) return h + emptyBox('Nothing in ' + mLabel(m, true), 'No spend logged for this month.', '');
+
+    h += '<section class="card"><div class="tablewrap"><table class="responsive"><thead><tr>' +
+      '<th>Date</th><th class="wcol">What for</th><th>Category</th><th>Where</th><th class="num">Amount</th><th></th>' +
+      '</tr></thead><tbody>' +
+      list.map(function (e) {
+        return '<tr>' +
+          '<td class="num" data-l="Date" style="text-align:left">' + dLabel(e.date) + '</td>' +
+          '<td class="wide"><div class="rowtitle">' + esc(e.campaign || e.vendor || e.category) + '</div>' +
+          (e.notes ? '<div class="rowsub truncate">' + esc(e.notes) + '</div>' : '') + '</td>' +
+          '<td data-l="Category"><span class="chip ' + (e.category === 'Ads' ? 'acc' : '') + '">' + esc(e.category) + '</span></td>' +
+          '<td data-l="Where" class="truncate">' + esc(e.platform || e.vendor || '—') + '</td>' +
+          '<td class="num" data-l="Amount">' + money(e.amount) + '</td>' +
+          '<td class="actcell"><div class="acts">' +
+          '<button class="btn icon sm" data-act="edit-expense" data-id="' + e.id + '" aria-label="Edit spend">' + ico('pencil') + '</button>' +
+          '<button class="btn icon sm" data-act="del" data-kind="expenses" data-id="' + e.id + '" aria-label="Delete spend">' + ico('trash') + '</button>' +
+          '</div></td></tr>';
+      }).join('') + '</tbody></table></div></section>';
+    return h;
+  }
+
+  function catBreak(m) {
+    var agg = {};
+    S.expenses.forEach(function (e) {
+      if (mKey(e.date) !== m) return;
+      agg[e.category || 'Other'] = (agg[e.category || 'Other'] || 0) + n(e.amount);
+    });
+    return sortBy(Object.keys(agg).map(function (k) { return { label: k, value: agg[k] }; }), function (x) { return x.value; }, 'desc');
+  }
+
+  function breakdownCard(title, rows, total) {
+    return '<section class="card"><div class="card-h">' + ico('wallet') + '<h3>' + esc(title) + '</h3></div><div class="card-b">' +
+      (rows.length ? rows.map(function (x) {
+        return '<div style="margin-bottom:12px"><div style="display:flex;gap:10px;font-size:13.5px">' +
+          '<span class="truncate" style="flex:1;font-weight:600">' + esc(x.label) + '</span>' +
+          '<span class="num">' + money0(x.value) + '</span>' +
+          '<span class="num" style="color:var(--muted);width:52px;text-align:right">' + (total ? pct((x.value / total) * 100) : '—') + '</span></div>' +
+          '<div class="meter" style="margin-top:5px"><i style="width:' + (total ? Math.max(2, (x.value / total) * 100) : 0) + '%"></i></div></div>';
+      }).join('') : '<div class="hint">Nothing logged this month.</div>') + '</div></section>';
+  }
+
+  function adCard(m, r) {
+    var agg = {};
+    S.expenses.forEach(function (e) {
+      if (mKey(e.date) !== m || e.category !== 'Ads') return;
+      var k = e.platform || 'Unspecified';
+      agg[k] = (agg[k] || 0) + n(e.amount);
+    });
+    var rows = sortBy(Object.keys(agg).map(function (k) { return { label: k, value: agg[k] }; }), function (x) { return x.value; }, 'desc');
+    return '<section class="card"><div class="card-h">' + ico('gauge') + '<h3>Ads</h3><div class="spacer"></div>' +
+      '<span class="chip ' + (r.roas >= 3 ? 'good' : r.roas >= 1.5 ? 'warn' : r.ads ? 'bad' : '') + '">' + (r.ads ? r.roas.toFixed(2) + 'x return' : 'no spend') + '</span></div><div class="card-b">' +
+      (rows.length ? rows.map(function (x) {
+        return '<div style="margin-bottom:12px"><div style="display:flex;gap:10px;font-size:13.5px">' +
+          '<span class="truncate" style="flex:1;font-weight:600">' + esc(x.label) + '</span>' +
+          '<span class="num">' + money0(x.value) + '</span></div>' +
+          '<div class="meter" style="margin-top:5px"><i style="width:' + Math.max(2, (x.value / (r.ads || 1)) * 100) + '%"></i></div></div>';
+      }).join('') : '<div class="hint">No ad spend logged this month.</div>') +
+      '<div class="hint" style="margin-top:6px;padding-top:12px;border-top:1px solid var(--line-2)">Return is all revenue this month divided by all ad spend this month — a whole-business number, not per campaign.</div>' +
+      '</div></section>';
+  }
+
+  /* ================================ SUPPLIERS ============================ */
+  function supStats(id) {
+    var products = S.products.filter(function (p) { return p.supplierId === id; });
+    var ships = S.shipments.filter(function (s) { return s.supplierId === id; });
+    var open = ships.filter(isOpen);
+    var spent = ships.filter(function (s) { return s.status !== 'Cancelled'; })
+      .reduce(function (a, s) { return a + shipTotal(s); }, 0);
+    var last = sortBy(ships, function (s) { return s.ordered || ''; }, 'desc')[0];
+    return { products: products.length, open: open.length, spent: spent, last: last ? last.ordered : '', stock: products.reduce(function (a, p) { return a + n(p.qty) * n(p.cost); }, 0) };
+  }
+
+  function viewSuppliers() {
+    var list = S.suppliers.filter(function (s) {
+      return matches([s.name, s.contact, s.country, s.email, s.phone, s.notes, s.terms].join(' '));
+    });
+    list = sortBy(list, function (s) { return (s.name || '').toLowerCase(); });
+
+    var h = '<div class="toolbar">' + searchBar('Search supplier, contact, country…') +
+      '<button class="btn primary" data-act="new-supplier">' + ico('plus') + 'Add supplier</button>' +
+      '<button class="btn" data-act="paste" data-kind="suppliers">' + ico('clip') + 'Paste in list</button>' +
+      '<button class="btn icon" data-act="export" data-kind="suppliers" title="Export suppliers as CSV" aria-label="Export suppliers as CSV">' + ico('down') + '</button>' +
+      '</div>';
+
+    if (!S.suppliers.length) {
+      return h + emptyBox('No suppliers yet', 'Keep every contact in one place — who to chase, how long they take, what the payment terms are.',
+        '<button class="btn primary" data-act="new-supplier">' + ico('plus') + 'Add supplier</button>');
+    }
+    if (!list.length) return h + emptyBox('Nothing matches', 'Try a different search.', '');
+
+    h += '<div class="grid g2">' + list.map(function (s) {
+      var st = supStats(s.id);
+      var links = '';
+      if (s.phone) links += '<a href="tel:' + esc(String(s.phone).replace(/\s/g, '')) + '">' + ico('phone') + esc(s.phone) + '</a>';
+      if (s.email) links += '<a href="mailto:' + esc(s.email) + '">' + ico('mail') + esc(s.email) + '</a>';
+      if (s.whatsapp) links += '<a href="https://wa.me/' + esc(String(s.whatsapp).replace(/[^0-9]/g, '')) + '" target="_blank" rel="noopener">' + ico('chat') + 'WhatsApp</a>';
+      if (s.website) links += '<a href="' + esc(/^https?:/.test(s.website) ? s.website : 'https://' + s.website) + '" target="_blank" rel="noopener">' + ico('globe') + esc(String(s.website).replace(/^https?:\/\//, '')) + '</a>';
+      return '<section class="card"><div class="card-h">' +
+        '<div style="min-width:0"><h3 class="truncate">' + esc(s.name) + '</h3>' +
+        '<div class="hint">' + esc(s.contact || 'No contact name') + (s.country ? ' · ' + esc(s.country) : '') + '</div></div>' +
+        '<div class="spacer"></div>' +
+        (s.rating ? '<span class="chip ' + (s.rating === 'Reliable' ? 'good' : s.rating === 'Problem' ? 'bad' : '') + '">' + esc(s.rating) + '</span>' : '') +
+        '<button class="btn icon sm" data-act="edit-supplier" data-id="' + s.id + '" aria-label="Edit supplier">' + ico('pencil') + '</button>' +
+        '<button class="btn icon sm" data-act="del" data-kind="suppliers" data-id="' + s.id + '" aria-label="Delete supplier">' + ico('trash') + '</button>' +
+        '</div><div class="card-b">' +
+        (links ? '<div class="linkrow" style="margin-bottom:14px">' + links + '</div>' : '') +
+        '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px">' +
+        miniStat('Lead time', s.leadTime ? n(s.leadTime) + ' days' : '—') +
+        miniStat('Open orders', st.open + '', st.open ? 'amb' : '') +
+        miniStat('Items supplied', st.products + '') +
+        miniStat('Ordered all time', money0(st.spent)) +
+        '</div>' +
+        (s.terms ? '<div style="margin-top:14px"><div class="eyebrow">Payment terms</div><div style="font-size:13.5px;margin-top:2px">' + esc(s.terms) + '</div></div>' : '') +
+        (s.notes ? '<div class="hint" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line-2)">' + esc(s.notes) + '</div>' : '') +
+        '</div></section>';
+    }).join('') + '</div>';
+    return h;
+  }
+
+  /* ================================ SETTINGS ============================= */
+  function viewSettings() {
+    var h = '<div class="grid g2">';
+
+    h += '<section class="card"><div class="card-h">' + ico('cog') + '<h3>Basics</h3></div><div class="card-b">' +
+      '<div class="fgrid">' +
+      '<div class="field full"><label for="set-biz">Business name</label>' +
+      '<input class="inp" id="set-biz" value="' + esc(S.meta.business || '') + '" data-set="business"></div>' +
+      '<div class="field"><label for="set-cur">Currency symbol</label>' +
+      '<input class="inp" id="set-cur" value="' + esc(S.meta.currency || '$') + '" data-set="currency" maxlength="4"></div>' +
+      '<div class="field"><label for="set-theme">Appearance</label>' +
+      '<select class="inp" id="set-theme" data-set="theme">' +
+      ['system', 'light', 'dark'].map(function (o) {
+        return '<option value="' + o + '"' + ((S.meta.theme || 'system') === o ? ' selected' : '') + '>' +
+          (o === 'system' ? 'Match my device' : o === 'light' ? 'Always light' : 'Always dark') + '</option>';
+      }).join('') + '</select></div>' +
+      '</div></div></section>';
+
+    h += '<section class="card"><div class="card-h">' + ico('down') + '<h3>Your data</h3></div><div class="card-b stack">' +
+      '<div class="hint">Everything lives in this page. Press <strong>Save</strong> in the corner to store it for good — until you do, changes are only on this device.</div>' +
+      '<div style="display:flex;gap:9px;flex-wrap:wrap">' +
+      '<button class="btn" data-act="export" data-kind="backup">' + ico('down') + 'Download full backup</button>' +
+      '<button class="btn" data-act="import-json">' + ico('up') + 'Restore a backup</button>' +
+      '</div>' +
+      '<div class="eyebrow" style="margin-top:6px">Export a single list</div>' +
+      '<div style="display:flex;gap:9px;flex-wrap:wrap">' +
+      ['products', 'shipments', 'sales', 'expenses', 'suppliers'].map(function (k) {
+        return '<button class="btn sm" data-act="export" data-kind="' + k + '">' + KIND[k].label + ' CSV</button>';
+      }).join('') +
+      '</div>' +
+      '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:6px;padding-top:14px;border-top:1px solid var(--line-2)">' +
+      (S.meta.sample ? '<button class="btn" data-act="clear-sample">Clear sample data</button>' : '') +
+      '<button class="btn danger" data-act="wipe">' + ico('trash') + 'Delete everything</button>' +
+      '</div></div></section>';
+
+    h += '<section class="card"><div class="card-h">' + ico('clip') + '<h3>How it works</h3></div><div class="card-b">' +
+      [['Stock moves by itself', 'Log a sale and the units come off. Mark a shipment received and the units go on. You never count twice.'],
+      ['Cost is frozen at the moment of sale', 'Each sale stores what that item cost you that day, so old profit numbers stay right even after supplier prices change.'],
+      ['Low stock is your call', 'Set a reorder point on each item. Anything at or under it shows up on the dashboard and gets a red dot on Stock.'],
+      ['Freight and duty', 'On a shipment they make up the landed cost. If you want them hitting profit, log the invoice under Money out as well.'],
+      ['Paste from a spreadsheet', 'Every list has a Paste in button. Copy straight out of Excel or Sheets — the columns line up automatically.']
+      ].map(function (x) {
+        return '<div style="margin-bottom:14px"><div style="font-weight:600;font-size:14px">' + esc(x[0]) + '</div>' +
+          '<div class="hint" style="margin-top:2px">' + esc(x[1]) + '</div></div>';
+      }).join('') + '</div></section>';
+
+    h += '<section class="card"><div class="card-h">' + ico('gauge') + '<h3>What is in here</h3></div><div class="card-b">' +
+      '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px">' +
+      miniStat('Stock items', S.products.length + '') +
+      miniStat('Suppliers', S.suppliers.length + '') +
+      miniStat('Shipments', S.shipments.length + '') +
+      miniStat('Sales logged', S.sales.length + '') +
+      miniStat('Spend entries', S.expenses.length + '') +
+      miniStat('Last saved', S.stamp ? new Date(S.stamp).toLocaleString() : 'Never') +
+      '</div></div></section>';
+
+    h += '</div>';
+    return h;
+  }
+
+  /* ============================ ENTITY DEFINITIONS ======================= */
+  function supplierOpts() {
+    return S.suppliers.map(function (s) { return { v: s.id, l: s.name }; });
+  }
+  function productOpts() {
+    return sortBy(S.products, function (p) { return (p.name || '').toLowerCase(); })
+      .map(function (p) { return { v: p.id, l: p.name + (p.sku ? '  (' + p.sku + ')' : '') }; });
+  }
+  function opts(arr) { return arr.map(function (x) { return { v: x, l: x }; }); }
+
+  var KIND = {
+    products: {
+      label: 'Stock', one: 'item', title: 'Stock item',
+      fields: [
+        { k: 'name', l: 'Item name', t: 'text', req: true, full: true, ph: 'GR86 wide body kit' },
+        { k: 'sku', l: 'SKU / part number', t: 'text', ph: 'BK-GR86-WB' },
+        { k: 'category', l: 'Category', t: 'combo', opts: opts(CATEGORIES) },
+        { k: 'supplierId', l: 'Supplier', t: 'ref', ref: supplierOpts },
+        { k: 'location', l: 'Where it sits', t: 'text', ph: 'Rack A1' },
+        { k: 'cost', l: 'Cost per unit', t: 'money', req: true },
+        { k: 'price', l: 'Sell price', t: 'money', req: true },
+        { k: 'qty', l: 'In stock now', t: 'int' },
+        { k: 'reorder', l: 'Reorder when down to', t: 'int', hint: 'Warns you at or below this' },
+        { k: 'notes', l: 'Notes', t: 'textarea', full: true }
+      ]
+    },
+    suppliers: {
+      label: 'Suppliers', one: 'supplier', title: 'Supplier',
+      fields: [
+        { k: 'name', l: 'Supplier name', t: 'text', req: true, full: true },
+        { k: 'contact', l: 'Contact person', t: 'text' },
+        { k: 'country', l: 'Country', t: 'text', ph: 'China' },
+        { k: 'email', l: 'Email', t: 'email' },
+        { k: 'phone', l: 'Phone', t: 'tel' },
+        { k: 'whatsapp', l: 'WhatsApp / WeChat', t: 'tel' },
+        { k: 'website', l: 'Website', t: 'text', ph: 'supplier.com' },
+        { k: 'leadTime', l: 'Lead time (days)', t: 'int' },
+        { k: 'rating', l: 'How they rate', t: 'select', opts: opts(['', 'Reliable', 'Okay', 'Backup', 'Problem']) },
+        { k: 'terms', l: 'Payment terms', t: 'text', full: true, ph: '30% deposit, 70% before shipping' },
+        { k: 'notes', l: 'Notes', t: 'textarea', full: true }
+      ]
+    },
+    sales: {
+      label: 'Sales', one: 'sale', title: 'Sale',
+      fields: [
+        { k: 'date', l: 'Date', t: 'date', req: true },
+        { k: 'productId', l: 'Item sold', t: 'ref', ref: productOpts, req: true },
+        { k: 'qty', l: 'Quantity', t: 'int', req: true },
+        { k: 'price', l: 'Sold at (each)', t: 'money', req: true },
+        { k: 'cost', l: 'Your cost (each)', t: 'money', hint: 'Filled from the item — change it if this one cost you something different' },
+        { k: 'fees', l: 'Platform fees', t: 'money' },
+        { k: 'shipCost', l: 'Postage you paid', t: 'money' },
+        { k: 'channel', l: 'Sold through', t: 'combo', opts: opts(CHANNELS) },
+        { k: 'customer', l: 'Customer', t: 'text' },
+        { k: 'notes', l: 'Notes', t: 'textarea', full: true }
+      ]
+    },
+    expenses: {
+      label: 'Money out', one: 'spend entry', title: 'Money out',
+      fields: [
+        { k: 'date', l: 'Date', t: 'date', req: true },
+        { k: 'amount', l: 'Amount', t: 'money', req: true },
+        { k: 'category', l: 'Category', t: 'select', opts: opts(EXP_CATS), req: true },
+        { k: 'platform', l: 'Ad platform', t: 'combo', opts: opts(AD_PLATFORMS), hint: 'Only needed for ads' },
+        { k: 'vendor', l: 'Paid to', t: 'text' },
+        { k: 'campaign', l: 'What for', t: 'text', full: true, ph: 'GR86 kit — retargeting' },
+        { k: 'notes', l: 'Notes', t: 'textarea', full: true }
+      ]
+    },
+    shipments: {
+      label: 'Incoming', one: 'shipment', title: 'Shipment',
+      noPaste: true,
+      fields: [
+        { k: 'ref', l: 'Reference', t: 'text', req: true, ph: 'KL-027' },
+        { k: 'supplierId', l: 'Supplier', t: 'ref', ref: supplierOpts, req: true },
+        { k: 'status', l: 'Status', t: 'select', opts: opts(SHIP_STATUS), req: true },
+        { k: 'ordered', l: 'Ordered on', t: 'date' },
+        { k: 'eta', l: 'Expected', t: 'date' },
+        { k: 'freight', l: 'Freight cost', t: 'money' },
+        { k: 'duties', l: 'Duty & clearing', t: 'money' },
+        { k: 'carrier', l: 'Carrier', t: 'text', ph: 'MSC — sea freight' },
+        { k: 'tracking', l: 'Tracking number', t: 'text' },
+        { k: 'notes', l: 'Notes', t: 'textarea', full: true }
+      ]
+    }
+  };
+
+  function blank(kind) {
+    var o = { id: uid(kind.slice(0, 2)) };
+    KIND[kind].fields.forEach(function (f) { o[f.k] = f.t === 'date' ? todayISO() : ''; });
+    if (kind === 'products') { o.qty = 0; o.reorder = 2; }
+    if (kind === 'sales') { o.qty = 1; }
+    if (kind === 'shipments') { o.status = 'Ordered'; o.items = []; o.applied = false; o.eta = ''; }
+    if (kind === 'expenses') { o.category = 'Ads'; }
+    return o;
+  }
+
+  /* ================================== FORMS ============================== */
+  var FORM = null;
+
+  function field(f, val) {
+    var id = 'f_' + f.k, cls = f.full ? 'field full' : 'field';
+    var h = '<div class="' + cls + '"><label for="' + id + '">' + esc(f.l) + (f.req ? ' *' : '') + '</label>';
+    var v = val == null ? '' : val;
+    if (f.t === 'textarea') {
+      h += '<textarea class="inp" id="' + id + '" data-k="' + f.k + '" rows="3">' + esc(v) + '</textarea>';
+    } else if (f.t === 'select' || f.t === 'ref') {
+      var list = f.t === 'ref' ? f.ref() : f.opts;
+      h += '<select class="inp" id="' + id + '" data-k="' + f.k + '">';
+      if (f.t === 'ref') h += '<option value="">— none —</option>';
+      h += list.map(function (o) {
+        return '<option value="' + esc(o.v) + '"' + (String(v) === String(o.v) ? ' selected' : '') + '>' + esc(o.l || '— none —') + '</option>';
+      }).join('') + '</select>';
+    } else if (f.t === 'combo') {
+      h += '<input class="inp" id="' + id + '" data-k="' + f.k + '" list="dl_' + f.k + '" value="' + esc(v) + '" autocomplete="off">' +
+        '<datalist id="dl_' + f.k + '">' + f.opts.map(function (o) { return '<option value="' + esc(o.v) + '"></option>'; }).join('') + '</datalist>';
+    } else {
+      var type = f.t === 'date' ? 'date' : (f.t === 'money' || f.t === 'int') ? 'number' : f.t === 'email' ? 'email' : f.t === 'tel' ? 'tel' : 'text';
+      var extra = f.t === 'money' ? ' step="0.01" inputmode="decimal"' : f.t === 'int' ? ' step="1" inputmode="numeric"' : '';
+      h += '<input class="inp" type="' + type + '" id="' + id + '" data-k="' + f.k + '" value="' + esc(v) + '"' + extra +
+        (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>';
+    }
+    if (f.hint) h += '<div class="hint">' + esc(f.hint) + '</div>';
+    return h + '</div>';
+  }
+
+  function openForm(kind, id) {
+    if (kind === 'shipments' && !S.suppliers.length) {
+      toast('Add the supplier first — a shipment needs somewhere to come from.');
+      return openForm('suppliers');
+    }
+    var existing = id ? byId(S[kind], id) : null;
+    var rec = existing ? JSON.parse(JSON.stringify(existing)) : blank(kind);
+    FORM = { kind: kind, id: id || null, before: existing ? JSON.parse(JSON.stringify(existing)) : null, draft: rec };
+    var def = KIND[kind];
+    var body = '<div class="fgrid">' + def.fields.map(function (f) { return field(f, rec[f.k]); }).join('') + '</div>';
+    if (kind === 'shipments') body += itemsEditor(rec);
+    drawer((id ? 'Edit ' : 'New ') + def.title.toLowerCase(), body,
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      (id ? '<button class="btn danger" data-act="del" data-kind="' + kind + '" data-id="' + id + '">' + ico('trash') + 'Delete</button>' : '') +
+      '<button class="btn primary" data-act="form-save">' + ico('check') + (id ? 'Save changes' : 'Add ' + def.one) + '</button>');
+  }
+
+  function itemsEditor(rec) {
+    var po = productOpts();
+    return '<div style="border-top:1px solid var(--line-2);padding-top:16px">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">' +
+      '<div class="eyebrow">What is in this shipment</div><div class="spacer" style="flex:1"></div>' +
+      '<button class="btn sm" data-act="item-add">' + ico('plus') + 'Add line</button></div>' +
+      '<div id="items">' + (rec.items || []).map(function (it, i) { return itemRow(it, i, po); }).join('') + '</div>' +
+      (!(rec.items || []).length ? '<div class="hint" id="items-empty">Nothing added yet. Line items are what gets added to stock when it arrives.</div>' : '') +
+      (!po.length ? '<div class="hint">Add stock items first, then you can put them on a shipment.</div>' : '') +
+      '</div>';
+  }
+  function itemRow(it, i, po) {
+    return '<div class="itemline" data-row="' + i + '" style="margin-bottom:8px">' +
+      '<select class="inp full2" data-ik="productId">' + po.map(function (o) {
+        return '<option value="' + esc(o.v) + '"' + (o.v === it.productId ? ' selected' : '') + '>' + esc(o.l) + '</option>';
+      }).join('') + '</select>' +
+      '<input class="inp" type="number" step="1" inputmode="numeric" data-ik="qty" value="' + esc(it.qty) + '" aria-label="Quantity" placeholder="Qty">' +
+      '<input class="inp" type="number" step="0.01" inputmode="decimal" data-ik="cost" value="' + esc(it.cost) + '" aria-label="Unit cost" placeholder="Cost">' +
+      '<button class="btn icon" data-act="item-del" data-row="' + i + '" aria-label="Remove line">' + ico('x') + '</button>' +
+      '</div>';
+  }
+
+  function readForm() {
+    var host = document.querySelector('.drawer-b');
+    if (!host) return null;
+    var out = {};
+    host.querySelectorAll('[data-k]').forEach(function (el) { out[el.getAttribute('data-k')] = el.value; });
+    var items = [];
+    host.querySelectorAll('.itemline').forEach(function (row) {
+      var o = {};
+      row.querySelectorAll('[data-ik]').forEach(function (el) { o[el.getAttribute('data-ik')] = el.value; });
+      if (o.productId && n(o.qty) > 0) items.push({ productId: o.productId, qty: n(o.qty), cost: n(o.cost) });
+    });
+    out._items = items;
+    return out;
+  }
+
+  function saveForm() {
+    var kind = FORM.kind, def = KIND[kind], vals = readForm();
+    var missing = def.fields.filter(function (f) { return f.req && !String(vals[f.k] || '').trim(); });
+    if (missing.length) { toast('Fill in ' + missing[0].l.toLowerCase() + ' first.'); 
+      var el = document.getElementById('f_' + missing[0].k); if (el) el.focus(); return; }
+
+    var rec = FORM.id ? byId(S[kind], FORM.id) : null;
+    var isNew = !rec;
+    if (isNew) { rec = { id: FORM.draft.id }; }
+
+    // stock: undo the old effect before writing the new values
+    if (kind === 'sales' && !isNew) applySaleStock(FORM.before, +1);
+    if (kind === 'shipments' && !isNew && FORM.before && FORM.before.applied) applyShipStock(FORM.before, -1);
+
+    def.fields.forEach(function (f) {
+      var v = vals[f.k];
+      rec[f.k] = (f.t === 'money' || f.t === 'int') ? n(v) : String(v == null ? '' : v).trim();
+    });
+    if (kind === 'shipments') {
+      rec.items = vals._items;
+      // the old effect was already undone above, so this is the whole truth now
+      if (rec.status === 'Received') {
+        applyShipStock(rec, +1);
+        rec.applied = true;
+        rec.arrived = rec.arrived || todayISO();
+      } else {
+        rec.applied = false;
+        rec.arrived = '';
+      }
+    }
+    if (isNew) S[kind].push(rec);
+    if (kind === 'sales') applySaleStock(rec, -1);
+
+    closeDrawer();
+    touch(); render();
+    toast(isNew ? def.title + ' added.' : 'Saved.');
+  }
+
+  function applySaleStock(sale, dir) {
+    if (!sale) return;
+    var p = prod(sale.productId);
+    if (p) p.qty = n(p.qty) + dir * n(sale.qty);
+  }
+  function applyShipStock(sh, dir) {
+    (sh.items || []).forEach(function (it) {
+      var p = prod(it.productId);
+      if (p) p.qty = n(p.qty) + dir * n(it.qty);
+    });
+  }
+
+  /* ================================= DRAWER ============================== */
+  function drawer(title, body, footer) {
+    document.getElementById('layer').innerHTML =
+      '<div class="scrim" data-scrim="1"><div class="drawer" role="dialog" aria-modal="true" aria-label="' + esc(title) + '">' +
+      '<div class="drawer-h"><h3>' + esc(title) + '</h3>' +
+      '<button class="btn icon ghost" data-act="close" aria-label="Close">' + ico('x') + '</button></div>' +
+      '<div class="drawer-b">' + body + '</div>' +
+      '<div class="drawer-f">' + footer + '</div></div></div>';
+    var first = document.querySelector('.drawer-b input, .drawer-b select, .drawer-b textarea');
+    if (first && window.innerWidth > 640) first.focus();
+  }
+  function closeDrawer() { document.getElementById('layer').innerHTML = ''; FORM = null; }
+
+  function confirmBox(title, msg, label, danger, cb) {
+    PENDING = cb;
+    drawer(title, '<p style="margin:0;font-size:14.5px;line-height:1.6">' + esc(msg) + '</p>',
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      '<button class="btn ' + (danger ? 'danger' : 'primary') + '" data-act="confirm-yes">' + esc(label) + '</button>');
+  }
+  var PENDING = null;
+
+  /* ============================== STOCK ADJUST =========================== */
+  function openAdjust(id) {
+    var p = prod(id); if (!p) return;
+    ADJUST = id;
+    drawer('Adjust stock',
+      '<div><div class="eyebrow">Item</div><div style="font-weight:600;font-size:16px;margin-top:2px">' + esc(p.name) + '</div>' +
+      '<div class="hint"><span class="sku">' + esc(p.sku || 'no SKU') + '</span>' + (p.location ? ' · ' + esc(p.location) : '') + '</div></div>' +
+      '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">' +
+      miniStat('Counted now', n(p.qty) + '') + miniStat('On the way', incomingQty(id) + '') + '</div>' +
+      '<div class="field"><label for="adj">New count</label>' +
+      '<input class="inp" id="adj" type="number" step="1" inputmode="numeric" value="' + n(p.qty) + '"></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      [-5, -1, 1, 5, 10].map(function (d) {
+        return '<button class="btn sm" data-act="adj-step" data-d="' + d + '">' + (d > 0 ? '+' : '') + d + '</button>';
+      }).join('') + '</div>' +
+      '<div class="hint">Use this after a stocktake, a breakage, or a sale you did not log.</div>',
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      '<button class="btn primary" data-act="adj-save">' + ico('check') + 'Update count</button>');
+  }
+  var ADJUST = null;
+
+  /* ============================= CSV / IMPORT ============================ */
+  function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+  var ALIAS = {
+    products: { item: 'name', part: 'name', product: 'name', productname: 'name', description: 'name', partnumber: 'sku', code: 'sku', partno: 'sku', type: 'category', supplier: 'supplierId', suppliername: 'supplierId', vendor: 'supplierId', buyprice: 'cost', costprice: 'cost', unitcost: 'cost', sellprice: 'price', rrp: 'price', retail: 'price', quantity: 'qty', stock: 'qty', instock: 'qty', onhand: 'qty', instocknow: 'qty', reorderpoint: 'reorder', reorderat: 'reorder', minimum: 'reorder', shelf: 'location', bin: 'location', whereitsits: 'location' },
+    suppliers: { supplier: 'name', suppliername: 'name', company: 'name', contactperson: 'contact', person: 'contact', mobile: 'phone', tel: 'phone', wechat: 'whatsapp', web: 'website', url: 'website', site: 'website', leadtimedays: 'leadTime', lead: 'leadTime', paymentterms: 'terms', howtheyrate: 'rating' },
+    sales: { item: 'productId', product: 'productId', sku: 'productId', itemsold: 'productId', quantity: 'qty', sold: 'price', soldat: 'price', sellprice: 'price', unitprice: 'price', price: 'price', yourcost: 'cost', costprice: 'cost', unitcost: 'cost', platformfees: 'fees', fee: 'fees', postage: 'shipCost', shipping: 'shipCost', shippingcost: 'shipCost', postageyoupaid: 'shipCost', channel: 'channel', soldthrough: 'channel', where: 'channel', buyer: 'customer', client: 'customer' },
+    expenses: { spend: 'amount', cost: 'amount', total: 'amount', paidto: 'vendor', supplier: 'vendor', payee: 'vendor', whatfor: 'campaign', description: 'campaign', purpose: 'campaign', adplatform: 'platform', channel: 'platform' }
+  };
+
+  function fieldFor(kind, header) {
+    var h = norm(header);
+    var a = ALIAS[kind] || {};
+    if (a[h]) return a[h];
+    var hit = null;
+    KIND[kind].fields.forEach(function (f) {
+      if (norm(f.k) === h || norm(f.l) === h) hit = f.k;
+    });
+    return hit;
+  }
+
+  function parseTable(text) {
+    var lines = String(text).replace(/\r\n?/g, '\n').split('\n').filter(function (l) { return l.trim(); });
+    if (!lines.length) return { rows: [] };
+    var delim = lines[0].indexOf('\t') >= 0 ? '\t' : ',';
+    var rows = lines.map(function (line) { return splitLine(line, delim); });
+    return { rows: rows };
+  }
+  function splitLine(line, delim) {
+    var out = [], cur = '', q = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (q) {
+        if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (c === '"') q = false;
+        else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === delim) { out.push(cur); cur = ''; }
+      else cur += c;
+    }
+    out.push(cur);
+    return out.map(function (s) { return s.trim(); });
+  }
+
+  function buildImport(kind, text, commit) {
+    var t = parseTable(text);
+    if (!t.rows.length) return { rows: [], cols: [], skipped: 0 };
+    var fields = KIND[kind].fields;
+    var head = t.rows[0], cols, body;
+    var mapped = head.map(function (h) { return fieldFor(kind, h); });
+    var hits = mapped.filter(Boolean).length;
+    if (hits >= 2) { cols = mapped; body = t.rows.slice(1); }
+    else { cols = fields.map(function (f) { return f.k; }); body = t.rows; }
+
+    var rows = [], skipped = 0;
+    body.forEach(function (cells) {
+      if (!cells.join('').trim()) return;
+      var rec = blank(kind);
+      cols.forEach(function (k, i) {
+        if (!k || i >= cells.length) return;
+        var v = cells[i];
+        if (k === 'supplierId') {
+          var sid = resolveSupplier(v, commit);
+          rec.supplierId = sid;
+          if (!sid && String(v).trim()) rec._newSupplier = String(v).trim();
+        }
+        else if (k === 'productId') { rec.productId = resolveProduct(v); }
+        else {
+          var f = fields.filter(function (x) { return x.k === k; })[0];
+          rec[k] = f && (f.t === 'money' || f.t === 'int') ? n(v) : (f && f.t === 'date' ? normDate(v) : v);
+        }
+      });
+      if (kind === 'sales' && !rec.productId) { skipped++; return; }
+      if ((kind === 'products' || kind === 'suppliers') && !String(rec.name).trim()) { skipped++; return; }
+      if (kind === 'expenses' && !n(rec.amount)) { skipped++; return; }
+      if (kind === 'sales') {
+        if (!n(rec.qty)) rec.qty = 1;
+        if (!n(rec.cost)) { var p = prod(rec.productId); if (p) rec.cost = n(p.cost); }
+        if (!rec.date) rec.date = todayISO();
+      }
+      rows.push(rec);
+    });
+    return { rows: rows, cols: cols, skipped: skipped };
+  }
+
+  function normDate(v) {
+    v = String(v || '').trim();
+    if (!v) return '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(v)) return v.slice(0, 10);
+    var m = v.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+    if (m) { // day first — Australian format
+      var y = m[3].length === 2 ? '20' + m[3] : m[3];
+      return y + '-' + pad(+m[2]) + '-' + pad(+m[1]);
+    }
+    var d = new Date(v);
+    return isNaN(d) ? '' : d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  /** Match a supplier by id or name. Only creates a missing one when committing. */
+  function resolveSupplier(nameOrId, commit) {
+    var v = String(nameOrId || '').trim(); if (!v) return '';
+    var hit = byId(S.suppliers, v);
+    if (hit) return hit.id;
+    for (var i = 0; i < S.suppliers.length; i++) if (norm(S.suppliers[i].name) === norm(v)) return S.suppliers[i].id;
+    if (!commit) return '';
+    var s = blank('suppliers'); s.name = v; S.suppliers.push(s); return s.id;
+  }
+  function resolveProduct(v) {
+    v = String(v || '').trim(); if (!v) return '';
+    var hit = byId(S.products, v); if (hit) return hit.id;
+    for (var i = 0; i < S.products.length; i++) {
+      if (norm(S.products[i].sku) === norm(v) || norm(S.products[i].name) === norm(v)) return S.products[i].id;
+    }
+    return '';
+  }
+
+  /* ============================== PASTE DRAWER =========================== */
+  var PASTE_KIND = null;
+  function openPaste(kind) {
+    PASTE_KIND = kind;
+    var def = KIND[kind];
+    var cols = def.fields.map(function (f) { return f.l; }).join(' · ');
+    drawer('Paste in ' + def.label.toLowerCase(),
+      '<div class="hint">Copy the rows straight out of Excel, Sheets or Numbers and paste them below. ' +
+      'If your sheet has a header row the columns are matched by name; if it does not, they are read in this order:</div>' +
+      '<div class="hint mono" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px;line-height:1.7">' + esc(cols) + '</div>' +
+      '<div class="field"><label for="paste">Your rows</label>' +
+      '<textarea class="inp" id="paste" rows="9" placeholder="Paste here…"></textarea></div>' +
+      '<div id="paste-preview"></div>',
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      '<button class="btn primary" data-act="paste-go" disabled id="paste-go">' + ico('check') + 'Import</button>');
+  }
+
+  function previewPaste() {
+    var ta = document.getElementById('paste'), host = document.getElementById('paste-preview');
+    var btn = document.getElementById('paste-go');
+    if (!ta || !host) return;
+    var res = buildImport(PASTE_KIND, ta.value, false);
+    if (!res.rows.length) {
+      host.innerHTML = ta.value.trim() ? '<div class="banner warn">' + ico('alert') + '<span class="spacer">Nothing usable found. Check the columns line up with the list above.</span></div>' : '';
+      btn.disabled = true; btn.innerHTML = ico('check') + 'Import';
+      return;
+    }
+    var fields = KIND[PASTE_KIND].fields.slice(0, 5);
+    host.innerHTML = '<div class="eyebrow" style="margin-bottom:8px">Preview — first ' + Math.min(5, res.rows.length) + ' of ' + res.rows.length + '</div>' +
+      '<div class="tablewrap" style="border:1px solid var(--line);border-radius:8px"><table><thead><tr>' +
+      fields.map(function (f) { return '<th>' + esc(f.l) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      res.rows.slice(0, 5).map(function (r) {
+        return '<tr>' + fields.map(function (f) {
+          var v = r[f.k];
+          if (f.k === 'supplierId') v = r._newSupplier ? r._newSupplier + ' (new)' : supName(v);
+          if (f.k === 'productId') v = prodName(v);
+          if (f.t === 'money') v = money(v);
+          return '<td class="' + (f.t === 'money' || f.t === 'int' ? 'num' : '') + '">' + esc(v === '' || v == null ? '—' : v) + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table></div>' +
+      (res.skipped ? '<div class="hint" style="margin-top:8px">' + res.skipped + ' row' + (res.skipped === 1 ? '' : 's') + ' will be skipped — missing a name, amount, or an item that matches your stock.</div>' : '');
+    btn.disabled = false;
+    btn.innerHTML = ico('check') + 'Import ' + res.rows.length + ' row' + (res.rows.length === 1 ? '' : 's');
+  }
+
+  function commitPaste() {
+    var ta = document.getElementById('paste');
+    var res = buildImport(PASTE_KIND, ta.value, true);
+    if (!res.rows.length) return;
+    res.rows.forEach(function (r) {
+      delete r._newSupplier;
+      S[PASTE_KIND].push(r);
+      if (PASTE_KIND === 'sales') applySaleStock(r, -1);
+    });
+    closeDrawer(); touch(); render();
+    toast('Imported ' + res.rows.length + ' row' + (res.rows.length === 1 ? '' : 's') + '.' + (res.skipped ? ' ' + res.skipped + ' skipped.' : ''));
+  }
+
+  /* ================================ EXPORT =============================== */
+  function csvCell(v) {
+    var s = String(v == null ? '' : v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function toCSV(kind) {
+    if (kind === 'shipments') {
+      var head = ['Reference', 'Supplier', 'Status', 'Ordered', 'Expected', 'Arrived', 'Carrier', 'Tracking', 'Item', 'SKU', 'Qty', 'Unit cost', 'Line total', 'Freight', 'Duty', 'Notes'];
+      var out = [head.map(csvCell).join(',')];
+      S.shipments.forEach(function (s) {
+        var items = (s.items || []).length ? s.items : [{ productId: '', qty: 0, cost: 0 }];
+        items.forEach(function (it, i) {
+          var p = prod(it.productId);
+          out.push([s.ref, supName(s.supplierId), s.status, s.ordered, s.eta, s.arrived, s.carrier, s.tracking,
+            p ? p.name : '', p ? p.sku : '', n(it.qty), n(it.cost), n(it.qty) * n(it.cost),
+          i === 0 ? n(s.freight) : '', i === 0 ? n(s.duties) : '', i === 0 ? s.notes : ''].map(csvCell).join(','));
+        });
+      });
+      return out.join('\n');
+    }
+    var fields = KIND[kind].fields;
+    var rows = [fields.map(function (f) { return csvCell(f.l); }).join(',')];
+    S[kind].forEach(function (r) {
+      rows.push(fields.map(function (f) {
+        var v = r[f.k];
+        if (f.k === 'supplierId') v = supName(v);
+        if (f.k === 'productId') v = prodName(v);
+        return csvCell(v);
+      }).join(','));
+    });
+    return rows.join('\n');
+  }
+
+  function stamp() { return todayISO(); }
+  function exportKind(kind) {
+    if (kind === 'backup') {
+      offerFile('kitted-lab-backup-' + stamp() + '.json', JSON.stringify(S, null, 2));
+    } else {
+      offerFile('kitted-lab-' + kind + '-' + stamp() + '.csv', toCSV(kind));
+    }
+  }
+  function offerFile(name, text) {
+    if (!DOWNLOADS) return showText(name, text);
+    DOWNLOADS.save({ filename: name, data: text }).then(function () { toast('Saved to your device.'); })
+      .catch(function (e) {
+        if (e && e.code === 'declined') return;
+        showText(name, text);
+      });
+  }
+  function showText(name, text) {
+    drawer('Copy ' + name,
+      '<div class="hint">Downloads are not available here. Select all of this and paste it into a file or a spreadsheet.</div>' +
+      '<textarea class="inp" id="copytext" rows="14" readonly>' + esc(text) + '</textarea>',
+      '<button class="btn ghost" data-act="close">Close</button><div class="spacer"></div>' +
+      '<button class="btn primary" data-act="copy-all">Select all</button>');
+  }
+
+  function openImportJson() {
+    drawer('Restore a backup',
+      '<div class="hint">Paste the contents of a backup file. This replaces everything currently in the tracker.</div>' +
+      '<textarea class="inp" id="jsonin" rows="12" placeholder="{ … }"></textarea>',
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      '<button class="btn danger" data-act="restore">Replace everything</button>');
+  }
+
+  /* ================================= RENDER ============================== */
+  var VIEWS = { dash: viewDash, stock: viewStock, incoming: viewIncoming, sales: viewSales, money: viewMoney, suppliers: viewSuppliers, settings: viewSettings };
+
+  function render() {
+    var active = document.activeElement, wasSearch = active && active.id === 'q';
+    var app = document.getElementById('app');
+    app.innerHTML = (VIEWS[UI.tab] || viewDash)();
+    renderChrome();
+    if (wasSearch) {
+      var q = document.getElementById('q');
+      if (q) { q.focus(); try { q.setSelectionRange(q.value.length, q.value.length); } catch (e) {} }
+    }
+  }
+  function applyTheme() {
+    var t = S.meta.theme || 'system';
+    if (t === 'system') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', t);
+  }
+  function setTab(id) {
+    UI.tab = id; UI.q = '';
+    try { sessionStorage.setItem('kl.ui', JSON.stringify(UI)); } catch (e) {}
+    window.scrollTo(0, 0);
+    render();
+  }
+
+  /* ================================= EVENTS ============================== */
+  document.addEventListener('click', function (ev) {
+    if (ev.target.hasAttribute && ev.target.hasAttribute('data-scrim')) { closeDrawer(); return; }
+    var tabBtn = ev.target.closest('[data-tab]');
+    if (tabBtn) { setTab(tabBtn.getAttribute('data-tab')); return; }
+    var el = ev.target.closest('[data-act]');
+    if (!el) return;
+    var act = el.getAttribute('data-act'), id = el.getAttribute('data-id'), kind = el.getAttribute('data-kind');
+
+    switch (act) {
+      case 'close': closeDrawer(); break;
+      case 'save': save(); break;
+
+      case 'month': UI.month = shiftMonth(UI.month, +el.getAttribute('data-d')); render(); break;
+      case 'month-now': UI.month = curMonth(); render(); break;
+      case 'stock-filter': UI.stockFilter = el.getAttribute('data-v'); render(); break;
+      case 'ship-filter': UI.shipFilter = el.getAttribute('data-v'); render(); break;
+      case 'sales-scope': UI.salesAll = el.getAttribute('data-v') === 'all'; render(); break;
+      case 'money-scope': UI.moneyAll = el.getAttribute('data-v') === 'all'; render(); break;
+
+      case 'new-product': openForm('products'); break;
+      case 'edit-product': openForm('products', id); break;
+      case 'new-supplier': openForm('suppliers'); break;
+      case 'edit-supplier': openForm('suppliers', id); break;
+      case 'new-shipment': openForm('shipments'); break;
+      case 'edit-shipment': openForm('shipments', id); break;
+      case 'new-sale': openForm('sales'); break;
+      case 'edit-sale': openForm('sales', id); break;
+      case 'new-expense': openForm('expenses'); break;
+      case 'edit-expense': openForm('expenses', id); break;
+      case 'form-save': saveForm(); break;
+
+      case 'item-add': addItemRow(); break;
+      case 'item-del': el.closest('.itemline').remove(); break;
+
+      case 'adjust': openAdjust(id); break;
+      case 'adj-step': {
+        var inp = document.getElementById('adj');
+        inp.value = n(inp.value) + n(el.getAttribute('data-d'));
+        break;
+      }
+      case 'adj-save': {
+        var p = prod(ADJUST);
+        if (p) { p.qty = n(document.getElementById('adj').value); closeDrawer(); touch(); render(); toast('Stock updated.'); }
+        break;
+      }
+
+      case 'receive': {
+        var sh = byId(S.shipments, id);
+        if (!sh) break;
+        confirmBox('Mark received', 'This adds ' + shipUnits(sh) + ' units from ' + (sh.ref || 'this shipment') + ' onto your stock counts.', 'Add to stock', false, function () {
+          if (sh.applied) return;
+          applyShipStock(sh, +1);
+          sh.applied = true; sh.status = 'Received'; sh.arrived = todayISO();
+          touch(); render(); toast('Stock updated from ' + (sh.ref || 'shipment') + '.');
+        });
+        break;
+      }
+
+      case 'del': {
+        var rec = byId(S[kind], id);
+        if (!rec) break;
+        var name = rec.name || rec.ref || (kind === 'sales' ? prodName(rec.productId) : rec.campaign || rec.vendor) || 'this row';
+        var extra = '';
+        if (kind === 'products') {
+          var used = S.sales.filter(function (s) { return s.productId === id; }).length;
+          if (used) extra = ' ' + used + ' sale' + (used === 1 ? '' : 's') + ' will keep their numbers but lose the item name.';
+        }
+        if (kind === 'sales') extra = ' The units go back onto your stock count.';
+        if (kind === 'shipments' && rec.applied) extra = ' The units it added come back off your stock count.';
+        confirmBox('Delete ' + KIND[kind].one, 'Delete ' + name + '?' + extra + ' This cannot be undone.', 'Delete', true, function () {
+          if (kind === 'sales') applySaleStock(rec, +1);
+          if (kind === 'shipments' && rec.applied) applyShipStock(rec, -1);
+          S[kind] = S[kind].filter(function (r) { return r.id !== id; });
+          touch(); render(); toast('Deleted.');
+        });
+        break;
+      }
+      case 'confirm-yes': { var cb = PENDING; PENDING = null; closeDrawer(); if (cb) cb(); break; }
+
+      case 'paste': openPaste(kind); break;
+      case 'paste-go': commitPaste(); break;
+      case 'export': exportKind(kind); break;
+      case 'import-json': openImportJson(); break;
+      case 'copy-all': {
+        var ta = document.getElementById('copytext');
+        ta.focus(); ta.select();
+        try { document.execCommand('copy'); toast('Copied.'); } catch (e) { toast('Press Ctrl/Cmd + C to copy.'); }
+        break;
+      }
+      case 'restore': {
+        var raw = document.getElementById('jsonin').value;
+        var data;
+        try { data = JSON.parse(raw); } catch (e) { toast('That is not a valid backup file.'); break; }
+        if (!data || !data.v) { toast('That backup is missing its structure.'); break; }
+        S = data;
+        ['suppliers', 'products', 'shipments', 'sales', 'expenses'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; });
+        if (!S.meta) S.meta = emptyState().meta;
+        closeDrawer(); applyTheme(); touch(); render(); toast('Backup restored. Press Save to keep it.');
+        break;
+      }
+      case 'clear-sample': {
+        confirmBox('Clear sample data', 'This removes every example item, supplier, shipment, sale and expense so you can start on your own numbers.', 'Clear it', true, function () {
+          var meta = S.meta; S = emptyState(); S.meta = meta; S.meta.sample = false;
+          touch(); render(); toast('Cleared. It is all yours now.');
+        });
+        break;
+      }
+      case 'wipe': {
+        confirmBox('Delete everything', 'Every item, supplier, shipment, sale and expense will be gone. Download a backup first if you are not sure.', 'Delete everything', true, function () {
+          var meta = S.meta; S = emptyState(); S.meta = meta; S.meta.sample = false;
+          touch(); render(); toast('Everything deleted.');
+        });
+        break;
+      }
+    }
+  });
+
+  function addItemRow() {
+    var host = document.getElementById('items');
+    if (!host) return;
+    var po = productOpts();
+    if (!po.length) { toast('Add a stock item first.'); return; }
+    var empty = document.getElementById('items-empty'); if (empty) empty.remove();
+    var i = host.querySelectorAll('.itemline').length;
+    var first = S.products.filter(function (p) { return p.id === po[0].v; })[0];
+    host.insertAdjacentHTML('beforeend', itemRow({ productId: po[0].v, qty: 1, cost: first ? n(first.cost) : 0 }, i, po));
+  }
+
+  document.addEventListener('input', function (ev) {
+    var t = ev.target;
+    if (t.id === 'q') { UI.q = t.value; render(); return; }
+    if (t.id === 'paste') { previewPaste(); return; }
+    if (t.hasAttribute('data-set')) {
+      var k = t.getAttribute('data-set');
+      S.meta[k] = t.value;
+      if (k === 'theme') applyTheme();
+      touch();
+      if (k === 'business') renderChrome();
+      return;
+    }
+  });
+
+  document.addEventListener('change', function (ev) {
+    var t = ev.target;
+    // picking the item on a sale fills in what it sells for and what it cost
+    if (t.getAttribute && t.getAttribute('data-k') === 'productId' && FORM && FORM.kind === 'sales') {
+      var p = prod(t.value);
+      if (p) {
+        var price = document.getElementById('f_price'), cost = document.getElementById('f_cost');
+        if (price && !n(price.value)) price.value = n(p.price);
+        if (cost && !n(cost.value)) cost.value = n(p.cost);
+      }
+    }
+    // picking an item on a shipment line fills in its cost
+    if (t.getAttribute && t.getAttribute('data-ik') === 'productId') {
+      var pp = prod(t.value), row = t.closest('.itemline');
+      var cin = row && row.querySelector('[data-ik="cost"]');
+      if (pp && cin && !n(cin.value)) cin.value = n(pp.cost);
+    }
+    if (t.getAttribute && t.getAttribute('data-set') === 'theme') { S.meta.theme = t.value; applyTheme(); touch(); }
+  });
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && document.querySelector('.scrim')) { closeDrawer(); }
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') { ev.preventDefault(); if (DIRTY) save(); }
+  });
+
+  window.addEventListener('beforeunload', function (e) {
+    if (DIRTY && !saving && ARTIFACT && !READONLY) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  /* ================================== INIT =============================== */
+  loadState();
+  UI = { tab: 'dash', month: curMonth(), q: '', stockFilter: 'all', shipFilter: 'open', salesAll: false, moneyAll: false };
+  try {
+    var saved = JSON.parse(sessionStorage.getItem('kl.ui') || 'null');
+    if (saved && saved.tab) { UI = saved; UI.q = ''; }
+    sessionStorage.removeItem('kl.ui');
+  } catch (e) {}
+  applyTheme();
+  render();
+
+  if (window.claude && window.claude.use) {
+    window.claude.use('artifact').then(function (a) { ARTIFACT = a; renderChrome(); });
+    window.claude.use('downloads').then(function (d) { DOWNLOADS = d; });
+  }
+})();
+</script>
