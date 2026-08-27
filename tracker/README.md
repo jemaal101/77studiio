@@ -1,44 +1,53 @@
 # Kitted Lab Tracker
 
-A single self-contained HTML file that runs the Kitted Lab car-parts business:
-stock, incoming shipments, sales, money out (including ad spend) and supplier
-contacts.
+One self-contained HTML file that runs the shop: jobs on cars (tinting,
+detailing, wrapping, installation and parts), the stock behind them, money in
+and out, and supplier contacts.
 
-## What it does
+Ships completely empty. The only thing pre-filled is a starter price list of the
+services a shop like this sells — every price on it is zero until the owner sets
+it.
 
-- **Dashboard** — net profit and margin for the month, what is on the way with
-  ETAs, and anything running low or running late.
-- **Stock** — every part with cost, sell price, margin, stock value, reorder
-  point and where it sits.
-- **Incoming** — shipments with line items, ETA, freight and duty. Marking one
-  received adds its units to stock.
-- **Sales** — one row per item sold. Logging a sale takes the units off stock
-  and freezes the cost price of that day so historical profit stays correct.
-- **Money out** — ad spend by platform with ROAS, plus freight, packaging,
-  software, rent and everything else.
-- **Suppliers** — contacts with click-to-call, email, WhatsApp, lead time and
-  payment terms.
+## The five screens
 
-Every list has a **Paste in** button that reads rows copied straight out of
-Excel, Sheets or Numbers, matching columns by header name.
+- **Home** — profit for the month in one number, then what came in, what went
+  out, what is still owed and the average job. Under that: what is booked in,
+  and what needs chasing (unpaid jobs, low stock, late orders). A "start here"
+  checklist appears until the basics are filled in, then disappears.
+- **Jobs** — one card per car. Customer, vehicle, the work as chips, the price,
+  and one button that moves it along: Start it → Finished → Got paid.
+- **Stock** — what is on the shelf, plus an "on order" section underneath.
+- **Money** — bills and ad spend going out, paid jobs coming in, ROAS.
+- **Contacts** — suppliers with tap-to-call, WhatsApp and email.
+
+Settings holds the price list, the business name, light/dark, and backups.
+
+## How the numbers work
+
+- A job counts as **money in** only when it is marked paid. Before that it sits
+  under "still owed".
+- **Profit on a job** = price − parts taken off the shelf − materials.
+- **Profit for the month** = everything paid − what those jobs cost − bills.
+- Parts and materials are counted on the job, so they are deliberately *not*
+  logged again under Money. Only bills a job does not cover go there.
+- Stock moves itself: parts added to a job come off the count; an order marked
+  arrived goes on. Edits compute the delta rather than re-applying.
 
 ## How it saves
 
-The page has no server. Data lives in the HTML itself:
+No server. Data lives in the HTML:
 
-- Every edit is mirrored to `localStorage` immediately, so nothing is lost on a
-  refresh.
-- Pressing **Save** calls the Claude Artifact `publish` capability, which
-  rebuilds the whole document from its own `#app-css` and `#app-js` plus the
-  current data and publishes it as a new version. That is what makes the data
-  follow you between devices.
+- Every edit mirrors to `localStorage` immediately.
+- **Save** calls the Artifact `publish` capability, which rebuilds the whole
+  document from its own `#app-css` and `#app-js` plus the current data. That is
+  what carries the data between devices.
 
-Opened anywhere without that capability (a plain file, another host) it still
-runs and still remembers on that device — it just shows "This device only".
+Without that capability the page still runs and remembers on that one device —
+it just says "This device only".
 
 ## Working on it
 
-The file is authored without `<!doctype>`, `<html>`, `<head>` or `<body>` because
-the Artifact publisher wraps it. `serialize()` in the script emits the full
-document for republishing, so any structural change to the page shell must be
-mirrored in `BODY_MARKUP` and `FONT_LINK` there.
+Authored without `<!doctype>`, `<html>`, `<head>` or `<body>`; the Artifact
+publisher wraps it. `serialize()` emits the full document for republishing, so
+any change to the page shell must be mirrored in `BODY_MARKUP` and `HEAD_LINKS`
+there.
