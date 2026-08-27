@@ -22,6 +22,41 @@ it.
 
 Settings holds the price list, the business name, light/dark, and backups.
 
+## Look and feel
+
+Not a stock dashboard. A workshop job-card system:
+
+- **Graphite bezel** sidebar and tab bar in both themes, against a concrete
+  ground. Flat panels, 3px radius, hairline rules — no drop shadows anywhere.
+- **Type**: Barlow for UI and hero figures, Barlow Condensed for stamped
+  uppercase labels, Roboto Mono for tabular figures only (never on a hero
+  number).
+- **Palette**: petrol teal `#0092A0` / `#2CA3AC` for money in, burnt orange
+  `#B4531B` / `#D07A2C` for money out, green and red reserved for status.
+  Both pairs pass the full six-check colour validator (lightness band, chroma
+  floor, CVD separation, normal-vision floor, contrast) in light and dark.
+- Status is encoded structurally as well as in colour: a 4px left stripe on
+  every job and order card, and a top stripe on each board column.
+
+## Charts
+
+Built as inline SVG in `buildMonths` / `buildColumns` / `buildSpark`. Each host
+is measured after render and drawn at real pixel width, so type never scales
+with the container; `drawCharts()` re-runs on a debounced resize.
+
+- **Month by month** — grouped bars, money in vs costs & bills, one y-axis,
+  legend, hover read-out, and a tap that opens that month.
+- **Profit, last 6 months** — line with a zero rule and an emphasised endpoint.
+- **Cars in, week by week** — twelve weekly columns on the Jobs page.
+- **Ad spend, last 6 months** — columns in the cost colour, with a return-on-ads
+  meter against a 3× target.
+- **Ranked bars** for what earned the most, where the money went, and where
+  stock value is sitting — one hue, values always directly labelled.
+- **Level bars** in the stock table, showing each item against its reorder
+  point, coloured by status.
+
+No dual-axis charts, no pies, no value-ramps on nominal categories.
+
 ## How the numbers work
 
 - A job counts as **money in** only when it is marked paid. Before that it sits

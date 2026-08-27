@@ -2,258 +2,349 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
 <style id="app-css">
+/* ==========================================================================
+   Kitted Lab — workshop job-card system
+   Graphite bezel · concrete ground · petrol teal + burnt orange
+   Type: Barlow (UI + hero figures) / Barlow Condensed (stamped labels) /
+         Roboto Mono (tabular figures only)
+   ========================================================================== */
 :root{
-  --bg:#EDF1F4; --panel:#FFFFFF; --panel-2:#F4F7F9; --panel-3:#E9EFF4;
-  --ink:#0D141B; --ink-2:#3C4956; --muted:#6A7A8A;
-  --line:#D6DEE6; --line-2:#E7EDF3;
-  --accent:#1A4FD0; --accent-ink:#FFFFFF; --accent-soft:#E4EAFB; --accent-line:#B7C9F2;
-  --good:#0A6E47; --good-soft:#DBF0E6; --good-line:#A5DAC4;
-  --warn:#94490A; --warn-soft:#F9E9D8; --warn-line:#EDC9A2;
-  --bad:#A32820; --bad-soft:#F9E2E0; --bad-line:#EDB8B3;
-  --shadow:0 1px 2px rgba(13,28,45,.06), 0 12px 32px -20px rgba(13,28,45,.35);
-  --r:14px;
+  --ground:#E6E8E5; --panel:#FBFCFA; --sunk:#EFF1ED; --raised:#FFFFFF;
+  --ink:#141A17; --ink-2:#3D4742; --muted:#6D7972;
+  --rule:#CFD5CE; --rule-2:#DFE3DD; --rule-hard:#AFB8B1;
+  --bezel:#1A1F1E; --bezel-ink:#DCE3DE; --bezel-muted:#8B968F; --bezel-rule:#2C3432; --bezel-hot:#242B29;
+  --acc:#07717D; --acc-fill:#0092A0; --acc-ink:#FFFFFF; --acc-wash:#DDEEF0; --acc-rule:#9CCBD1;
+  --s1:#0092A0; --s2:#B4531B;
+  --good:#197A4B; --good-wash:#DEEFE5; --good-rule:#A6D3BB;
+  --bad:#B3261E; --bad-wash:#F8E3E1; --bad-rule:#E3B2AE;
+  --grid:#E2E6E0;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0A1016; --panel:#141C25; --panel-2:#1A232E; --panel-3:#212C38;
-    --ink:#E8EFF6; --ink-2:#B6C4D2; --muted:#8496A7;
-    --line:#26333F; --line-2:#1C2731;
-    --accent:#7CA3FF; --accent-ink:#06101F; --accent-soft:#182742; --accent-line:#2B4470;
-    --good:#48D099; --good-soft:#0E2A20; --good-line:#1E4B39;
-    --warn:#E7A661; --warn-soft:#2D2114; --warn-line:#543D23;
-    --bad:#F2857D; --bad-soft:#301B1A; --bad-line:#5A2F2C;
-    --shadow:0 1px 2px rgba(0,0,0,.45), 0 14px 36px -22px rgba(0,0,0,.9);
+    --ground:#0D1113; --panel:#151B1D; --sunk:#101618; --raised:#1B2224;
+    --ink:#E6ECE8; --ink-2:#B1BDB7; --muted:#7D8985;
+    --rule:#242C2E; --rule-2:#1D2426; --rule-hard:#33403F;
+    --bezel:#101517; --bezel-ink:#DCE3DE; --bezel-muted:#7D8985; --bezel-rule:#212A2B; --bezel-hot:#1A2224;
+    --acc:#4FC3CB; --acc-fill:#2CA3AC; --acc-ink:#06181A; --acc-wash:#123137; --acc-rule:#255B63;
+    --s1:#2CA3AC; --s2:#D07A2C;
+    --good:#4CC98A; --good-wash:#0E2C1E; --good-rule:#1E5138;
+    --bad:#F0837B; --bad-wash:#2E1917; --bad-rule:#5A2C29;
+    --grid:#222A2C;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0A1016; --panel:#141C25; --panel-2:#1A232E; --panel-3:#212C38;
-  --ink:#E8EFF6; --ink-2:#B6C4D2; --muted:#8496A7;
-  --line:#26333F; --line-2:#1C2731;
-  --accent:#7CA3FF; --accent-ink:#06101F; --accent-soft:#182742; --accent-line:#2B4470;
-  --good:#48D099; --good-soft:#0E2A20; --good-line:#1E4B39;
-  --warn:#E7A661; --warn-soft:#2D2114; --warn-line:#543D23;
-  --bad:#F2857D; --bad-soft:#301B1A; --bad-line:#5A2F2C;
-  --shadow:0 1px 2px rgba(0,0,0,.45), 0 14px 36px -22px rgba(0,0,0,.9);
+  --ground:#0D1113; --panel:#151B1D; --sunk:#101618; --raised:#1B2224;
+  --ink:#E6ECE8; --ink-2:#B1BDB7; --muted:#7D8985;
+  --rule:#242C2E; --rule-2:#1D2426; --rule-hard:#33403F;
+  --bezel:#101517; --bezel-ink:#DCE3DE; --bezel-muted:#7D8985; --bezel-rule:#212A2B; --bezel-hot:#1A2224;
+  --acc:#4FC3CB; --acc-fill:#2CA3AC; --acc-ink:#06181A; --acc-wash:#123137; --acc-rule:#255B63;
+  --s1:#2CA3AC; --s2:#D07A2C;
+  --good:#4CC98A; --good-wash:#0E2C1E; --good-rule:#1E5138;
+  --bad:#F0837B; --bad-wash:#2E1917; --bad-rule:#5A2C29;
+  --grid:#222A2C;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);
-  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
-h1,h2,h3{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
-  margin:0;font-weight:700;letter-spacing:-.012em;text-wrap:balance}
-.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+body{background:var(--ground);color:var(--ink);
+  font-family:Barlow,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.005em}
+.cond{font-family:"Barlow Condensed",Barlow,sans-serif}
+.num{font-family:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 button,input,select,textarea{font:inherit;color:inherit}
-a{color:var(--accent)}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+a{color:var(--acc)}
+:focus-visible{outline:2px solid var(--acc-fill);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
 
-/* ---------------- shell ---------------- */
+/* ------------------------------------------------------------ shell ----- */
 .shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100vh}
 .rail{display:none}
-.main{min-width:0;padding-bottom:96px}
+.main{min-width:0;padding-bottom:92px}
 @media (min-width:1000px){
-  .shell{grid-template-columns:250px minmax(0,1fr)}
-  .rail{display:flex;flex-direction:column;gap:3px;position:sticky;top:0;height:100vh;padding:20px 14px;
-        background:var(--panel);border-right:1px solid var(--line)}
+  .shell{grid-template-columns:238px minmax(0,1fr)}
+  .rail{display:flex;flex-direction:column;gap:1px;position:sticky;top:0;height:100vh;
+        padding:18px 12px;background:var(--bezel);color:var(--bezel-ink)}
   .main{padding-bottom:0}
 }
-.brand{display:flex;align-items:center;gap:11px;padding:6px 10px 20px}
-.brand-mark{width:34px;height:34px;border-radius:9px;background:var(--ink);color:var(--panel);
-  display:grid;place-items:center;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px;letter-spacing:-.05em;flex:none}
-.brand-name{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:17px;line-height:1.15}
-.brand-sub{font-size:11px;color:var(--muted);letter-spacing:.11em;text-transform:uppercase;font-weight:600}
-.navbtn{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:9px;border:0;background:transparent;
-  color:var(--ink-2);cursor:pointer;text-align:left;font-weight:500;font-size:15.5px;width:100%;transition:background .12s}
-.navbtn:hover{background:var(--panel-2)}
-.navbtn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
-.navbtn>svg{width:19px;height:19px;flex:none}
-.navbtn .pip{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;
-  background:var(--bad);color:#fff;border-radius:20px;padding:1px 7px}
-.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line-2)}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:1px solid var(--bezel-rule);margin-bottom:14px}
+.brand-mark{width:36px;height:36px;border-radius:3px;background:var(--acc-fill);color:var(--acc-ink);
+  display:grid;place-items:center;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:17px;flex:none}
+.brand-name{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:19px;line-height:1.1;letter-spacing:.01em}
+.brand-sub{font-family:"Barlow Condensed",sans-serif;font-size:12px;color:var(--bezel-muted);
+  letter-spacing:.18em;text-transform:uppercase;font-weight:600}
+.navbtn{display:flex;align-items:center;gap:12px;padding:10px 11px;border-radius:3px;border:0;background:transparent;
+  color:var(--bezel-muted);cursor:pointer;text-align:left;font-weight:500;font-size:15.5px;width:100%;
+  border-left:3px solid transparent;transition:background .1s,color .1s}
+.navbtn:hover{background:var(--bezel-hot);color:var(--bezel-ink)}
+.navbtn[aria-current="page"]{background:var(--bezel-hot);color:#fff;border-left-color:var(--acc-fill);font-weight:600}
+.navbtn>svg{width:18px;height:18px;flex:none}
+.navbtn .pip{margin-left:auto;font-family:"Roboto Mono",monospace;font-size:11px;font-weight:500;
+  background:var(--bad);color:#fff;border-radius:2px;padding:1px 5px}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:9px;padding-top:14px;border-top:1px solid var(--bezel-rule)}
 
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-auto-flow:column;
-  grid-auto-columns:minmax(0,1fr);background:var(--panel);border-top:1px solid var(--line);
-  padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
-.tabbtn{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:5px 2px;border-radius:9px;cursor:pointer;font-size:11px;font-weight:600;position:relative;min-width:0;overflow:hidden}
+  grid-auto-columns:minmax(0,1fr);background:var(--bezel);border-top:2px solid var(--acc-fill);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.tabbtn{border:0;background:transparent;color:var(--bezel-muted);display:flex;flex-direction:column;align-items:center;
+  gap:3px;padding:6px 2px;border-radius:3px;cursor:pointer;font-family:"Barlow Condensed",sans-serif;
+  font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;position:relative;min-width:0;overflow:hidden}
 .tabbtn>svg{width:21px;height:21px}
-.tabbtn[aria-current="page"]{color:var(--accent)}
-.tabbtn .pip{position:absolute;top:1px;right:calc(50% - 19px);width:8px;height:8px;border-radius:50%;background:var(--bad)}
+.tabbtn[aria-current="page"]{color:#fff}
+.tabbtn[aria-current="page"]>svg{color:var(--acc)}
+.tabbtn .pip{position:absolute;top:2px;right:calc(50% - 18px);width:7px;height:7px;border-radius:50%;background:var(--bad)}
 @media (min-width:1000px){.tabbar{display:none}}
 
-/* ---------------- topbar ---------------- */
-.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:14px 16px;
-  background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-@media (min-width:1000px){.top{padding:16px 30px}}
-.top h1{font-size:23px}
+/* ------------------------------------------------------------ topbar ---- */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:13px 16px;
+  background:var(--ground);border-bottom:1px solid var(--rule-hard)}
+@media (min-width:1000px){.top{padding:15px 28px}}
+.top h1{font-family:"Barlow Condensed",sans-serif;font-size:26px;font-weight:700;letter-spacing:.01em;
+  text-transform:uppercase;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top .spacer{flex:1}
 .savechip{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);font-weight:500;white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--good);flex:none}
-.dot.pending{background:var(--warn)} .dot.off{background:var(--muted)}
+.dot.pending{background:var(--s2)} .dot.off{background:var(--muted)}
+.rail .savechip{color:var(--bezel-muted)}
+@media (max-width:640px){.top .savechip .lbl{display:none}.top .savechip{gap:0}}
 
-/* ---------------- buttons ---------------- */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);
-  background:var(--panel);color:var(--ink);padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:600;
-  font-size:15px;white-space:nowrap;transition:background .12s,border-color .12s}
-.btn:hover{background:var(--panel-2);border-color:var(--muted)}
-.btn>svg{width:17px;height:17px;flex:none}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.primary:hover{filter:brightness(1.09)}
+/* ----------------------------------------------------------- buttons ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--rule-hard);
+  background:var(--panel);color:var(--ink);padding:9px 15px;border-radius:3px;cursor:pointer;font-weight:600;
+  font-size:15px;white-space:nowrap;transition:background .1s,border-color .1s}
+.btn:hover{background:var(--sunk);border-color:var(--ink-2)}
+.btn>svg{width:16px;height:16px;flex:none}
+.btn.primary{background:var(--acc-fill);border-color:var(--acc-fill);color:var(--acc-ink)}
+.btn.primary:hover{background:var(--acc);border-color:var(--acc)}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
-.btn.ghost:hover{background:var(--panel-2)}
-.btn.danger{color:var(--bad);border-color:var(--bad-line);background:var(--bad-soft)}
-.btn.ok{color:var(--good);border-color:var(--good-line);background:var(--good-soft)}
-.btn.sm{padding:6px 12px;font-size:13.5px;border-radius:9px}
-.btn.sm>svg{width:15px;height:15px}
-.btn.icon{padding:9px;border-radius:9px}
-.btn.icon.sm{padding:7px}
-.btn.big{padding:14px 20px;font-size:16px;border-radius:12px}
+.btn.ghost:hover{background:var(--sunk)}
+.btn.danger{color:var(--bad);border-color:var(--bad-rule);background:var(--bad-wash)}
+.btn.ok{color:var(--good);border-color:var(--good-rule);background:var(--good-wash)}
+.btn.sm{padding:5px 11px;font-size:13.5px}
+.btn.sm>svg{width:14px;height:14px}
+.btn.icon{padding:8px}
+.btn.icon.sm{padding:6px}
+.btn.big{padding:13px 20px;font-size:16px}
 .btn.block{width:100%}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:35;
-  width:58px;height:58px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);
-  display:grid;place-items:center;box-shadow:0 8px 24px -6px rgba(26,79,208,.55);cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.rail .btn{background:transparent;border-color:var(--bezel-rule);color:var(--bezel-ink)}
+.rail .btn:hover{background:var(--bezel-hot);border-color:var(--bezel-muted)}
+.rail .btn.primary{background:var(--acc-fill);border-color:var(--acc-fill);color:var(--acc-ink)}
+.fab{position:fixed;right:14px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:35;
+  width:56px;height:56px;border-radius:4px;border:0;background:var(--acc-fill);color:var(--acc-ink);
+  display:grid;place-items:center;cursor:pointer;box-shadow:0 6px 0 -2px rgba(0,0,0,.18)}
 .fab>svg{width:26px;height:26px}
 @media (min-width:1000px){.fab{display:none}}
 
-/* ---------------- blocks ---------------- */
+/* ------------------------------------------------------------ blocks ---- */
 .wrap{padding:16px}
-@media (min-width:1000px){.wrap{padding:24px 30px 70px}}
+@media (min-width:1000px){.wrap{padding:22px 28px 64px}}
 .stack{display:flex;flex-direction:column;gap:16px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
-.card-h{display:flex;align-items:center;gap:11px;padding:15px 17px;border-bottom:1px solid var(--line-2);min-width:0}
-.card-h h3{font-size:17px;min-width:0;overflow-wrap:anywhere}
+.card{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px}
+.card-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--rule);
+  min-width:0;background:var(--sunk)}
+.card-h h3{font-family:"Barlow Condensed",sans-serif;font-size:16px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;min-width:0;overflow-wrap:anywhere}
 .card-h .spacer{flex:1}
-.card-h>svg{width:18px;height:18px;flex:none;color:var(--muted)}
-.card-b{padding:17px}
+.card-h>svg{width:17px;height:17px;flex:none;color:var(--muted)}
+.card-b{padding:16px}
 .card-b.flush{padding:0}
-.eyebrow{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.sec-h{display:flex;align-items:baseline;gap:10px;margin:26px 0 12px}
-.sec-h h2{font-size:19px}
-.sec-h .spacer{flex:1}
+.eyebrow{font-family:"Barlow Condensed",sans-serif;font-size:13px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.sec-h{display:flex;align-items:center;gap:10px 14px;margin:26px 0 12px;flex-wrap:wrap}
+.sec-h h2{font-family:"Barlow Condensed",sans-serif;font-size:20px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.sec-h .line{flex:1 1 24px;min-width:24px;height:1px;background:var(--rule-hard)}
 .grid{display:grid;gap:14px;min-width:0;align-items:start}
 .g2{grid-template-columns:minmax(0,1fr)}
-@media (min-width:900px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:960px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-/* ---------------- headline money ---------------- */
-.headline{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
-  padding:22px 22px 20px;box-shadow:var(--shadow)}
-.headline .lab{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.headline .big{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
-  font-size:clamp(38px,10vw,54px);font-weight:600;letter-spacing:-.045em;line-height:1.02;margin-top:6px}
-.headline .sub{margin-top:8px;color:var(--muted);font-size:14.5px}
-.tiles{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px}
+/* --------------------------------------------------------- headline ----- */
+.headline{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;
+  display:grid;grid-template-columns:minmax(0,1fr);border-top:3px solid var(--acc-fill)}
+@media (min-width:760px){.headline{grid-template-columns:minmax(0,1fr) minmax(0,320px)}}
+.headline-l{padding:20px 22px 18px}
+.headline-r{padding:16px 18px;border-top:1px solid var(--rule)}
+@media (min-width:760px){.headline-r{border-top:0;border-left:1px solid var(--rule)}}
+.headline .lab{font-family:"Barlow Condensed",sans-serif;font-size:14px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);font-weight:600}
+.headline .big{font-size:clamp(42px,11vw,62px);font-weight:600;letter-spacing:-.035em;line-height:1;margin-top:4px}
+.headline .sub{margin-top:10px;color:var(--ink-2);font-size:15px}
+.tiles{display:grid;gap:1px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px;
+  background:var(--rule-hard);border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
 @media (min-width:900px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;box-shadow:var(--shadow)}
-.tile .lab{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.tile .val{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:26px;
-  font-weight:600;letter-spacing:-.035em;line-height:1.15;margin-top:5px}
-.tile .sub{font-size:13px;color:var(--muted);margin-top:3px}
-.tile.tap{cursor:pointer} .tile.tap:hover{border-color:var(--accent-line)}
-.pos{color:var(--good)} .neg{color:var(--bad)} .amb{color:var(--warn)}
+.tile{background:var(--panel);padding:14px 15px}
+.tile .lab{font-family:"Barlow Condensed",sans-serif;font-size:13px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.tile .val{font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1.1;margin-top:3px}
+.tile .sub{font-size:13.5px;color:var(--muted);margin-top:2px}
+.tile.tap{cursor:pointer} .tile.tap:hover{background:var(--sunk)}
+.pos{color:var(--good)} .neg{color:var(--bad)} .amb{color:var(--s2)}
 
-/* ---------------- chips ---------------- */
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:3px 10px;
-  border-radius:20px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink-2);white-space:nowrap}
-.chip.good{background:var(--good-soft);border-color:var(--good-line);color:var(--good)}
-.chip.warn{background:var(--warn-soft);border-color:var(--warn-line);color:var(--warn)}
-.chip.bad{background:var(--bad-soft);border-color:var(--bad-line);color:var(--bad)}
-.chip.acc{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
+/* ------------------------------------------------------------- stage ---- */
+.stages{display:grid;gap:1px;grid-template-columns:repeat(2,minmax(0,1fr));
+  background:var(--rule-hard);border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
+@media (min-width:880px){.stages{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stage{background:var(--panel);padding:13px 14px;border-top:3px solid var(--rule-hard);cursor:pointer;text-align:left}
+.stage:hover{background:var(--sunk)}
+.stage.s-book{border-top-color:var(--muted)}
+.stage.s-prog{border-top-color:var(--s2)}
+.stage.s-owed{border-top-color:var(--bad)}
+.stage.s-paid{border-top-color:var(--good)}
+.stage .n{font-size:26px;font-weight:600;letter-spacing:-.025em;line-height:1.1}
+.stage .l{font-family:"Barlow Condensed",sans-serif;font-size:13px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.stage .v{font-size:13.5px;color:var(--muted);margin-top:2px}
 
-/* ---------------- job cards ---------------- */
+/* ------------------------------------------------------------- tags ----- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:"Barlow Condensed",sans-serif;font-size:13.5px;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px;
+  border:1px solid var(--rule-hard);background:var(--sunk);color:var(--ink-2);white-space:nowrap}
+.chip.good{background:var(--good-wash);border-color:var(--good-rule);color:var(--good)}
+.chip.bad{background:var(--bad-wash);border-color:var(--bad-rule);color:var(--bad)}
+.chip.acc{background:var(--acc-wash);border-color:var(--acc-rule);color:var(--acc)}
+.chip.amb{background:var(--panel);border-color:var(--s2);color:var(--s2)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+
+/* ------------------------------------------------------------- jobs ----- */
 .jobs{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
-@media (min-width:820px){.jobs{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (min-width:1500px){.jobs{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.job{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
-  display:flex;flex-direction:column;overflow:hidden}
-.job-top{padding:15px 16px 13px;cursor:pointer}
-.job-top:hover{background:var(--panel-2)}
+@media (min-width:860px){.jobs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1560px){.jobs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.job{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;display:flex;flex-direction:column;
+  overflow:hidden;border-left:4px solid var(--rule-hard)}
+.job.s-book{border-left-color:var(--muted)}
+.job.s-prog{border-left-color:var(--s2)}
+.job.s-owed{border-left-color:var(--bad)}
+.job.s-paid{border-left-color:var(--good)}
+.job-top{padding:14px 16px 12px;cursor:pointer}
+.job-top:hover{background:var(--sunk)}
 .job-row1{display:flex;align-items:flex-start;gap:12px}
 .job-who{flex:1;min-width:0}
-.job-who .n{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:18px;line-height:1.2;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.job-who .c{font-size:14px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.job-price{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:21px;
-  font-weight:600;letter-spacing:-.035em;text-align:right;flex:none}
-.job-meta{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.job-who .n{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:21px;line-height:1.12;
+  letter-spacing:.005em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job-who .c{font-size:14px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job-price{font-size:22px;font-weight:600;letter-spacing:-.025em;text-align:right;flex:none}
+.job-meta{display:flex;align-items:center;gap:9px;margin-top:11px;flex-wrap:wrap}
 .job-when{font-size:13.5px;color:var(--muted);font-weight:500}
-.job-acts{display:flex;gap:7px;padding:11px 16px;border-top:1px solid var(--line-2);background:var(--panel-2);flex-wrap:wrap}
+.job-acts{display:flex;gap:7px;padding:10px 16px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap}
 .job-acts .spacer{flex:1}
 
-/* ---------------- rows / lists ---------------- */
+/* ------------------------------------------------------------- rows ----- */
 .rows{display:flex;flex-direction:column}
-.row{display:flex;align-items:center;gap:13px;padding:13px 17px;border-bottom:1px solid var(--line-2)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--rule-2)}
 .row:last-child{border-bottom:0}
-.row.tap{cursor:pointer} .row.tap:hover{background:var(--panel-2)}
+.row.tap{cursor:pointer} .row.tap:hover{background:var(--sunk)}
 .row>svg{width:17px;height:17px;flex:none;color:var(--muted)}
 .row .grow{flex:1;min-width:0}
 .row .t{font-weight:600;font-size:15px}
-.row .s{font-size:13px;color:var(--muted)}
+.row .s{font-size:13.5px;color:var(--muted)}
 .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ---------------- tables ---------------- */
+/* ------------------------------------------------------------ tables ---- */
 .tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:15px}
-thead th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-  font-weight:600;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--panel-2)}
-tbody td{padding:12px 14px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+thead th{text-align:left;font-family:"Barlow Condensed",sans-serif;font-size:13px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--muted);font-weight:600;padding:10px 14px;
+  border-bottom:1px solid var(--rule-hard);white-space:nowrap;background:var(--sunk)}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
-tbody tr:hover{background:var(--panel-2)}
-td.num,th.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+tbody tr:hover{background:var(--sunk)}
+td.num,th.num{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;
+  letter-spacing:-.03em}
 th.wcol{width:34%}
 .rowtitle{font-weight:600}
 .rowsub{font-size:13px;color:var(--muted)}
 .acts{display:flex;gap:5px;justify-content:flex-end}
 @media (max-width:719px){
   .responsive thead{display:none}
-  .responsive tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;padding:14px;border-bottom:1px solid var(--line-2)}
+  .responsive tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;padding:13px 14px;
+    border-bottom:1px solid var(--rule)}
   .responsive tbody tr:hover{background:transparent}
-  .responsive tbody td{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border:0;text-align:left}
+  .responsive tbody td{display:flex;justify-content:space-between;gap:14px;padding:2px 0;border:0;text-align:left}
   .responsive tbody td.num{justify-content:space-between}
-  .responsive tbody td[data-l]::before{content:attr(data-l);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--muted);font-weight:600;font-family:"IBM Plex Sans",sans-serif;flex:none}
+  .responsive tbody td[data-l]::before{content:attr(data-l);font-family:"Barlow Condensed",sans-serif;font-size:13px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;flex:none}
   .responsive tbody td.wide{display:block;padding-bottom:7px}
-  .responsive tbody td.actcell{padding-top:11px}
+  .responsive tbody td.actcell{padding-top:10px}
   .responsive tbody td.actcell .acts{justify-content:flex-start}
 }
 
-/* ---------------- meters ---------------- */
-.meter{height:7px;border-radius:5px;background:var(--panel-3);overflow:hidden}
-.meter>i{display:block;height:100%;background:var(--accent);border-radius:5px}
-.brk{margin-bottom:14px}
-.brk-t{display:flex;gap:10px;font-size:14.5px;align-items:baseline}
-.brk-t .n{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ------------------------------------------------------------ charts ---- */
+.chart{display:block;width:100%;max-width:100%;height:auto;overflow:visible}
+.chart .grid-line{stroke:var(--grid);stroke-width:1}
+.chart .axis-line{stroke:var(--rule-hard);stroke-width:1}
+.chart .tick{font-family:"Roboto Mono",monospace;font-size:11px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.chart .cat{font-family:"Barlow Condensed",sans-serif;font-size:13px;fill:var(--muted);
+  letter-spacing:.09em;text-transform:uppercase;font-weight:600}
+.chart .cat.on{fill:var(--ink)}
+.chart .s1{fill:var(--s1)} .chart .s2{fill:var(--s2)}
+.chart .dim{opacity:.42}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .hit:hover+.band,.chart .band.on{fill:var(--sunk)}
+.chart .band{fill:transparent}
+.chart .val{font-family:"Roboto Mono",monospace;font-size:12px;fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.chart .spark-line{fill:none;stroke:var(--acc-fill);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .spark-zero{stroke:var(--rule-hard);stroke-width:1}
+.chart .end-dot{fill:var(--acc-fill);stroke:var(--panel);stroke-width:2}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--ink-2);margin-top:2px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:11px;height:11px;border-radius:2px;display:inline-block;flex:none}
+.charttip{position:fixed;z-index:70;pointer-events:none;background:var(--bezel);color:var(--bezel-ink);
+  border:1px solid var(--bezel-rule);border-radius:3px;padding:9px 11px;font-size:13.5px;line-height:1.5;
+  white-space:nowrap;box-shadow:0 8px 20px -10px rgba(0,0,0,.6)}
+.charttip b{font-family:"Barlow Condensed",sans-serif;letter-spacing:.1em;text-transform:uppercase;
+  font-size:12.5px;color:var(--bezel-muted);font-weight:600;display:block;margin-bottom:3px}
+.charttip .r{display:flex;align-items:center;gap:8px;font-family:"Roboto Mono",monospace;font-size:13px;
+  font-variant-numeric:tabular-nums}
+.charttip .r i{width:9px;height:9px;border-radius:2px;flex:none}
+.hbar{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;margin-bottom:13px}
+.hbar-t{display:flex;gap:10px;align-items:baseline;font-size:14.5px}
+.hbar-t .n{flex:1;min-width:0;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar-t .v{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;font-size:13.5px;letter-spacing:-.03em}
+.hbar-t .p{font-family:"Roboto Mono",monospace;font-size:12.5px;color:var(--muted);width:44px;text-align:right}
+.track{height:9px;background:var(--sunk);border:1px solid var(--rule);border-radius:2px;overflow:hidden;position:relative}
+.track>i{display:block;height:100%;background:var(--s1);border-radius:1px}
+.track>i.o{background:var(--s2)}
+.meter{height:14px;background:var(--sunk);border:1px solid var(--rule-hard);border-radius:2px;position:relative;overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--s1)}
+.meter>u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.65}
+.meter-legend{display:flex;justify-content:space-between;font-family:"Roboto Mono",monospace;font-size:12px;
+  color:var(--muted);margin-top:5px}
+.lvl{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+.lvl .bar{width:52px;height:7px;background:var(--sunk);border:1px solid var(--rule);border-radius:2px;overflow:hidden;flex:none}
+.lvl .bar>i{display:block;height:100%;background:var(--s1)}
+.lvl .bar>i.low{background:var(--s2)}
+.lvl .bar>i.out{background:var(--bad)}
 
-/* ---------------- inputs ---------------- */
-.field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.inp{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:16px}
-.inp:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
-textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
-.hint{font-size:13.5px;color:var(--muted);line-height:1.55}
-.search{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);
-  border-radius:10px;padding:0 13px;flex:1;min-width:0}
-.search input{border:0;background:transparent;padding:11px 0;width:100%;font-size:16px}
+/* ------------------------------------------------------------ inputs ---- */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:"Barlow Condensed",sans-serif;font-size:13.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.inp{width:100%;background:var(--raised);border:1px solid var(--rule-hard);border-radius:3px;padding:11px 12px;font-size:16px}
+.inp:focus{outline:2px solid var(--acc-fill);outline-offset:-1px;border-color:var(--acc-fill)}
+textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.55}
+.hint{font-size:14px;color:var(--muted);line-height:1.5}
+.search{display:flex;align-items:center;gap:9px;background:var(--raised);border:1px solid var(--rule-hard);
+  border-radius:3px;padding:0 12px;flex:1;min-width:0}
+.search input{border:0;background:transparent;padding:10px 0;width:100%;font-size:16px}
 .search input:focus{outline:none}
 .search>svg{width:17px;height:17px;color:var(--muted);flex:none}
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
-.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;overflow:auto}
-.seg button{border:0;background:transparent;padding:7px 13px;border-radius:8px;cursor:pointer;font-size:14px;
-  font-weight:600;color:var(--muted);white-space:nowrap}
-.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
-.pick{display:flex;flex-wrap:wrap;gap:8px}
-.pick button{border:1px solid var(--line);background:var(--panel-2);color:var(--ink-2);padding:9px 14px;
-  border-radius:22px;cursor:pointer;font-size:14.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
-.pick button:hover{border-color:var(--muted)}
-.pick button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;overflow:auto}
+.seg button{border:0;border-right:1px solid var(--rule);background:transparent;padding:8px 14px;cursor:pointer;
+  font-family:"Barlow Condensed",sans-serif;font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--acc-fill);color:var(--acc-ink)}
+.pick{display:flex;flex-wrap:wrap;gap:7px}
+.pick button{border:1px solid var(--rule-hard);background:var(--panel);color:var(--ink-2);padding:8px 13px;
+  border-radius:3px;cursor:pointer;font-size:14.5px;font-weight:500;display:inline-flex;align-items:center;gap:7px}
+.pick button:hover{border-color:var(--ink-2)}
+.pick button[aria-pressed="true"]{background:var(--acc-wash);border-color:var(--acc-fill);color:var(--acc);font-weight:600}
 .pick button>svg{width:14px;height:14px}
 @media (max-width:719px){
   .toolbar .search{flex:1 1 100%}
@@ -261,62 +352,67 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
   .toolbar .seg button{flex:1}
 }
 
-/* ---------------- drawer ---------------- */
-.scrim{position:fixed;inset:0;z-index:50;background:rgba(6,14,22,.55);backdrop-filter:blur(3px);
-  display:flex;justify-content:flex-end;animation:fade .16s ease}
+/* ------------------------------------------------------------ drawer ---- */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(8,14,13,.6);display:flex;justify-content:flex-end;animation:fade .14s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .drawer{background:var(--panel);width:min(580px,100%);height:100%;display:flex;flex-direction:column;
-  box-shadow:-24px 0 70px -34px rgba(0,0,0,.7);animation:slide .2s cubic-bezier(.2,.8,.3,1)}
-@keyframes slide{from{transform:translateX(26px);opacity:.4}to{transform:none;opacity:1}}
+  border-left:3px solid var(--acc-fill);animation:slide .18s cubic-bezier(.2,.8,.3,1)}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
 @media (max-width:640px){
   .scrim{align-items:flex-end}
-  .drawer{width:100%;height:min(95vh,100%);border-radius:18px 18px 0 0;animation:up .22s cubic-bezier(.2,.8,.3,1)}
-  @keyframes up{from{transform:translateY(32px);opacity:.5}to{transform:none;opacity:1}}
+  .drawer{width:100%;height:min(95vh,100%);border-left:0;border-top:3px solid var(--acc-fill);
+    animation:up .2s cubic-bezier(.2,.8,.3,1)}
+  @keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
 }
-.drawer-h{display:flex;align-items:center;gap:11px;padding:17px 20px;border-bottom:1px solid var(--line)}
-.drawer-h h3{font-size:19px;flex:1}
-.drawer-b{padding:20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
-.drawer-f{display:flex;gap:10px;padding:15px 20px calc(15px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--line);background:var(--panel-2)}
+.drawer-h{display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--rule-hard);background:var(--sunk)}
+.drawer-h h3{font-family:"Barlow Condensed",sans-serif;font-size:21px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;flex:1}
+.drawer-b{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+.drawer-f{display:flex;gap:10px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--rule-hard);background:var(--sunk)}
 .drawer-f .spacer{flex:1}
 .fgrid{display:grid;gap:15px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .fgrid .full{grid-column:1/-1}
 @media (max-width:540px){.fgrid{grid-template-columns:minmax(0,1fr)}}
-.more{border:0;background:transparent;color:var(--accent);font-weight:600;font-size:14.5px;cursor:pointer;
+.more{border:0;background:transparent;color:var(--acc);font-weight:600;font-size:14.5px;cursor:pointer;
   padding:6px 0;display:inline-flex;align-items:center;gap:7px;align-self:flex-start}
 .more>svg{width:15px;height:15px}
-.linebox{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--panel-2)}
+.linebox{border:1px solid var(--rule-hard);border-radius:3px;padding:13px;display:flex;flex-direction:column;
+  gap:10px;background:var(--sunk)}
 .itemline{display:grid;grid-template-columns:minmax(0,1fr) 76px 100px auto;gap:8px;align-items:center}
 @media (max-width:540px){.itemline{grid-template-columns:repeat(2,minmax(0,1fr))}.itemline .full2{grid-column:1/-1}}
 
-/* ---------------- misc ---------------- */
-.empty{text-align:center;padding:46px 22px;color:var(--muted)}
-.empty>svg{width:34px;height:34px;color:var(--muted);opacity:.6;margin-bottom:12px}
-.empty h3{color:var(--ink);margin-bottom:7px;font-size:19px}
-.empty p{margin:0 auto 18px;max-width:42ch;font-size:15px}
-.empty .acts2{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.banner{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:var(--r);
-  border:1px solid var(--accent-line);background:var(--accent-soft);color:var(--accent);font-size:14.5px;font-weight:500}
+/* ------------------------------------------------------------- misc ----- */
+.empty{padding:26px 18px;display:flex;gap:16px;align-items:flex-start}
+.empty>svg{width:26px;height:26px;color:var(--muted);flex:none;margin-top:2px}
+.empty .body{flex:1;min-width:0}
+.empty h3{font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;margin-bottom:5px}
+.empty p{margin:0 0 14px;max-width:52ch;font-size:15px;color:var(--muted)}
+.empty .acts2{display:flex;gap:10px;flex-wrap:wrap}
+.banner{display:flex;align-items:center;gap:12px;padding:12px 15px;border-radius:3px;
+  border:1px solid var(--acc-rule);background:var(--acc-wash);color:var(--acc);font-size:14.5px;font-weight:500}
 .banner .spacer{flex:1}
 .banner>svg{width:18px;height:18px;flex:none}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom));z-index:80;
-  background:var(--ink);color:var(--panel);padding:12px 18px;border-radius:11px;font-size:14.5px;font-weight:600;
-  box-shadow:var(--shadow);max-width:calc(100vw - 32px);text-align:center}
-@media (min-width:1000px){.toast{bottom:28px}}
-.linkrow{display:flex;flex-wrap:wrap;gap:9px}
-.linkrow a{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;text-decoration:none;
-  border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:var(--panel-2);color:var(--ink-2)}
-.linkrow a:hover{border-color:var(--accent);color:var(--accent)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(106px + env(safe-area-inset-bottom));z-index:80;
+  background:var(--bezel);color:var(--bezel-ink);padding:12px 18px;border-radius:3px;font-size:14.5px;font-weight:500;
+  border-left:3px solid var(--acc-fill);max-width:calc(100vw - 32px);text-align:left}
+@media (min-width:1000px){.toast{bottom:26px}}
+.linkrow{display:flex;flex-wrap:wrap;gap:8px}
+.linkrow a{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:500;text-decoration:none;
+  border:1px solid var(--rule-hard);border-radius:3px;padding:7px 11px;background:var(--panel);color:var(--ink-2)}
+.linkrow a:hover{border-color:var(--acc-fill);color:var(--acc)}
 .linkrow a>svg{width:15px;height:15px}
-.check{display:flex;align-items:center;gap:12px;padding:13px 17px;border-bottom:1px solid var(--line-2)}
+.check{display:flex;align-items:center;gap:13px;padding:13px 16px;border-bottom:1px solid var(--rule-2)}
 .check:last-child{border-bottom:0}
-.check .bx{width:24px;height:24px;border-radius:7px;border:2px solid var(--line);flex:none;display:grid;place-items:center}
+.check .bx{width:24px;height:24px;border-radius:2px;border:1px solid var(--rule-hard);flex:none;display:grid;
+  place-items:center;background:var(--raised)}
 .check .bx>svg{width:14px;height:14px}
 .check.done .bx{background:var(--good);border-color:var(--good);color:var(--panel)}
 .check.done .t{color:var(--muted);text-decoration:line-through}
 .check .grow{flex:1;min-width:0}
 .check .t{font-weight:600;font-size:15px}
-.check .s{font-size:13px;color:var(--muted)}
+.check .s{font-size:13.5px;color:var(--muted)}
 </style>
 
 <script type="application/json" id="app-data">{"v":2,"fresh":true}</script>
@@ -478,8 +574,8 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
   var HEAD_LINKS =
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600' +
-    '&amp;family=IBM+Plex+Sans+Condensed:wght@600;700&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">';
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700' +
+    '&amp;family=Barlow:wght@400;500;600;700&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">';
 
   /** Rebuild the whole page from its own stylesheet, script and current data. */
   function serialize() {
@@ -585,6 +681,201 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     setTimeout(function () { el.remove(); }, 3400);
   }
 
+
+  /* ========================== CHARTS ====================================
+     Everything is measured then drawn at real pixel size, so type never
+     scales with the container. One y-axis per chart, hairline grid,
+     hover read-out, and a click that changes the month you are looking at.
+     ===================================================================== */
+  function niceMax(v) {
+    if (!(v > 0)) return 1;
+    var mag = Math.pow(10, Math.floor(Math.log10(v)));
+    var r = v / mag;
+    var step = r <= 1 ? 1 : r <= 2 ? 2 : r <= 2.5 ? 2.5 : r <= 5 ? 5 : 10;
+    return step * mag;
+  }
+  function shortMoney(v) {
+    var x = Math.abs(n(v));
+    if (x >= 1000000) return cur() + (x / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+    if (x >= 1000) return cur() + (x / 1000).toFixed(x >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+    return cur() + Math.round(x);
+  }
+  /** A bar with its top corners rounded and its base flat on the axis. */
+  function barPath(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h);
+    if (h <= 0.5) return '';
+    return 'M' + x + ' ' + (y + h) + 'V' + (y + r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + -r +
+      'h' + (w - 2 * r) + 'a' + r + ' ' + r + ' 0 0 1 ' + r + ' ' + r + 'V' + (y + h) + 'Z';
+  }
+  function tipAttr(html) { return ' data-tip="' + esc(html) + '"'; }
+
+  /* --- six months: money in vs costs & bills, click a month to open it --- */
+  function buildMonths(w) {
+    var keys = [], k = curMonth(), i;
+    for (i = 5; i >= 0; i--) keys.push(shiftMonth(UI.month, -i));
+    var data = keys.map(function (key) { var r = monthStats(key); return { k: key, a: r.in, b: r.cost + r.out, p: r.profit }; });
+    var top = 0;
+    data.forEach(function (d) { top = Math.max(top, d.a, d.b); });
+    var max = niceMax(top || 1);
+    var H = 196, padL = 52, padR = 10, padT = 14, padB = 28;
+    var plotW = Math.max(60, w - padL - padR), plotH = H - padT - padB;
+    var band = plotW / data.length;
+    var bw = Math.max(6, Math.min(34, (band - 14) / 2 - 1));
+    var y = function (v) { return padT + plotH - (v / max) * plotH; };
+
+    var g = '';
+    [0, 0.5, 1].forEach(function (f) {
+      var yy = padT + plotH - f * plotH;
+      g += '<line class="grid-line" x1="' + padL + '" y1="' + yy + '" x2="' + (padL + plotW) + '" y2="' + yy + '"/>' +
+        '<text class="tick" x="' + (padL - 8) + '" y="' + (yy + 4) + '" text-anchor="end">' + esc(shortMoney(max * f)) + '</text>';
+    });
+    g += '<line class="axis-line" x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (padL + plotW) + '" y2="' + (padT + plotH) + '"/>';
+
+    data.forEach(function (d, ix) {
+      var cx = padL + band * ix + band / 2;
+      var on = d.k === UI.month;
+      var x1 = cx - bw - 1, x2 = cx + 1;
+      g += '<path class="s1' + (on ? '' : ' dim') + '" d="' + barPath(x1, y(d.a), bw, (d.a / max) * plotH, 3) + '"/>';
+      g += '<path class="s2' + (on ? '' : ' dim') + '" d="' + barPath(x2, y(d.b), bw, (d.b / max) * plotH, 3) + '"/>';
+      g += '<text class="cat' + (on ? ' on' : '') + '" x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(mLabel(d.k).slice(0, 3)) + '</text>';
+      var tip = '<b>' + esc(mLabel(d.k)) + '</b>' +
+        '<div class="r"><i style="background:var(--s1)"></i>' + esc(money(d.a)) + ' in</div>' +
+        '<div class="r"><i style="background:var(--s2)"></i>' + esc(money(d.b)) + ' out</div>' +
+        '<div class="r"><i style="background:transparent"></i>' + esc(money(d.p)) + ' profit</div>';
+      g += '<rect class="hit" x="' + (padL + band * ix) + '" y="' + padT + '" width="' + band + '" height="' + plotH +
+        '" data-month="' + esc(d.k) + '"' + tipAttr(tip) + '></rect>';
+    });
+    return '<svg class="chart" width="' + w + '" height="' + H + '" viewBox="0 0 ' + w + ' ' + H + '" role="img" ' +
+      'aria-label="Money in and costs for the last six months">' + g + '</svg>';
+  }
+
+  /* --- one series of columns: jobs per week, or ad spend per month ------- */
+  function buildColumns(w, data, opts) {
+    var max = niceMax(Math.max.apply(null, data.map(function (d) { return d.v; }).concat([opts.min || 1])));
+    var H = opts.height || 168, padL = opts.padL == null ? 46 : opts.padL, padR = 8, padT = 12, padB = 26;
+    var plotW = Math.max(50, w - padL - padR), plotH = H - padT - padB;
+    var band = plotW / Math.max(1, data.length);
+    var bw = Math.max(5, Math.min(opts.barMax || 26, band - 8));
+    var g = '';
+    [0, 0.5, 1].forEach(function (f) {
+      var yy = padT + plotH - f * plotH;
+      g += '<line class="grid-line" x1="' + padL + '" y1="' + yy + '" x2="' + (padL + plotW) + '" y2="' + yy + '"/>' +
+        '<text class="tick" x="' + (padL - 8) + '" y="' + (yy + 4) + '" text-anchor="end">' +
+        esc(opts.fmtAxis ? opts.fmtAxis(max * f) : Math.round(max * f)) + '</text>';
+    });
+    g += '<line class="axis-line" x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (padL + plotW) + '" y2="' + (padT + plotH) + '"/>';
+    data.forEach(function (d, ix) {
+      var cx = padL + band * ix + band / 2, h = (d.v / max) * plotH;
+      g += '<path class="' + (opts.series || 's1') + (d.on ? '' : ' dim') + '" d="' + barPath(cx - bw / 2, padT + plotH - h, bw, h, 3) + '"/>';
+      if (d.label) g += '<text class="cat' + (d.on ? ' on' : '') + '" x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(d.label) + '</text>';
+      g += '<rect class="hit" x="' + (padL + band * ix) + '" y="' + padT + '" width="' + band + '" height="' + plotH + '"' +
+        tipAttr('<b>' + esc(d.tipLabel || d.label || '') + '</b><div class="r">' + esc(d.tipValue) + '</div>') + '></rect>';
+    });
+    return '<svg class="chart" width="' + w + '" height="' + H + '" viewBox="0 0 ' + w + ' ' + H + '" role="img" ' +
+      'aria-label="' + esc(opts.aria || 'chart') + '">' + g + '</svg>';
+  }
+
+  function buildWeeks(w) {
+    var out = [], i, now = new Date(todayISO() + 'T00:00:00');
+    var monday = new Date(now.getTime() - ((now.getDay() + 6) % 7) * 86400000);
+    for (i = 11; i >= 0; i--) {
+      var start = new Date(monday.getTime() - i * 7 * 86400000);
+      var end = new Date(start.getTime() + 7 * 86400000);
+      var si = start.toISOString().slice(0, 10), ei = end.toISOString().slice(0, 10);
+      var count = S.jobs.filter(function (j) { return j.date >= si && j.date < ei && j.status !== 'Cancelled'; }).length;
+      out.push({
+        v: count, on: i === 0, label: i % 2 === 0 ? (+si.slice(8, 10)) + ' ' + MON[+si.slice(5, 7) - 1] : '',
+        tipLabel: 'Week of ' + dLabel(si), tipValue: plural(count, 'car') + ' in'
+      });
+    }
+    return buildColumns(w, out, { height: 160, barMax: 20, aria: 'Cars booked in per week for the last twelve weeks' });
+  }
+
+  function buildAds(w) {
+    var out = [], i;
+    for (i = 5; i >= 0; i--) {
+      var key = shiftMonth(UI.month, -i), r = monthStats(key);
+      out.push({
+        v: r.ads, on: key === UI.month, label: mLabel(key).slice(0, 3),
+        tipLabel: mLabel(key),
+        tipValue: money(r.ads) + ' on ads' + (r.ads ? ' · ' + money2(r.roas) + ' back per ' + cur() + '1' : '')
+      });
+    }
+    return buildColumns(w, out, { height: 158, barMax: 30, series: 's2', fmtAxis: shortMoney, aria: 'Ad spend over the last six months' });
+  }
+
+  /* --- profit line for the headline card -------------------------------- */
+  function buildSpark(w) {
+    var pts = [], i;
+    for (i = 5; i >= 0; i--) { var key = shiftMonth(UI.month, -i); pts.push({ k: key, v: monthStats(key).profit }); }
+    var H = 74, padT = 10, padB = 20, padX = 4;
+    var lo = Math.min(0, Math.min.apply(null, pts.map(function (p) { return p.v; })));
+    var hi = Math.max(0, Math.max.apply(null, pts.map(function (p) { return p.v; })));
+    var span = (hi - lo) || 1;
+    var plotW = Math.max(40, w - padX * 2), plotH = H - padT - padB;
+    var X = function (ix) { return padX + (plotW / Math.max(1, pts.length - 1)) * ix; };
+    var Y = function (v) { return padT + plotH - ((v - lo) / span) * plotH; };
+    var d = pts.map(function (p, ix) { return (ix ? 'L' : 'M') + X(ix).toFixed(1) + ' ' + Y(p.v).toFixed(1); }).join(' ');
+    var zero = Y(0);
+    var g = '<line class="spark-zero" x1="' + padX + '" y1="' + zero + '" x2="' + (padX + plotW) + '" y2="' + zero + '"/>' +
+      '<path class="spark-line" d="' + d + '"/>' +
+      '<circle class="end-dot" cx="' + X(pts.length - 1) + '" cy="' + Y(pts[pts.length - 1].v) + '" r="4.5"/>';
+    pts.forEach(function (p, ix) {
+      g += '<rect class="hit" x="' + (X(ix) - plotW / 12) + '" y="' + padT + '" width="' + (plotW / 6) + '" height="' + plotH +
+        '" data-month="' + esc(p.k) + '"' + tipAttr('<b>' + esc(mLabel(p.k)) + '</b><div class="r">' + esc(money(p.v)) + ' profit</div>') + '></rect>';
+    });
+    g += '<text class="tick" x="' + padX + '" y="' + (H - 5) + '">' + esc(mLabel(pts[0].k).slice(0, 3)) + '</text>' +
+      '<text class="tick" x="' + (padX + plotW) + '" y="' + (H - 5) + '" text-anchor="end">' + esc(mLabel(pts[5].k).slice(0, 3)) + '</text>';
+    return '<svg class="chart" width="' + w + '" height="' + H + '" viewBox="0 0 ' + w + ' ' + H + '" role="img" ' +
+      'aria-label="Profit over the last six months">' + g + '</svg>';
+  }
+
+  var CHARTS = { months: buildMonths, weeks: buildWeeks, ads: buildAds, spark: buildSpark };
+
+  function drawCharts() {
+    var hosts = document.querySelectorAll('.chart-host');
+    for (var i = 0; i < hosts.length; i++) {
+      var el = hosts[i], w = Math.round(el.clientWidth);
+      if (!w) continue;
+      var fn = CHARTS[el.getAttribute('data-chart')];
+      if (fn) el.innerHTML = fn(w);
+    }
+  }
+  function chartHost(name, h) {
+    return '<div class="chart-host" data-chart="' + name + '" style="height:' + h + 'px"></div>';
+  }
+
+  /* --- ranked horizontal bars (HTML, values always visible) -------------- */
+  function hbars(rows, total, opts) {
+    opts = opts || {};
+    if (!rows.length) return '<div class="hint">' + esc(opts.empty || 'Nothing here yet.') + '</div>';
+    var max = Math.max.apply(null, rows.map(function (r) { return Math.abs(r.v); })) || 1;
+    return rows.map(function (r) {
+      return '<div class="hbar"><div class="hbar-t"><span class="n">' + esc(r.n) + '</span>' +
+        '<span class="v">' + esc(money(r.v)) + '</span>' +
+        (total ? '<span class="p">' + pct((r.v / total) * 100) + '</span>' : '') + '</div>' +
+        '<div class="track"><i class="' + (opts.alt ? 'o' : '') + '" style="width:' + Math.max(2, (Math.abs(r.v) / max) * 100) + '%"></i></div></div>';
+    }).join('');
+  }
+
+  /* --- one ratio against a target --------------------------------------- */
+  function meter(value, target, label) {
+    var top = Math.max(target * 1.5, value * 1.1, 1);
+    return '<div><div class="meter"><i style="width:' + Math.min(100, (value / top) * 100) + '%;background:' +
+      (value >= target ? 'var(--good)' : 'var(--s2)') + '"></i>' +
+      '<u style="left:' + Math.min(99, (target / top) * 100) + '%"></u></div>' +
+      '<div class="meter-legend"><span>' + esc(label) + '</span><span>aiming for ' + esc(target.toFixed(1)) + '\u00d7</span></div></div>';
+  }
+
+  /* --- stock level against its reorder point ---------------------------- */
+  function levelBar(qty, reorder) {
+    var q = n(qty), r = n(reorder), top = Math.max(r * 3, q, 1);
+    var cls = q <= 0 ? 'out' : q <= r ? 'low' : '';
+    return '<span class="lvl"><span class="bar"><i class="' + cls + '" style="width:' +
+      Math.max(q > 0 ? 6 : 0, Math.min(100, (q / top) * 100)) + '%"></i></span>' +
+      '<span>' + q + '</span></span>';
+  }
+
   /* ------------------------------------------------------------- chrome */
   var TABS = [
     { id: 'home', label: 'Home', icon: 'home' },
@@ -636,7 +927,8 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     else if (saving) { cls = 'pending'; txt = 'Saving…'; }
     else if (DIRTY) { cls = 'pending'; txt = 'Not saved yet'; }
     else if (!ARTIFACT) { cls = 'off'; txt = 'This device only'; }
-    return '<span class="savechip"><i class="dot ' + cls + '"></i>' + txt + '</span>';
+    return '<span class="savechip" title="' + esc(txt) + '"><i class="dot ' + cls + '"></i>' +
+      '<span class="lbl">' + esc(txt) + '</span></span>';
   }
   function saveBtn(extra) {
     if (READONLY || !ARTIFACT) return '';
@@ -645,11 +937,19 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
   }
 
   /* =============================== HOME ================================ */
+  function emptyBlock(icon, title, body, actions) {
+    return '<div class="empty">' + ico(icon) + '<div class="body">' +
+      '<h3>' + esc(title) + '</h3><p>' + esc(body) + '</p>' +
+      (actions ? '<div class="acts2">' + actions + '</div>' : '') + '</div></div>';
+  }
+  function secH(title, right) {
+    return '<div class="sec-h"><h2>' + esc(title) + '</h2><span class="line"></span>' + (right || '') + '</div>';
+  }
   function monthBar() {
     return '<div class="toolbar">' +
       '<div class="seg" style="flex:none">' +
       '<button data-act="month" data-d="-1" aria-label="Previous month">' + ico('left') + '</button>' +
-      '<button aria-pressed="true" style="min-width:104px">' + mLabel(UI.month) + '</button>' +
+      '<button aria-pressed="true" style="min-width:118px">' + mLabel(UI.month) + '</button>' +
       '<button data-act="month" data-d="1" aria-label="Next month">' + ico('right') + '</button></div>' +
       (UI.month !== curMonth() ? '<button class="btn ghost" data-act="month-now">This month</button>' : '') +
       '</div>';
@@ -660,33 +960,65 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     var owed = S.jobs.reduce(function (a, j) { return a + (j.status === 'Done' ? jobOwing(j) : 0); }, 0);
     var h = monthBar();
 
-    h += '<div class="headline">' +
+    h += '<div class="headline"><div class="headline-l">' +
       '<div class="lab">Profit in ' + esc(mLabel(m)) + '</div>' +
       '<div class="big ' + (r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : '') + '">' + money(r.profit) + '</div>' +
       '<div class="sub">' + money(r.in) + ' came in · ' + money(r.cost + r.out) + ' went out' +
       (r.in > 0 && r.profit >= 0 ? ' · you keep ' + pct(r.margin) + ' of every dollar' :
-        r.profit < 0 ? ' · more going out than coming in' : '') + '</div></div>';
+        r.profit < 0 ? ' · more going out than coming in' : '') + '</div></div>' +
+      '<div class="headline-r"><div class="eyebrow" style="margin-bottom:6px">Profit, last 6 months</div>' +
+      chartHost('spark', 74) + '</div></div>';
 
     h += '<div class="tiles">' +
       tile('Money in', money(r.in), plural(r.jobs, 'job') + ' paid', 'jobs') +
       tile('Costs & bills', money(r.cost + r.out), 'Jobs ' + money(r.cost) + ' · bills ' + money(r.out), 'money') +
       tile('Still owed', money(owed), owed ? plural(unpaidJobs().length, 'job') + ' to chase' : 'Nothing outstanding', 'jobs') +
-      tile('Average job', money(r.avg), r.jobs ? 'Across ' + plural(r.jobs, 'paid job') : 'No paid jobs yet', 'jobs') +
+      tile('Average job', money(r.avg), r.jobs ? 'Across ' + plural(r.jobs, 'paid job') : 'No paid jobs yet') +
       '</div>';
 
     var todo = startHere();
     if (todo) h += todo;
 
+    h += secH('The board');
+    h += stageStrip(m);
+
+    h += secH('Month by month');
+    h += '<section class="card"><div class="card-b">' +
+      '<div class="legend" style="margin-bottom:10px">' +
+      '<span><i style="background:var(--s1)"></i>Money in</span>' +
+      '<span><i style="background:var(--s2)"></i>Costs &amp; bills</span></div>' +
+      chartHost('months', 196) +
+      '<div class="hint" style="margin-top:8px">Tap a month to open it.</div></div></section>';
+
     h += '<div class="grid g2" style="margin-top:20px">' + comingUp() + needsDoing() + '</div>';
 
-    if (S.jobs.filter(function (j) { return j.status === 'Paid'; }).length) h += whereMoneyCame(m);
+    if (S.jobs.some(function (j) { return j.status === 'Paid'; })) h += whereMoneyCame(m);
     return h;
   }
 
-  function tile(lab, val, sub, tab, cls) {
+  function tile(lab, val, sub, tab) {
     return '<div class="tile' + (tab ? ' tap' : '') + '"' + (tab ? ' data-tab="' + tab + '"' : '') + '>' +
-      '<div class="lab">' + esc(lab) + '</div><div class="val ' + (cls || '') + '">' + esc(val) + '</div>' +
+      '<div class="lab">' + esc(lab) + '</div><div class="val">' + esc(val) + '</div>' +
       '<div class="sub">' + esc(sub) + '</div></div>';
+  }
+
+  function stageStrip(m) {
+    var booked = S.jobs.filter(function (j) { return j.status === 'Booked' || j.status === 'Enquiry'; });
+    var prog = S.jobs.filter(function (j) { return j.status === 'In progress'; });
+    var owed = S.jobs.filter(function (j) { return j.status === 'Done'; });
+    var paid = S.jobs.filter(function (j) { return j.status === 'Paid' && mKey(j.date) === m; });
+    var sum = function (l, f) { return l.reduce(function (a, j) { return a + f(j); }, 0); };
+    var cell = function (cls, label, list, value, filter) {
+      return '<button class="stage ' + cls + '" data-act="job-jump" data-v="' + filter + '">' +
+        '<div class="l">' + esc(label) + '</div><div class="n">' + list.length + '</div>' +
+        '<div class="v">' + esc(value) + '</div></button>';
+    };
+    return '<div class="stages">' +
+      cell('s-book', 'Booked in', booked, money(sum(booked, function (j) { return n(j.price); })) + ' of work', 'open') +
+      cell('s-prog', 'On the tools', prog, money(sum(prog, function (j) { return n(j.price); })) + ' in progress', 'open') +
+      cell('s-owed', 'Waiting on payment', owed, money(sum(owed, jobOwing)) + ' owed', 'done') +
+      cell('s-paid', 'Paid this month', paid, money(sum(paid, function (j) { return n(j.price); })) + ' banked', 'paid') +
+      '</div>';
   }
 
   function startHere() {
@@ -698,9 +1030,8 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     ];
     if (steps.every(function (x) { return x.done; })) return '';
     var done = steps.filter(function (x) { return x.done; }).length;
-    return '<section class="card" style="margin-top:20px"><div class="card-h">' + ico('spark') +
-      '<h3>Start here</h3><div class="spacer"></div><span class="chip acc">' + done + ' of ' + steps.length + '</span></div>' +
-      '<div class="card-b flush">' + steps.map(function (x) {
+    return secH('Start here', '<span class="chip acc">' + done + ' of ' + steps.length + '</span>') +
+      '<section class="card"><div class="card-b flush">' + steps.map(function (x) {
         return '<div class="check' + (x.done ? ' done' : '') + '"' +
           (x.done ? '' : (x.act === 'tab' ? ' data-tab="' + x.v + '"' : ' data-act="' + x.act + '"') + ' style="cursor:pointer"') + '>' +
           '<span class="bx">' + (x.done ? ico('check') : '') + '</span>' +
@@ -710,20 +1041,21 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
   }
 
   function comingUp() {
-    var open = sortBy(S.jobs.filter(jobOpen), function (j) { return j.date || '9999'; }).slice(0, 6);
+    var all = S.jobs.filter(jobOpen);
+    var open = sortBy(all, function (j) { return j.date || '9999'; }).slice(0, 6);
     var h = '<section class="card"><div class="card-h">' + ico('calendar') + '<h3>Coming up</h3><div class="spacer"></div>' +
-      (open.length ? '<span class="chip">' + plural(S.jobs.filter(jobOpen).length, 'job') + '</span>' : '') + '</div>';
+      (all.length ? '<span class="chip">' + plural(all.length, 'job') + '</span>' : '') + '</div>';
     if (!open.length) {
-      h += '<div class="empty">' + ico('car') + '<h3>No cars booked in</h3>' +
-        '<p>When someone books a tint, a detail, a wrap or an install, put it in here.</p>' +
-        '<div class="acts2"><button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button></div></div>';
+      h += emptyBlock('car', 'No cars booked in',
+        'When someone books a tint, a detail, a wrap or an install, put it in here.',
+        '<button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button>');
     } else {
       h += '<div class="card-b flush"><div class="rows">' + open.map(function (j) {
         var d = days(j.date);
         return '<div class="row tap" data-act="edit-job" data-id="' + j.id + '">' +
           '<span class="grow"><span class="t truncate">' + esc(j.customer || 'No name') + (j.car ? ' · ' + esc(j.car) : '') + '</span>' +
           '<br><span class="s truncate">' + esc(jobTitle(j)) + '</span></span>' +
-          '<span style="text-align:right;flex:none"><span class="chip ' + (d != null && d < 0 ? 'bad' : d === 0 ? 'warn' : '') + '">' +
+          '<span style="text-align:right;flex:none"><span class="chip ' + (d != null && d < 0 ? 'bad' : d === 0 ? 'amb' : '') + '">' +
           esc(whenLabel(j.date)) + '</span><br><span class="s num">' + money(j.price) + '</span></span></div>';
       }).join('') + '</div></div>';
     }
@@ -734,11 +1066,8 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     var unpaid = unpaidJobs(), low = lowStock(), late = lateOrders();
     var total = unpaid.length + low.length + late.length;
     var h = '<section class="card"><div class="card-h">' + ico('alert') + '<h3>Needs doing</h3><div class="spacer"></div>' +
-      '<span class="chip ' + (total ? 'warn' : 'good') + '">' + total + '</span></div>';
-    if (!total) {
-      h += '<div class="empty">' + ico('check') + '<h3>Nothing to chase</h3><p>Everyone has paid, nothing is low and nothing is late.</p></div>';
-      return h + '</section>';
-    }
+      '<span class="chip ' + (total ? 'bad' : 'good') + '">' + total + '</span></div>';
+    if (!total) return h + emptyBlock('check', 'Nothing to chase', 'Everyone has paid, nothing is low and nothing is late.') + '</section>';
     h += '<div class="card-b flush"><div class="rows">';
     h += unpaid.map(function (j) {
       return '<div class="row tap" data-act="edit-job" data-id="' + j.id + '">' +
@@ -758,7 +1087,7 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
         '<span class="grow"><span class="t truncate">' + esc(p.name) + '</span>' +
         '<br><span class="s truncate">' + (inc ? inc + ' on the way' : 'Nothing on order') +
         (p.supplierId ? ' · ' + esc(supName(p.supplierId)) : '') + '</span></span>' +
-        '<span class="chip ' + (n(p.qty) <= 0 ? 'bad' : 'warn') + '">' + (n(p.qty) <= 0 ? 'Out' : n(p.qty) + ' left') + '</span></div>';
+        '<span class="chip ' + (n(p.qty) <= 0 ? 'bad' : 'amb') + '">' + (n(p.qty) <= 0 ? 'Out' : n(p.qty) + ' left') + '</span></div>';
     }).join('');
     return h + '</div></div></section>';
   }
@@ -775,15 +1104,10 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       });
     });
     var rows = sortBy(Object.keys(agg).map(function (k) { return { n: k, v: agg[k] }; }), function (x) { return x.v; }, 'desc').slice(0, 8);
-    var total = rows.reduce(function (a, x) { return a + x.v; }, 0) || 1;
     if (!rows.length) return '';
-    return '<section class="card" style="margin-top:14px"><div class="card-h">' + ico('spark') +
-      '<h3>What earned the most</h3></div><div class="card-b">' +
-      rows.map(function (x) {
-        return '<div class="brk"><div class="brk-t"><span class="n">' + esc(x.n) + '</span>' +
-          '<span class="num">' + money(x.v) + '</span></div>' +
-          '<div class="meter" style="margin-top:6px"><i style="width:' + Math.max(3, (x.v / total) * 100) + '%"></i></div></div>';
-      }).join('') +
+    var total = rows.reduce(function (a, x) { return a + x.v; }, 0) || 1;
+    return secH('What earned the most in ' + mLabel(m)) +
+      '<section class="card"><div class="card-b">' + hbars(rows, total) +
       '<div class="hint">A job with two services splits its price evenly between them.</div></div></section>';
   }
 
@@ -798,13 +1122,13 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
         esc(o.l) + (o.n ? ' ' + o.n : '') + '</button>';
     }).join('') + '</div>';
   }
-  function hit(text) {
-    var q = UI.q.trim().toLowerCase();
-    return !q || String(text).toLowerCase().indexOf(q) >= 0;
+  function hit(text) { var q = UI.q.trim().toLowerCase(); return !q || String(text).toLowerCase().indexOf(q) >= 0; }
+  function statusCls(j) {
+    return j.status === 'Paid' ? 's-paid' : j.status === 'Done' ? 's-owed' :
+      j.status === 'In progress' ? 's-prog' : j.status === 'Cancelled' ? '' : 's-book';
   }
   function statusChip(j) {
-    var c = j.status === 'Paid' ? 'good' : j.status === 'In progress' ? 'warn' :
-      j.status === 'Done' ? 'bad' : j.status === 'Booked' ? 'acc' : '';
+    var c = j.status === 'Paid' ? 'good' : j.status === 'In progress' ? 'amb' : j.status === 'Done' ? 'bad' : '';
     return '<span class="chip ' + c + '">' + esc(j.status === 'Done' ? 'Waiting on payment' : j.status) + '</span>';
   }
 
@@ -825,14 +1149,17 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
         { v: 'paid', l: 'Paid', n: '' },
         { v: 'all', l: 'All', n: '' }
       ], f) +
-      '<button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button>' +
-      '</div>';
+      '<button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button></div>';
 
     if (!S.jobs.length) {
-      return h + '<section class="card"><div class="empty">' + ico('car') +
-        '<h3>No jobs yet</h3><p>Every car you tint, detail, wrap or fit parts to goes in here — with what you charged and what it cost you.</p>' +
-        '<div class="acts2"><button class="btn primary big" data-act="new-job">' + ico('plus') + 'Book your first job</button></div></div></section>';
+      return h + '<section class="card">' + emptyBlock('car', 'No jobs yet',
+        'Every car you tint, detail, wrap or fit parts to goes in here — with what you charged and what it cost you.',
+        '<button class="btn primary big" data-act="new-job">' + ico('plus') + 'Book your first job</button>') + '</section>';
     }
+
+    h += '<section class="card" style="margin-bottom:16px"><div class="card-h">' + ico('calendar') +
+      '<h3>Cars in, week by week</h3></div><div class="card-b">' + chartHost('weeks', 160) + '</div></section>';
+
     if (!list.length) {
       var why = UI.q.trim()
         ? { h: 'Nothing matches "' + UI.q.trim() + '"', p: 'Try a different name, car or rego.' }
@@ -840,9 +1167,8 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
           : f === 'done' ? { h: 'Nobody owes you', p: 'Every finished job has been paid.' }
             : f === 'paid' ? { h: 'No paid jobs yet', p: 'Finish a job and mark it paid — it shows up here.' }
               : { h: 'Nothing here', p: 'Try a different tab above.' };
-      return h + '<section class="card"><div class="empty">' + ico('car') +
-        '<h3>' + esc(why.h) + '</h3><p>' + esc(why.p) + '</p>' +
-        '<div class="acts2"><button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button></div></div></section>';
+      return h + '<section class="card">' + emptyBlock('car', why.h, why.p,
+        '<button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button>') + '</section>';
     }
     return h + '<div class="jobs">' + list.map(jobCard).join('') + '</div>';
   }
@@ -861,7 +1187,7 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       '<button class="btn icon sm" data-act="edit-job" data-id="' + j.id + '" aria-label="Edit job">' + ico('pencil') + '</button>' +
       '<button class="btn icon sm" data-act="del" data-kind="jobs" data-id="' + j.id + '" aria-label="Delete job">' + ico('trash') + '</button>';
 
-    return '<article class="job"><div class="job-top" data-act="edit-job" data-id="' + j.id + '">' +
+    return '<article class="job ' + statusCls(j) + '"><div class="job-top" data-act="edit-job" data-id="' + j.id + '">' +
       '<div class="job-row1"><div class="job-who">' +
       '<div class="n">' + esc(j.customer || 'No name') + '</div>' +
       '<div class="c">' + esc(j.car || 'Car not set') + (j.rego ? ' · ' + esc(j.rego) : '') + '</div>' +
@@ -872,7 +1198,7 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       '<div class="job-meta">' + statusChip(j) +
       '<span class="job-when">' + esc(whenLabel(j.date)) + '</span>' +
       (j.status === 'Paid' ? '<span class="job-when num ' + (profit >= 0 ? 'pos' : 'neg') + '">' + money(profit) + ' profit</span>' :
-        (n(j.deposit) ? '<span class="job-when num">' + money(j.deposit) + ' deposit paid</span>' : '')) +
+        (n(j.deposit) ? '<span class="job-when num">' + money(j.deposit) + ' deposit</span>' : '')) +
       '</div></div><div class="job-acts">' + acts + '</div></article>';
   }
 
@@ -894,34 +1220,57 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
         { v: 'out', l: 'Out', n: out.length || '' }
       ], UI.stockFilter) +
       '<button class="btn primary" data-act="new-product">' + ico('plus') + 'Add item</button>' +
-      '<button class="btn" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button>' +
-      '</div>';
+      '<button class="btn" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button></div>';
 
     if (!S.products.length) {
-      h += '<section class="card"><div class="empty">' + ico('box') +
-        '<h3>No stock yet</h3><p>Tint film, wrap vinyl, polish, body kits, wheels — anything you count and pay for.</p>' +
-        '<div class="acts2"><button class="btn primary big" data-act="new-product">' + ico('plus') + 'Add an item</button>' +
-        '<button class="btn big" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button></div></div></section>';
+      h += '<section class="card">' + emptyBlock('box', 'No stock yet',
+        'Tint film, wrap vinyl, polish, body kits, wheels — anything you count and pay for.',
+        '<button class="btn primary big" data-act="new-product">' + ico('plus') + 'Add an item</button>' +
+        '<button class="btn big" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button>') + '</section>';
     } else {
-      h += '<div class="tiles" style="margin-bottom:16px">' +
+      h += '<div class="tiles" style="margin-bottom:16px;margin-top:0">' +
         tile('Items', S.products.length + '', plural(sv.units, 'unit') + ' on hand') +
         tile('What it cost you', money(sv.cost), 'Money sitting on the shelf') +
-        tile('Low or out', low.length + '', out.length + ' completely out', 'stock', low.length ? 'amb' : '') +
+        tile('Low or out', low.length + '', out.length + ' completely out', 'stock') +
         tile('On the way', S.products.reduce(function (a, p) { return a + incomingQty(p.id); }, 0) + '', 'units on order') +
         '</div>';
+
+      var byCat = {};
+      S.products.forEach(function (p) {
+        var k = p.category || 'No type';
+        byCat[k] = (byCat[k] || 0) + n(p.qty) * n(p.cost);
+      });
+      var catRows = sortBy(Object.keys(byCat).map(function (k) { return { n: k, v: byCat[k] }; }), function (x) { return x.v; }, 'desc').slice(0, 7);
+
+      h += '<div class="grid g2" style="margin-bottom:16px">';
+      h += '<section class="card"><div class="card-h">' + ico('box') + '<h3>Where the money is sitting</h3></div>' +
+        '<div class="card-b">' + hbars(catRows, sv.cost, { empty: 'Nothing costed yet.' }) + '</div></section>';
+      h += '<section class="card"><div class="card-h">' + ico('truck') + '<h3>Coming in</h3></div><div class="card-b flush">' +
+        (S.orders.filter(orderOpen).length
+          ? '<div class="rows">' + sortBy(S.orders.filter(orderOpen), function (o) { return o.eta || '9999'; }).slice(0, 5).map(function (o) {
+            var d = days(o.eta);
+            return '<div class="row tap" data-act="edit-order" data-id="' + o.id + '">' +
+              '<span class="grow"><span class="t truncate">' + esc(o.ref || 'Order') + ' · ' + esc(supName(o.supplierId) || 'No supplier') + '</span>' +
+              '<br><span class="s truncate">' + plural(orderUnits(o), 'unit') + ' · ' + money(orderTotal(o)) + ' landed</span></span>' +
+              '<span class="chip ' + (orderLate(o) ? 'bad' : d != null && d <= 7 ? 'amb' : 'acc') + '">' +
+              (d == null ? 'No date' : d < 0 ? Math.abs(d) + 'd late' : d === 0 ? 'Today' : 'in ' + d + 'd') + '</span></div>';
+          }).join('') + '</div>'
+          : emptyBlock('truck', 'Nothing on order', 'Put an order in as soon as you place it.',
+            '<button class="btn" data-act="new-order">' + ico('plus') + 'Add an order</button>')) +
+        '</div></section></div>';
+
       if (!list.length) {
-        h += '<section class="card"><div class="empty">' + ico('search') + '<h3>Nothing here</h3><p>Try another search or filter.</p></div></section>';
+        h += '<section class="card">' + emptyBlock('search', 'Nothing here', 'Try another search or filter.') + '</section>';
       } else {
         h += '<section class="card"><div class="tablewrap"><table class="responsive"><thead><tr>' +
           '<th class="wcol">Item</th><th class="num">In stock</th><th class="num">Coming</th>' +
           '<th class="num">Cost</th><th class="num">Sell for</th><th></th></tr></thead><tbody>' +
           list.map(function (p) {
-            var q = n(p.qty), inc = incomingQty(p.id);
-            var c = q <= 0 ? 'bad' : q <= n(p.reorder) ? 'warn' : '';
+            var inc = incomingQty(p.id);
             return '<tr><td class="wide"><div class="rowtitle">' + esc(p.name) + '</div>' +
-              '<div class="rowsub">' + (p.category ? esc(p.category) : 'No category') +
+              '<div class="rowsub">' + (p.category ? esc(p.category) : 'No type') +
               (p.supplierId ? ' · ' + esc(supName(p.supplierId)) : '') + (p.location ? ' · ' + esc(p.location) : '') + '</div></td>' +
-              '<td class="num" data-l="In stock">' + (c ? '<span class="chip ' + c + '">' + q + '</span>' : q) + '</td>' +
+              '<td class="num" data-l="In stock">' + levelBar(p.qty, p.reorder) + '</td>' +
               '<td class="num" data-l="Coming">' + (inc ? '<span class="chip acc">+' + inc + '</span>' : '—') + '</td>' +
               '<td class="num" data-l="Cost">' + money2(p.cost) + '</td>' +
               '<td class="num" data-l="Sell for">' + (n(p.price) ? money2(p.price) : '—') + '</td>' +
@@ -934,16 +1283,15 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       }
     }
 
-    /* --- on order --- */
     var open = S.orders.filter(orderOpen);
     var showOrders = UI.orderAll ? S.orders : open;
-    h += '<div class="sec-h"><h2>On order</h2><div class="spacer"></div>' +
-      (S.orders.length > open.length ? '<button class="btn ghost sm" data-act="order-all">' + (UI.orderAll ? 'Show open only' : 'Show all') + '</button>' : '') +
-      '<button class="btn sm" data-act="new-order">' + ico('plus') + 'Add an order</button></div>';
+    h += secH('On order',
+      (S.orders.length > open.length ? '<button class="btn ghost sm" data-act="order-all">' + (UI.orderAll ? 'Open only' : 'Show all') + '</button>' : '') +
+      '<button class="btn sm" data-act="new-order">' + ico('plus') + 'Add an order</button>');
     if (!showOrders.length) {
-      h += '<section class="card"><div class="empty">' + ico('truck') +
-        '<h3>Nothing on order</h3><p>Put an order in as soon as you place it and you will always know what is coming and when.</p>' +
-        '<div class="acts2"><button class="btn primary" data-act="new-order">' + ico('plus') + 'Add an order</button></div></div></section>';
+      h += '<section class="card">' + emptyBlock('truck', 'Nothing on order',
+        'Put an order in as soon as you place it and you will always know what is coming and when.',
+        '<button class="btn primary" data-act="new-order">' + ico('plus') + 'Add an order</button>') + '</section>';
     } else {
       h += '<div class="jobs">' + sortBy(showOrders, function (o) { return (orderOpen(o) ? '0' : '1') + (o.eta || '9999'); }).map(orderCard).join('') + '</div>';
     }
@@ -952,14 +1300,14 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
 
   function orderCard(o) {
     var d = days(o.eta), late = orderLate(o);
+    var cls = o.status === 'Arrived' ? 's-paid' : late ? 's-owed' : 's-book';
     var acts = '';
-    if (orderOpen(o) && (o.items || []).length) {
+    if (orderOpen(o) && (o.items || []).length)
       acts += '<button class="btn sm primary" data-act="receive" data-id="' + o.id + '">' + ico('check') + 'It arrived</button>';
-    }
     acts += '<span class="spacer"></span>' +
       '<button class="btn icon sm" data-act="edit-order" data-id="' + o.id + '" aria-label="Edit order">' + ico('pencil') + '</button>' +
       '<button class="btn icon sm" data-act="del" data-kind="orders" data-id="' + o.id + '" aria-label="Delete order">' + ico('trash') + '</button>';
-    return '<article class="job"><div class="job-top" data-act="edit-order" data-id="' + o.id + '">' +
+    return '<article class="job ' + cls + '"><div class="job-top" data-act="edit-order" data-id="' + o.id + '">' +
       '<div class="job-row1"><div class="job-who">' +
       '<div class="n">' + esc(o.ref || 'Order') + '</div>' +
       '<div class="c">' + esc(supName(o.supplierId) || 'No supplier') + '</div></div>' +
@@ -976,55 +1324,42 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     var m = UI.month, r = monthStats(m);
     var h = monthBar();
 
-    h += '<div class="tiles" style="margin-bottom:16px">' +
+    h += '<div class="tiles" style="margin-top:0">' +
       tile('Came in', money(r.in), plural(r.jobs, 'job') + ' paid') +
       tile('Went out', money(r.cost + r.out), 'Job costs ' + money(r.cost) + ' · bills ' + money(r.out)) +
-      tile('Profit', money(r.profit), r.in ? pct(r.margin) + ' of what came in' : 'Nothing in yet', '', r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : '') +
-      tile('Ads', money(r.ads), r.ads ? money(r.roas) + ' back for every ' + cur() + '1' : 'No ad spend', '', r.roas >= 3 ? 'pos' : r.ads ? 'amb' : '') +
+      tile('Profit', money(r.profit), r.in ? pct(r.margin) + ' of what came in' : 'Nothing in yet') +
+      tile('Ad spend', money(r.ads), r.ads ? money2(r.roas) + ' back per ' + cur() + '1' : 'No ad spend') +
       '</div>';
 
-    h += '<div class="toolbar">' +
+    h += '<div class="toolbar" style="margin-top:16px">' +
       seg('money-view', [{ v: 'out', l: 'Going out' }, { v: 'in', l: 'Coming in' }], UI.moneyView) +
       (UI.moneyView === 'out'
         ? '<button class="btn primary" data-act="new-expense">' + ico('plus') + 'Add a bill</button>' +
           '<button class="btn" data-act="paste" data-kind="expenses">' + ico('clip') + 'Paste a list</button>'
-        : '') +
-      '</div>';
+        : '') + '</div>';
 
-    if (UI.moneyView === 'in') return h + moneyIn(m, r);
+    if (UI.moneyView === 'in') return h + moneyIn(m);
 
     var list = sortBy(S.expenses.filter(function (e) { return mKey(e.date) === m; }), function (e) { return e.date; }, 'desc');
     if (!S.expenses.length) {
-      return h + '<section class="card"><div class="empty">' + ico('wallet') +
-        '<h3>Nothing logged yet</h3><p>Ad spend, rent, film and vinyl you buy, tools, fuel — everything that leaves the account.</p>' +
-        '<div class="acts2"><button class="btn primary big" data-act="new-expense">' + ico('plus') + 'Add a bill</button></div></div></section>' +
-        moneyNote();
+      return h + '<section class="card">' + emptyBlock('wallet', 'Nothing logged yet',
+        'Ad spend, rent, film and vinyl you buy, tools, fuel — everything that leaves the account.',
+        '<button class="btn primary big" data-act="new-expense">' + ico('plus') + 'Add a bill</button>') + '</section>' + moneyNote();
     }
 
     var agg = {};
     list.forEach(function (e) { agg[e.category || 'Other'] = (agg[e.category || 'Other'] || 0) + n(e.amount); });
     var rows = sortBy(Object.keys(agg).map(function (k) { return { n: k, v: agg[k] }; }), function (x) { return x.v; }, 'desc');
-    var total = r.out || 1;
 
     h += '<div class="grid g2">';
-    h += '<section class="card"><div class="card-h">' + ico('wallet') + '<h3>Where it went in ' + esc(mLabel(m)) + '</h3></div><div class="card-b">' +
-      (rows.length ? rows.map(function (x) {
-        return '<div class="brk"><div class="brk-t"><span class="n">' + esc(x.n) + '</span><span class="num">' + money(x.v) + '</span>' +
-          '<span class="num" style="color:var(--muted);width:46px;text-align:right">' + pct((x.v / total) * 100) + '</span></div>' +
-          '<div class="meter" style="margin-top:6px"><i style="width:' + Math.max(3, (x.v / total) * 100) + '%"></i></div></div>';
-      }).join('') : '<div class="hint">Nothing this month.</div>') + '</div></section>';
-
-    var ads = {};
-    list.forEach(function (e) { if (e.category === 'Ads') { var k = e.platform || 'Not set'; ads[k] = (ads[k] || 0) + n(e.amount); } });
-    var adRows = sortBy(Object.keys(ads).map(function (k) { return { n: k, v: ads[k] }; }), function (x) { return x.v; }, 'desc');
+    h += '<section class="card"><div class="card-h">' + ico('wallet') + '<h3>Where it went in ' + esc(mLabel(m)) + '</h3></div>' +
+      '<div class="card-b">' + hbars(rows, r.out, { alt: true, empty: 'Nothing this month.' }) + '</div></section>';
     h += '<section class="card"><div class="card-h">' + ico('spark') + '<h3>Ads</h3><div class="spacer"></div>' +
-      '<span class="chip ' + (r.roas >= 3 ? 'good' : r.roas >= 1.5 ? 'warn' : r.ads ? 'bad' : '') + '">' +
+      '<span class="chip ' + (r.roas >= 3 ? 'good' : r.roas >= 1.5 ? 'amb' : r.ads ? 'bad' : '') + '">' +
       (r.ads ? money2(r.roas) + ' back per ' + cur() + '1' : 'no spend') + '</span></div><div class="card-b">' +
-      (adRows.length ? adRows.map(function (x) {
-        return '<div class="brk"><div class="brk-t"><span class="n">' + esc(x.n) + '</span><span class="num">' + money(x.v) + '</span></div>' +
-          '<div class="meter" style="margin-top:6px"><i style="width:' + Math.max(3, (x.v / (r.ads || 1)) * 100) + '%"></i></div></div>';
-      }).join('') : '<div class="hint">No ad spend logged this month.</div>') +
-      '<div class="hint">Every dollar that came in this month, divided by every dollar you spent on ads. It counts the whole business, not one campaign.</div>' +
+      (r.ads ? meter(r.roas, 3, money(r.in) + ' in on ' + money(r.ads) + ' of ads') +
+        '<div class="eyebrow" style="margin:16px 0 8px">Ad spend, last 6 months</div>' + chartHost('ads', 158)
+        : '<div class="hint">No ad spend logged this month. Add a bill and set its type to Ads.</div>') +
       '</div></section></div>';
 
     if (list.length) {
@@ -1043,8 +1378,8 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
             '</div></td></tr>';
         }).join('') + '</tbody></table></div></section>';
     } else {
-      h += '<section class="card" style="margin-top:14px"><div class="empty">' + ico('calendar') +
-        '<h3>Nothing in ' + esc(mLabel(m)) + '</h3><p>No bills logged for this month.</p></div></section>';
+      h += '<section class="card" style="margin-top:14px">' +
+        emptyBlock('calendar', 'Nothing in ' + mLabel(m), 'No bills logged for this month.') + '</section>';
     }
     return h + moneyNote();
   }
@@ -1055,12 +1390,12 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       'rent, ads, tools, fuel, software.</div>';
   }
 
-  function moneyIn(m, r) {
+  function moneyIn(m) {
     var paid = sortBy(S.jobs.filter(function (j) { return mKey(j.date) === m && j.status === 'Paid'; }), function (j) { return j.date; }, 'desc');
     if (!paid.length) {
-      return '<section class="card"><div class="empty">' + ico('money') +
-        '<h3>Nothing came in yet</h3><p>Money in is every job you have marked as paid. Mark one paid on the Jobs page and it shows up here.</p>' +
-        '<div class="acts2"><button class="btn primary" data-tab="jobs">Go to Jobs</button></div></div></section>';
+      return '<section class="card">' + emptyBlock('money', 'Nothing came in yet',
+        'Money in is every job you have marked as paid. Mark one paid on the Jobs page and it shows up here.',
+        '<button class="btn primary" data-tab="jobs">Go to Jobs</button>') + '</section>';
     }
     return '<section class="card"><div class="tablewrap"><table class="responsive"><thead><tr>' +
       '<th>Date</th><th class="wcol">Job</th><th class="num">Charged</th><th class="num">Cost you</th><th class="num">Profit</th><th></th>' +
@@ -1088,11 +1423,11 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       '<button class="btn" data-act="paste" data-kind="suppliers">' + ico('clip') + 'Paste a list</button></div>';
 
     if (!S.suppliers.length) {
-      return h + '<section class="card"><div class="empty">' + ico('users') +
-        '<h3>No contacts yet</h3><p>Film and vinyl suppliers, parts importers, the local wheel shop — everyone you buy from, in one place you can call from.</p>' +
-        '<div class="acts2"><button class="btn primary big" data-act="new-supplier">' + ico('plus') + 'Add your first contact</button></div></div></section>';
+      return h + '<section class="card">' + emptyBlock('users', 'No contacts yet',
+        'Film and vinyl suppliers, parts importers, the local wheel shop — everyone you buy from, in one place you can call from.',
+        '<button class="btn primary big" data-act="new-supplier">' + ico('plus') + 'Add your first contact</button>') + '</section>';
     }
-    if (!list.length) return h + '<section class="card"><div class="empty">' + ico('search') + '<h3>Nothing here</h3><p>Try another search.</p></div></section>';
+    if (!list.length) return h + '<section class="card">' + emptyBlock('search', 'Nothing here', 'Try another search.') + '</section>';
 
     return h + '<div class="grid g2">' + list.map(function (s) {
       var open = S.orders.filter(function (o) { return o.supplierId === s.id && orderOpen(o); }).length;
@@ -1105,21 +1440,21 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       if (s.email) links += '<a href="mailto:' + esc(s.email) + '">' + ico('mail') + esc(s.email) + '</a>';
       if (s.website) links += '<a href="' + esc(/^https?:/.test(s.website) ? s.website : 'https://' + s.website) + '" target="_blank" rel="noopener">' + ico('globe') + esc(String(s.website).replace(/^https?:\/\//, '')) + '</a>';
       return '<section class="card"><div class="card-h"><div style="min-width:0;flex:1">' +
-        '<h3 class="truncate">' + esc(s.name) + '</h3>' +
-        '<div class="hint">' + esc(s.contact || 'No contact name') + (s.country ? ' · ' + esc(s.country) : '') + '</div></div>' +
+        '<h3 class="truncate">' + esc(s.name) + '</h3></div>' +
         '<button class="btn icon sm" data-act="edit-supplier" data-id="' + s.id + '" aria-label="Edit contact">' + ico('pencil') + '</button>' +
         '<button class="btn icon sm" data-act="del" data-kind="suppliers" data-id="' + s.id + '" aria-label="Delete contact">' + ico('trash') + '</button>' +
         '</div><div class="card-b">' +
-        (links ? '<div class="linkrow" style="margin-bottom:15px">' + links + '</div>' :
-          '<div class="hint" style="margin-bottom:15px">No phone or email saved yet.</div>') +
+        '<div class="hint" style="margin-bottom:13px">' + esc(s.contact || 'No contact name') + (s.country ? ' · ' + esc(s.country) : '') + '</div>' +
+        (links ? '<div class="linkrow" style="margin-bottom:14px">' + links + '</div>' :
+          '<div class="hint" style="margin-bottom:14px">No phone or email saved yet.</div>') +
         '<div class="chips">' +
         (n(s.leadTime) ? '<span class="chip">' + n(s.leadTime) + ' day lead time</span>' : '') +
-        (open ? '<span class="chip warn">' + plural(open, 'order') + ' on the way</span>' : '') +
+        (open ? '<span class="chip amb">' + plural(open, 'order') + ' on the way</span>' : '') +
         (items ? '<span class="chip">' + plural(items, 'item') + ' from them</span>' : '') +
         (spent ? '<span class="chip">' + money(spent) + ' ordered all up</span>' : '') +
         '</div>' +
         (s.terms ? '<div class="hint" style="margin-top:13px"><strong>Terms:</strong> ' + esc(s.terms) + '</div>' : '') +
-        (s.notes ? '<div class="hint" style="margin-top:9px">' + esc(s.notes) + '</div>' : '') +
+        (s.notes ? '<div class="hint" style="margin-top:8px">' + esc(s.notes) + '</div>' : '') +
         '</div></section>';
     }).join('') + '</div>';
   }
@@ -1130,14 +1465,14 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
 
     h += '<section class="card"><div class="card-h">' + ico('spark') + '<h3>Your prices</h3><div class="spacer"></div>' +
       '<button class="btn sm" data-act="new-service">' + ico('plus') + 'Add</button></div><div class="card-b flush">' +
-      '<div class="hint" style="padding:15px 17px 0">Set what you charge once. Booking a job then becomes: pick the work, and the price fills itself in.</div>' +
+      '<div class="hint" style="padding:14px 16px 0">Set what you charge once. Booking a job then becomes: pick the work, and the price fills itself in.</div>' +
       (S.services.length ? '<div class="rows" style="margin-top:10px">' + S.services.map(function (sv) {
         return '<div class="row tap" data-act="edit-service" data-id="' + sv.id + '">' +
           '<span class="grow"><span class="t truncate">' + esc(sv.name) + '</span>' +
           (n(sv.cost) ? '<br><span class="s">materials about ' + money(sv.cost) + '</span>' : '') + '</span>' +
           '<span class="num ' + (n(sv.price) ? '' : 'amb') + '" style="font-weight:600">' + (n(sv.price) ? money(sv.price) : 'set price') + '</span>' +
           '<button class="btn icon sm" data-act="del" data-kind="services" data-id="' + sv.id + '" aria-label="Delete">' + ico('trash') + '</button></div>';
-      }).join('') + '</div>' : '<div class="empty">' + ico('spark') + '<h3>No services yet</h3><p>Add the work you do and what you charge for it.</p></div>') +
+      }).join('') + '</div>' : emptyBlock('spark', 'No services yet', 'Add the work you do and what you charge for it.')) +
       '</div></section>';
 
     h += '<section class="card"><div class="card-h">' + ico('cog') + '<h3>Basics</h3></div><div class="card-b">' +
@@ -1162,7 +1497,7 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       ['jobs', 'products', 'orders', 'expenses', 'suppliers'].map(function (k) {
         return '<button class="btn sm" data-act="export" data-kind="' + k + '">' + esc(KIND[k].label) + '</button>';
       }).join('') + '</div>' +
-      '<div style="margin-top:6px;padding-top:15px;border-top:1px solid var(--line-2)">' +
+      '<div style="margin-top:6px;padding-top:15px;border-top:1px solid var(--rule)">' +
       '<button class="btn danger" data-act="wipe">' + ico('trash') + 'Delete everything</button></div>' +
       '</div></section>';
 
@@ -1684,6 +2019,7 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     var wasSearch = document.activeElement && document.activeElement.id === 'q';
     document.getElementById('app').innerHTML = (VIEWS[UI.tab] || viewHome)();
     renderChrome();
+    drawCharts();
     if (wasSearch) {
       var q = document.getElementById('q');
       if (q) { q.focus(); try { q.setSelectionRange(q.value.length, q.value.length); } catch (e) {} }
@@ -1715,8 +2051,49 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
     FORM.autoMat = matCost;
   }
 
+  /* ---------------------------- chart read-out --------------------------- */
+  var TIP = null;
+  function hideTip() { if (TIP) { TIP.remove(); TIP = null; } }
+  function moveTip(ev) {
+    if (!TIP) return;
+    var pad = 14, w = TIP.offsetWidth, h = TIP.offsetHeight;
+    var x = Math.min(window.innerWidth - w - 8, Math.max(8, ev.clientX + pad));
+    var y = ev.clientY - h - pad;
+    if (y < 8) y = ev.clientY + pad;
+    TIP.style.left = x + 'px'; TIP.style.top = y + 'px';
+  }
+  document.addEventListener('mouseover', function (ev) {
+    var t = ev.target;
+    if (!t.getAttribute || !t.getAttribute('data-tip')) return;
+    hideTip();
+    TIP = document.createElement('div');
+    TIP.className = 'charttip';
+    TIP.innerHTML = t.getAttribute('data-tip');
+    document.body.appendChild(TIP);
+    moveTip(ev);
+  });
+  document.addEventListener('mousemove', function (ev) {
+    if (!TIP) return;
+    if (ev.target.getAttribute && ev.target.getAttribute('data-tip')) moveTip(ev);
+    else hideTip();
+  });
+  document.addEventListener('mouseout', function (ev) {
+    if (ev.target.getAttribute && ev.target.getAttribute('data-tip')) hideTip();
+  });
+  window.addEventListener('scroll', hideTip, true);
+
+  var redrawTimer = null;
+  window.addEventListener('resize', function () {
+    hideTip();
+    renderChrome();
+    clearTimeout(redrawTimer);
+    redrawTimer = setTimeout(drawCharts, 140);
+  });
+
   /* =============================== EVENTS =============================== */
   document.addEventListener('click', function (ev) {
+    var monthHit = ev.target.getAttribute && ev.target.getAttribute('data-month');
+    if (monthHit) { hideTip(); UI.month = monthHit; render(); return; }
     if (ev.target.hasAttribute && ev.target.hasAttribute('data-scrim')) return closeDrawer();
     if (ev.target.closest && ev.target.closest('#fab')) return openQuick();
 
@@ -1748,6 +2125,7 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
       case 'month': UI.month = shiftMonth(UI.month, +el.getAttribute('data-d')); render(); break;
       case 'month-now': UI.month = curMonth(); render(); break;
       case 'job-filter': UI.jobFilter = el.getAttribute('data-v'); render(); break;
+      case 'job-jump': UI.jobFilter = el.getAttribute('data-v'); setTab('jobs'); break;
       case 'stock-filter': UI.stockFilter = el.getAttribute('data-v'); render(); break;
       case 'money-view': UI.moneyView = el.getAttribute('data-v'); render(); break;
       case 'order-all': UI.orderAll = !UI.orderAll; render(); break;
@@ -1893,7 +2271,6 @@ textarea.inp{min-height:82px;resize:vertical;font-size:15px;line-height:1.6}
   window.addEventListener('beforeunload', function (e) {
     if (DIRTY && !saving && ARTIFACT && !READONLY) { e.preventDefault(); e.returnValue = ''; }
   });
-  window.addEventListener('resize', function () { renderChrome(); });
 
   /* ================================ INIT ================================ */
   loadState();
