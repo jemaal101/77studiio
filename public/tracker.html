@@ -299,7 +299,8 @@ th.wcol{width:34%}
     border-bottom:1px solid var(--rule)}
   .responsive tbody tr:hover{background:transparent}
   .responsive tbody td{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border:0;text-align:left}
-  .responsive tbody td.num{justify-content:space-between}
+  .responsive tbody td.num{justify-content:space-between;flex-wrap:wrap}
+  .responsive tbody td.num .sub2{flex:0 0 100%;text-align:right;white-space:normal;margin-top:0}
   .responsive tbody td[data-l]::before{content:attr(data-l);font-size:13.5px;letter-spacing:.09em;
     text-transform:uppercase;color:var(--muted);font-weight:700;flex:none}
   .responsive tbody td.wide{display:block;padding-bottom:7px}
@@ -358,6 +359,24 @@ th.wcol{width:34%}
 .inp:focus{outline:3px solid var(--acc-fill);outline-offset:-1px;border-color:var(--acc-fill)}
 textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 .hint{font-size:15.5px;color:var(--muted);line-height:1.5}
+/* the running sum at the foot of a job: charge, minus the shelf, what is left */
+.keep{margin-top:18px;border:1px solid var(--rule-hard);border-radius:4px;background:var(--sunk);padding:13px 15px}
+.keep .kr{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:4px 0;
+  font-size:15.5px;color:var(--ink-2)}
+.keep .kr span:first-child{min-width:0}
+.keep .kr span:last-child{flex:none}
+.keep .kr.tot{border-top:1px solid var(--rule-hard);margin-top:7px;padding-top:9px;
+  font-size:19px;font-weight:600;color:var(--ink)}
+/* how far through the shipping window an order is */
+.ship{display:flex;align-items:center;gap:10px;margin-top:11px}
+.ship-bar{flex:1;min-width:0;height:6px;border-radius:3px;background:var(--sunk);
+  border:1px solid var(--rule);overflow:hidden}
+.ship-bar i{display:block;height:100%;background:var(--acc-fill)}
+.ship-bar i.late{background:var(--bad)}
+.ship-lab{flex:none;font-size:14px;color:var(--muted)}
+/* the smaller line under a figure: its own row, never wrapping into the next column */
+.sub2{display:block;font-size:13.5px;line-height:1.35;color:var(--muted);margin-top:2px;
+  white-space:nowrap;font-family:"Roboto Mono",ui-monospace,monospace}
 .search{display:flex;align-items:center;gap:10px;background:var(--raised);border:1px solid var(--rule-hard);
   border-radius:3px;padding:0 13px;flex:1;min-width:0}
 .search input{border:0;background:transparent;padding:11px 0;width:100%;font-size:17px}
@@ -552,6 +571,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   var OPEN_ORDER = ['Ordered', 'Paid for', 'In transit', 'At customs'];
   var EXP_CATS = ['Ads', 'Materials', 'Freight & duty', 'Tools & equipment', 'Rent', 'Wages', 'Software', 'Fees', 'Fuel & travel', 'Other'];
   var AD_PLATFORMS = ['Meta', 'Instagram', 'Google', 'TikTok', 'YouTube', 'Other'];
+  var BUY_FROM = ['Alibaba', 'AliExpress', '1688', 'Taobao', 'Direct factory', 'Local supplier', 'Other'];
+  var SHIP_WAYS = ['Sea freight', 'Air freight', 'Express courier', 'Picked up locally'];
+  var SHIP_DAYS = { 'Sea freight': 40, 'Air freight': 12, 'Express courier': 6, 'Picked up locally': 0 };
   var STOCK_CATS = ['Tint film', 'Wrap vinyl', 'Paint protection film', 'Detailing supplies', 'Body kit', 'Bumper',
     'Spoiler', 'Wheels', 'Exhaust', 'Suspension', 'Lighting', 'Interior', 'Tools', 'Other'];
   var STARTER_SERVICES = ['Window tint — full car', 'Window tint — front two', 'Windscreen strip',
@@ -577,7 +599,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   function emptyState() {
     return {
-      v: 3, stamp: 0,
+      v: 4, stamp: 0,
       meta: { business: 'Kitted Lab', currency: '$', theme: 'system' },
       services: STARTER_SERVICES.map(function (nm) {
         return { id: uid('sv'), name: nm, price: 0, cost: 0, mode: defaultMode(nm) };
@@ -593,6 +615,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (st.v < 3) {
       (st.services || []).forEach(function (sv) { if (!sv.mode) sv.mode = defaultMode(sv.name); });
       st.v = 3;
+    }
+    if (st.v < 4) {
+      // stock used to be counted one-for-one; a roll stays one roll until you
+      // say how many cars it does, so no count moves
+      (st.products || []).forEach(function (p) { if (!n(p.uses)) p.uses = 1; });
+      st.v = 4;
     }
     return st;
   }
@@ -704,6 +732,25 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function jobOpen(j) { return OPEN_JOB.indexOf(j.status) >= 0; }
   function orderOpen(o) { return OPEN_ORDER.indexOf(o.status) >= 0; }
 
+  /* One roll of tint that gets you through five cars is five cars' worth of
+     stock, not one roll. Once you say how many cars one does, stock is counted
+     and costed in cars, because that is the number that decides whether a job
+     made money. */
+  function uses(p) { return Math.max(1, n(p && p.uses) || 1); }
+  function shared(p) { return uses(p) > 1; }
+  function carsLeft(p) { return n(p.qty) * uses(p); }
+  function costPerCar(p) { return n(p.cost) / uses(p); }
+  function qtyStr(x) { return String(Math.round(n(x) * 100) / 100); }
+  function carsStr(x) { var v = Math.round(n(x) * 100) / 100; return v + (v === 1 ? ' car' : ' cars'); }
+  function carsWorth(x) { var v = Math.round(n(x) * 100) / 100; return v + (v === 1 ? ' car\u2019s' : ' cars\u2019') + ' worth'; }
+  function safeUrl(u) {
+    var v = String(u || '').trim();
+    if (!v) return '';
+    if (/^https?:\/\//i.test(v)) return v;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return '';     // no javascript:, no data:
+    return 'https://' + v;
+  }
+
   function partsCost(j) { return (j.parts || []).reduce(function (a, p) { return a + n(p.qty) * n(p.cost); }, 0); }
   function jobCost(j) { return partsCost(j) + n(j.materials); }
   function jobProfit(j) { return n(j.price) - jobCost(j); }
@@ -726,7 +773,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function orderTotal(o) { return orderGoods(o) + n(o.freight) + n(o.duties); }
   function orderLate(o) { var d = days(o.eta); return orderOpen(o) && d != null && d < 0; }
 
-  function lowStock() { return S.products.filter(function (p) { return n(p.qty) <= n(p.reorder); }); }
+  function lowStock() { return S.products.filter(function (p) { return carsLeft(p) <= n(p.reorder); }); }
   function lateOrders() { return S.orders.filter(orderLate); }
   function unpaidJobs() {
     return S.jobs.filter(function (j) { return j.status === 'Done' && jobOwing(j) > 0; });
@@ -951,12 +998,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   /* --- stock level against its reorder point ---------------------------- */
-  function levelBar(qty, reorder) {
-    var q = n(qty), r = n(reorder), top = Math.max(r * 3, q, 1);
+  function levelBar(p) {
+    var q = carsLeft(p), r = n(p.reorder), top = Math.max(r * 3, q, 1);
     var cls = q <= 0 ? 'out' : q <= r ? 'low' : '';
     return '<span class="lvl"><span class="bar"><i class="' + cls + '" style="width:' +
       Math.max(q > 0 ? 6 : 0, Math.min(100, (q / top) * 100)) + '%"></i></span>' +
-      '<span>' + q + '</span></span>';
+      '<span>' + qtyStr(q) + (shared(p) ? ' cars' : '') + '</span></span>';
   }
 
 
@@ -1124,7 +1171,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         setSyncState('ok');
         return;
       }
-      // another device moved on: hold both versions and let him choose
+      // another device moved on: hold both versions and let you choose
       return unseal(r.blob).then(function (theirs) {
         SYNC.conflict = { theirs: theirs, updated: n(r.updated) };
         setSyncState('conflict'); render();
@@ -1289,8 +1336,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       tile('Average job', money(r.avg), r.jobs ? 'Across ' + plural(r.jobs, 'paid job') : 'No paid jobs yet') +
       '</div>';
 
-    h += secH('The board');
+    h += secH('Where every job is at');
     h += stageStrip(m);
+    h += '<div class="hint" style="margin-top:9px">Every job you have sits in one of these four. Tap one to see them.</div>';
 
     h += secH('Month by month');
     h += '<section class="card"><div class="card-b">' +
@@ -1325,10 +1373,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         '<div class="v">' + esc(value) + '</div></button>';
     };
     return '<div class="stages">' +
-      cell('s-book', 'Booked in', booked, money(sum(booked, function (j) { return n(j.price); })) + ' of work', 'open') +
-      cell('s-prog', 'On the tools', prog, money(sum(prog, function (j) { return n(j.price); })) + ' in progress', 'open') +
-      cell('s-owed', 'Waiting on payment', owed, money(sum(owed, jobOwing)) + ' owed', 'done') +
-      cell('s-paid', 'Paid this month', paid, money(sum(paid, function (j) { return n(j.price); })) + ' banked', 'paid') +
+      cell('s-book', 'Not started yet', booked, money(sum(booked, function (j) { return n(j.price); })) + ' of work coming', 'open') +
+      cell('s-prog', 'Car is in now', prog, money(sum(prog, function (j) { return n(j.price); })) + ' being worked on', 'open') +
+      cell('s-owed', 'Done, not paid yet', owed, money(sum(owed, jobOwing)) + ' they still owe you', 'done') +
+      cell('s-paid', 'Paid this month', paid, money(sum(paid, function (j) { return n(j.price); })) + ' in the bank', 'paid') +
       '</div>';
   }
 
@@ -1400,7 +1448,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         '<span class="grow"><span class="t truncate">' + esc(p.name) + '</span>' +
         '<br><span class="s truncate">' + (inc ? inc + ' on the way' : 'Nothing on order') +
         (p.supplierId ? ' · ' + esc(supName(p.supplierId)) : '') + '</span></span>' +
-        '<span class="chip ' + (n(p.qty) <= 0 ? 'bad' : 'amb') + '">' + (n(p.qty) <= 0 ? 'Out' : n(p.qty) + ' left') + '</span></div>';
+        '<span class="chip ' + (carsLeft(p) <= 0 ? 'bad' : 'amb') + '">' +
+        (carsLeft(p) <= 0 ? 'Out' : (shared(p) ? carsStr(carsLeft(p)) : qtyStr(p.qty)) + ' left') + '</span></div>';
     }).join('');
     return h + '</div></div></section>';
   }
@@ -1581,8 +1630,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
     return '<div class="cal">' + h + '</div>' +
       '<div class="legend" style="margin-top:12px">' +
-      '<span><i style="background:var(--muted)"></i>Booked in</span>' +
-      '<span><i style="background:var(--s2)"></i>On the tools</span>' +
+      '<span><i style="background:var(--muted)"></i>Not started yet</span>' +
+      '<span><i style="background:var(--s2)"></i>Car is in now</span>' +
       '<span><i style="background:var(--bad)"></i>Waiting on payment</span>' +
       '<span><i style="background:var(--good)"></i>Paid</span>' +
       '</div><div class="hint" style="margin-top:8px">Tap a day to see it, or tap a name to open that job.</div>';
@@ -1641,7 +1690,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         '<button class="btn big" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button>') + '</section>';
     } else {
       h += '<div class="tiles" style="margin-bottom:16px;margin-top:0">' +
-        tile('Items', S.products.length + '', plural(sv.units, 'unit') + ' on hand') +
+        tile('Items', S.products.length + '', qtyStr(sv.units) + ' on the shelf') +
         tile('What it cost you', money(sv.cost), 'Money sitting on the shelf') +
         tile('Low or out', low.length + '', out.length + ' completely out', 'stock') +
         tile('On the way', S.products.reduce(function (a, p) { return a + incomingQty(p.id); }, 0) + '', 'units on order') +
@@ -1654,6 +1703,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       });
       var catRows = sortBy(Object.keys(byCat).map(function (k) { return { n: k, v: byCat[k] }; }), function (x) { return x.v; }, 'desc').slice(0, 7);
 
+      h += perCarCard();
       h += '<div class="grid g2" style="margin-bottom:16px">';
       h += '<section class="card"><div class="card-h">' + ico('box') + '<h3>Where the money is sitting</h3></div>' +
         '<div class="card-b">' + hbars(catRows, sv.cost, { empty: 'Nothing costed yet.' }) + '</div></section>';
@@ -1675,16 +1725,19 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         h += '<section class="card">' + emptyBlock('search', 'Nothing here', 'Try another search or filter.') + '</section>';
       } else {
         h += '<section class="card"><div class="tablewrap"><table class="responsive"><thead><tr>' +
-          '<th class="wcol">Item</th><th class="num">In stock</th><th class="num">Coming</th>' +
-          '<th class="num">Cost</th><th class="num">Sell for</th><th></th></tr></thead><tbody>' +
+          '<th class="wcol">Item</th><th class="num">Left</th><th class="num">Coming</th>' +
+          '<th class="num">Costs you</th><th class="num">Sell for</th><th></th></tr></thead><tbody>' +
           list.map(function (p) {
             var inc = incomingQty(p.id);
             return '<tr><td class="wide"><div class="rowtitle">' + esc(p.name) + '</div>' +
               '<div class="rowsub">' + (p.category ? esc(p.category) : 'No type') +
+              (shared(p) ? ' · one does ' + carsStr(uses(p)) : '') +
               (p.supplierId ? ' · ' + esc(supName(p.supplierId)) : '') + (p.location ? ' · ' + esc(p.location) : '') + '</div></td>' +
-              '<td class="num" data-l="In stock">' + levelBar(p.qty, p.reorder) + '</td>' +
+              '<td class="num" data-l="Left">' + levelBar(p) +
+              (shared(p) ? '<span class="sub2">' + qtyStr(p.qty) + ' on the shelf</span>' : '') + '</td>' +
               '<td class="num" data-l="Coming">' + (inc ? '<span class="chip acc">+' + inc + '</span>' : '—') + '</td>' +
-              '<td class="num" data-l="Cost">' + money2(p.cost) + '</td>' +
+              '<td class="num" data-l="Costs you">' + money2(shared(p) ? costPerCar(p) : p.cost) +
+              (shared(p) ? '<span class="sub2">a car · ' + money2(p.cost) + ' the roll</span>' : '') + '</td>' +
               '<td class="num" data-l="Sell for">' + (n(p.price) ? money2(p.price) : '—') + '</td>' +
               '<td class="actcell"><div class="acts">' +
               '<button class="btn sm" data-act="adjust" data-id="' + p.id + '">Count</button>' +
@@ -1710,6 +1763,43 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     return h;
   }
 
+  /** How far through the wait an order is, so a 40-day sea shipment reads as
+      "day 12 of 40" instead of a date that needs arithmetic. */
+  function shipProgress(o) {
+    if (!orderOpen(o) || !o.ordered || !o.eta) return '';
+    var a = new Date(o.ordered + 'T00:00:00'), b = new Date(o.eta + 'T00:00:00');
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return '';
+    var total = Math.round((b - a) / 86400000);
+    if (total <= 0) return '';
+    var gone = Math.round((Date.now() - a) / 86400000);
+    var pctDone = Math.max(0, Math.min(100, (gone / total) * 100));
+    var late = gone > total;
+    return '<div class="ship"><div class="ship-bar"><i class="' + (late ? 'late' : '') +
+      '" style="width:' + pctDone.toFixed(1) + '%"></i></div>' +
+      '<div class="ship-lab">' + (late ? 'day ' + gone + ', due on day ' + total :
+        'day ' + Math.max(0, gone) + ' of about ' + total) + '</div></div>';
+  }
+
+  /** The sum written out in full: what the roll cost, how many cars it does,
+      what that makes one car cost, and how many cars are left in it. */
+  function perCarCard() {
+    var list = S.products.filter(shared);
+    if (!list.length) return '';
+    list = sortBy(list, function (p) { return costPerCar(p); }, 'desc').slice(0, 8);
+    return '<section class="card" style="margin-bottom:16px"><div class="card-h">' + ico('spark') +
+      '<h3>What your materials cost you a car</h3></div><div class="card-b flush"><div class="rows">' +
+      list.map(function (p) {
+        return '<div class="row tap" data-act="edit-product" data-id="' + p.id + '">' +
+          '<span class="grow"><span class="t truncate">' + esc(p.name) + '</span><br>' +
+          '<span class="s truncate">' + money2(p.cost) + ' \u00f7 ' + carsStr(uses(p)) +
+          ' \u00b7 ' + carsStr(carsLeft(p)) + ' left in it</span></span>' +
+          '<span class="num" style="font-weight:600;text-align:right;flex:none">' + money2(costPerCar(p)) +
+          '<span class="sub2" style="font-weight:400">a car</span></span></div>';
+      }).join('') + '</div></div>' +
+      '<div class="card-b"><div class="hint">Put one of these on a job and it charges the job that much, ' +
+      'not the price of the whole roll. That is what makes the profit on a job real.</div></div></section>';
+  }
+
   function orderCard(o) {
     var d = days(o.eta), late = orderLate(o);
     var cls = o.status === 'Arrived' ? 's-paid' : late ? 's-owed' : 's-book';
@@ -1727,7 +1817,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<div class="job-meta">' +
       '<span class="chip ' + (o.status === 'Arrived' ? 'good' : late ? 'bad' : 'acc') + '">' + esc(o.status) + '</span>' +
       '<span class="job-when">' + (o.status === 'Arrived' ? 'Done' : d == null ? 'No date set' : d < 0 ? Math.abs(d) + ' days late' : d === 0 ? 'Due today' : 'in ' + d + ' days') + '</span>' +
+      (o.ship ? '<span class="job-when">' + esc(o.ship) + '</span>' : '') +
       '<span class="job-when">' + plural(orderUnits(o), 'unit') + '</span></div>' +
+      shipProgress(o) +
       '</div><div class="job-acts">' + acts + '</div></article>';
   }
 
@@ -1850,7 +1942,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       if (s.phone) links += '<a href="tel:' + esc(String(s.phone).replace(/\s/g, '')) + '">' + ico('phone') + esc(s.phone) + '</a>';
       if (s.whatsapp) links += '<a href="https://wa.me/' + esc(String(s.whatsapp).replace(/[^0-9]/g, '')) + '" target="_blank" rel="noopener">' + ico('chat') + 'WhatsApp</a>';
       if (s.email) links += '<a href="mailto:' + esc(s.email) + '">' + ico('mail') + esc(s.email) + '</a>';
-      if (s.website) links += '<a href="' + esc(/^https?:/.test(s.website) ? s.website : 'https://' + s.website) + '" target="_blank" rel="noopener">' + ico('globe') + esc(String(s.website).replace(/^https?:\/\//, '')) + '</a>';
+      if (safeUrl(s.link)) links = '<a href="' + esc(safeUrl(s.link)) + '" target="_blank" rel="noopener">' +
+        ico('chat') + esc('Open ' + (s.platform || 'chat')) + '</a>' + links;
+      if (safeUrl(s.website)) links += '<a href="' + esc(safeUrl(s.website)) + '" target="_blank" rel="noopener">' + ico('globe') + esc(String(s.website).replace(/^https?:\/\//, '')) + '</a>';
       return '<section class="card"><div class="card-h"><div style="min-width:0;flex:1">' +
         '<h3 class="truncate">' + esc(s.name) + '</h3></div>' +
         '<button class="btn icon sm" data-act="edit-supplier" data-id="' + s.id + '" aria-label="Edit contact">' + ico('pencil') + '</button>' +
@@ -1860,7 +1954,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         (links ? '<div class="linkrow" style="margin-bottom:14px">' + links + '</div>' :
           '<div class="hint" style="margin-bottom:14px">No phone or email saved yet.</div>') +
         '<div class="chips">' +
-        (n(s.leadTime) ? '<span class="chip">' + n(s.leadTime) + ' day lead time</span>' : '') +
+        (s.platform ? '<span class="chip acc">' + esc(s.platform) + '</span>' : '') +
+        (n(s.leadTime) ? '<span class="chip">usually ' + n(s.leadTime) + ' days to land</span>' : '') +
         (open ? '<span class="chip amb">' + plural(open, 'order') + ' on the way</span>' : '') +
         (items ? '<span class="chip">' + plural(items, 'item') + ' from them</span>' : '') +
         (spent ? '<span class="chip">' + money(spent) + ' ordered all up</span>' : '') +
@@ -2051,10 +2146,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       fields: [
         { k: 'name', l: 'What is it', t: 'text', req: true, full: true, ph: '3M Ceramic IR 35% roll' },
         { k: 'category', l: 'Type', t: 'combo', o: opts(STOCK_CATS) },
-        { k: 'qty', l: 'How many you have', t: 'int' },
-        { k: 'reorder', l: 'Warn me at', t: 'int', hint: 'You get a nudge at or below this' },
-        { k: 'cost', l: 'What it costs you', t: 'money' },
+        { k: 'qty', l: 'How many you have', t: 'int', hint: 'Rolls, boxes, sets \u2014 however you buy it' },
+        { k: 'uses', l: 'How many cars does one do?', t: 'int',
+          hint: 'A roll of tint that gets you through 5 cars \u2192 put 5. If you sell the thing itself, like a bumper, leave it at 1.' },
+        { k: 'cost', l: 'What one costs you', t: 'money', hint: 'What you pay for the whole roll or box' },
         { k: 'price', l: 'What you sell it for', t: 'money' },
+        { k: 'reorder', l: 'Tell me when I am down to', t: 'int',
+          hint: 'Counted in cars. Hit it and the item goes red on the Stock page, shows up under Needs doing on Home, and the Stock tab gets a number on it.' },
         { k: 'supplierId', l: 'Who you buy it from', t: 'ref', ref: supOpts, adv: true },
         { k: 'sku', l: 'Code or part number', t: 'text', adv: true },
         { k: 'location', l: 'Where it sits', t: 'text', adv: true, ph: 'Rack A1' },
@@ -2067,7 +2165,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         { k: 'ref', l: 'Give it a name', t: 'text', req: true, ph: 'KL-001' },
         { k: 'supplierId', l: 'From', t: 'ref', ref: supOpts, req: true },
         { k: 'ordered', l: 'Ordered on', t: 'date' },
-        { k: 'eta', l: 'Should arrive', t: 'date' },
+        { k: 'ship', l: 'How it is coming', t: 'combo', o: opts(SHIP_WAYS) },
+        { k: 'eta', l: 'Should arrive', t: 'date',
+          hint: 'Fills itself in from how long they usually take. Change it the moment you know better.' },
         { k: 'status', l: 'Where it is at', t: 'select', o: opts(ORDER_STATUS) },
         { k: 'items', l: 'What is in it', t: 'lines', full: true },
         { k: 'freight', l: 'Freight', t: 'money', adv: true },
@@ -2093,12 +2193,17 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       fields: [
         { k: 'name', l: 'Business name', t: 'text', req: true, full: true },
         { k: 'contact', l: 'Person you deal with', t: 'text' },
-        { k: 'phone', l: 'Phone', t: 'tel' },
+        { k: 'platform', l: 'Where you buy from them', t: 'combo', o: opts(BUY_FROM) },
+        { k: 'link', l: 'Link to your chat with them', t: 'text', full: true,
+          ph: 'https://message.alibaba.com/\u2026',
+          hint: 'Paste the Alibaba, WeChat or WhatsApp chat link. One tap from their card and you are back in the conversation.' },
+        { k: 'leadTime', l: 'How long they take, in days', t: 'int',
+          hint: 'From paying to it landing. Sea from China is usually 30\u201345 days, air 7\u201314, express about a week.' },
         { k: 'whatsapp', l: 'WhatsApp or WeChat', t: 'tel' },
-        { k: 'email', l: 'Email', t: 'email' },
         { k: 'country', l: 'Where they are', t: 'text' },
+        { k: 'phone', l: 'Phone', t: 'tel', adv: true },
+        { k: 'email', l: 'Email', t: 'email', adv: true },
         { k: 'website', l: 'Website', t: 'text', adv: true },
-        { k: 'leadTime', l: 'How many days they take', t: 'int', adv: true },
         { k: 'terms', l: 'Payment terms', t: 'text', full: true, adv: true, ph: '30% deposit, rest before it ships' },
         { k: 'notes', l: 'Notes', t: 'textarea', full: true, adv: true }
       ]
@@ -2125,7 +2230,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (kind === 'orders') { o.status = 'Ordered'; o.eta = ''; o.applied = false; }
     if (kind === 'expenses') { o.category = 'Ads'; }
     if (kind === 'services') { o.mode = 'fixed'; }
-    if (kind === 'products') { o.reorder = 2; }
+    if (kind === 'products') { o.reorder = 2; o.uses = 1; }
+    if (kind === 'suppliers') { o.country = 'China'; o.platform = 'Alibaba'; }
     return o;
   }
 
@@ -2202,25 +2308,45 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<div class="hint" id="svchint">Tap everything you are doing. Anything with a set price fills the box below in.</div></div>';
   }
 
+  /* On a job you spend cars' worth, on an order you buy whole rolls, so the
+     same editor counts in different units either side. */
+  function prodOpts(kind) {
+    return S.products.map(function (p) {
+      var left = shared(p) ? carsStr(carsLeft(p)) : qtyStr(p.qty);
+      var l = kind === 'jobs'
+        ? p.name + '  \u2014  ' + money2(costPerCar(p)) + (shared(p) ? ' a car' : ' each') +
+          (carsLeft(p) > 0 ? '  \u00b7  ' + left + ' left' : '  \u00b7  none left')
+        : p.name + (n(p.qty) ? '  (' + qtyStr(p.qty) + ' in stock)' : '  (none in stock)');
+      return { v: p.id, l: l };
+    });
+  }
+  function lineCost(kind, p) { return kind === 'jobs' ? costPerCar(p) : n(p.cost); }
   function linesEditor(kind, rows) {
-    var po = S.products.map(function (p) { return { v: p.id, l: p.name + (n(p.qty) ? '  (' + n(p.qty) + ' in stock)' : '  (none in stock)') }; });
-    var label = kind === 'jobs' ? 'Parts off your shelf' : 'What is in it';
+    var po = prodOpts(kind);
+    var label = kind === 'jobs' ? 'What you used off the shelf' : 'What is in it';
     return '<div class="field full"><label>' + esc(label) + '</label>' +
-      '<div class="linebox"><div id="lines">' + (rows || []).map(function (r, i) { return lineRow(r, po); }).join('') + '</div>' +
+      '<div class="linebox"><div id="lines" data-kind="' + esc(kind) + '">' +
+      (rows || []).map(function (r) { return lineRow(r, po, kind); }).join('') + '</div>' +
       (po.length
         ? '<button type="button" class="btn sm" data-act="line-add" style="align-self:flex-start">' + ico('plus') + 'Add a line</button>'
         : '<div class="hint">Add something to Stock first, then you can put it on here.</div>') +
       '</div>' +
-      (kind === 'jobs' ? '<div class="hint">These come straight off your stock count when you save.</div>'
+      (kind === 'jobs'
+        ? '<div class="hint">Count in cars, not rolls. One car\u2019s worth of a $150 roll that does 5 cars ' +
+          'costs this job $30, and takes a fifth of a roll off your stock.</div>'
         : '<div class="hint">These go onto your stock count when you mark the order arrived.</div>') + '</div>';
   }
-  function lineRow(r, po) {
+  function lineRow(r, po, kind) {
+    var job = kind === 'jobs';
     return '<div class="itemline">' +
       '<select class="inp full2" data-ik="productId">' + po.map(function (o) {
         return '<option value="' + esc(o.v) + '"' + (o.v === r.productId ? ' selected' : '') + '>' + esc(o.l) + '</option>';
       }).join('') + '</select>' +
-      '<input class="inp" type="number" step="1" inputmode="numeric" data-ik="qty" value="' + esc(r.qty) + '" placeholder="Qty" aria-label="How many">' +
-      '<input class="inp" type="number" step="0.01" inputmode="decimal" data-ik="cost" value="' + esc(r.cost) + '" placeholder="Cost" aria-label="Cost each">' +
+      '<input type="hidden" data-ik="per" value="' + esc(r.per || 1) + '">' +
+      '<input class="inp" type="number" step="1" min="0" inputmode="numeric" data-ik="qty" value="' + esc(r.qty) + '" placeholder="' +
+      (job ? 'Cars' : 'Qty') + '" aria-label="' + (job ? 'How many cars\u2019 worth' : 'How many') + '">' +
+      '<input class="inp" type="number" step="0.01" min="0" inputmode="decimal" data-ik="cost" value="' + esc(r.cost) + '" placeholder="' +
+      (job ? '$ a car' : 'Cost') + '" aria-label="' + (job ? 'What one car\u2019s worth costs you' : 'Cost each') + '">' +
       '<button type="button" class="btn icon" data-act="line-del" aria-label="Remove line">' + ico('x') + '</button></div>';
   }
 
@@ -2255,10 +2381,71 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       body += '<button class="more" data-act="toggle-more" id="morebtn">' + ico('chevron') + 'More details</button>' +
         '<div class="fgrid" id="moregrid" hidden>' + render(adv) + '</div>';
     }
+    if (kind === 'jobs') body += '<div class="keep" id="keepstrip"></div>';
     drawer((id ? 'Edit ' : 'New ') + def.title.toLowerCase(), body,
       '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
       (id ? '<button class="btn danger" data-act="del" data-kind="' + kind + '" data-id="' + id + '" aria-label="Delete">' + ico('trash') + '</button>' : '') +
       '<button class="btn primary" data-act="form-save">' + ico('check') + (id ? 'Save' : 'Add ' + def.one) + '</button>');
+    if (kind === 'jobs') syncKeep();
+    if (kind === 'orders') { FORM.autoEta = rec.eta || ''; syncEta(); }
+  }
+
+  /** Works out, live, what is left of the price once the shelf and the
+      materials are paid for. This is the whole point of counting in cars. */
+  function syncKeep() {
+    var box = document.getElementById('keepstrip');
+    if (!box || !FORM || FORM.kind !== 'jobs') return;
+    var el = function (id) { var e = document.getElementById(id); return e ? n(e.value) : 0; };
+    var price = el('f_price'), mat = el('f_materials'), parts = 0, rows = [];
+    var host = document.querySelector('.drawer-b');
+    if (host) host.querySelectorAll('.itemline').forEach(function (row) {
+      var sel = row.querySelector('[data-ik="productId"]');
+      var q = n((row.querySelector('[data-ik="qty"]') || {}).value);
+      var c = n((row.querySelector('[data-ik="cost"]') || {}).value);
+      var pr = prod(sel && sel.value);
+      if (!pr || q <= 0) return;
+      parts += q * c;
+      rows.push({ n: pr.name, q: q, c: c, sh: shared(pr) });
+    });
+    var cost = parts + mat, keep = price - cost;
+    if (!price && !cost) {
+      box.innerHTML = '<div class="eyebrow">What you actually make on this</div>' +
+        '<div class="hint" style="margin-top:5px">Put in the price and what you used, and the sum lands here.</div>';
+      return;
+    }
+    var line = function (l, v, cls) {
+      return '<div class="kr' + (cls ? ' ' + cls : '') + '"><span>' + esc(l) + '</span><span class="num">' + esc(v) + '</span></div>';
+    };
+    var h = '<div class="eyebrow">What you actually make on this</div>' + line('You charge', money2(price));
+    rows.forEach(function (r) {
+      h += line((r.sh ? carsWorth(r.q) + ' of ' : r.q + ' \u00d7 ') + r.n +
+        '  (' + money2(r.c) + (r.sh ? ' a car' : ' each') + ')', '\u2212' + money2(r.q * r.c));
+    });
+    if (mat) h += line('Film, vinyl or polish', '\u2212' + money2(mat));
+    h += line('You keep', money2(keep), 'tot');
+    h += '<div class="hint" style="margin-top:6px">' +
+      (price > 0
+        ? (keep >= 0 ? Math.round((keep / price) * 100) + '\u00a2 of every dollar they pay you stays with you.'
+          : 'This one costs you more than it brings in.')
+        : 'No price on it yet.') + '</div>';
+    box.innerHTML = h;
+  }
+
+  /** An order lands about when the supplier usually takes, so fill that in
+      and it gives way the moment a real date is typed in. */
+  function syncEta() {
+    if (!FORM || FORM.kind !== 'orders') return;
+    var eta = document.getElementById('f_eta'), ord = document.getElementById('f_ordered');
+    if (!eta || !ord || !ord.value) return;
+    if (eta.value && eta.value !== FORM.autoEta) return;      // typed over, leave it alone
+    var sup = document.getElementById('f_supplierId'), ship = document.getElementById('f_ship');
+    var sp = sup ? byId(S.suppliers, sup.value) : null;
+    var d = sp && n(sp.leadTime) ? n(sp.leadTime) : (ship ? n(SHIP_DAYS[ship.value]) : 0);
+    if (!d) return;
+    var t = new Date(ord.value + 'T00:00:00');
+    if (isNaN(t.getTime())) return;
+    t.setDate(t.getDate() + d);
+    eta.value = FORM.autoEta = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
   }
 
   function readForm() {
@@ -2269,7 +2456,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     host.querySelectorAll('.itemline').forEach(function (row) {
       var o = {};
       row.querySelectorAll('[data-ik]').forEach(function (el) { o[el.getAttribute('data-ik')] = el.value; });
-      if (o.productId && n(o.qty) > 0) lines.push({ productId: o.productId, qty: n(o.qty), cost: n(o.cost) });
+      if (o.productId && n(o.qty) > 0)
+        lines.push({ productId: o.productId, qty: n(o.qty), cost: n(o.cost), per: Math.max(1, n(o.per) || 1) });
     });
     out._lines = lines;
     return out;
@@ -2312,10 +2500,15 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     toast(isNew ? def.title + ' added.' : 'Saved.');
   }
 
+  /** A job line is counted in cars, an order line in whole rolls; `per` says
+      how many cars one roll did at the time, so old lines still balance even
+      if you change that number later. */
   function applyLines(lines, dir) {
     (lines || []).forEach(function (l) {
       var p = prod(l.productId);
-      if (p) p.qty = n(p.qty) + dir * n(l.qty);
+      if (!p) return;
+      var units = n(l.qty) / Math.max(1, n(l.per) || 1);
+      p.qty = Math.round((n(p.qty) + dir * units) * 1000) / 1000;
     });
   }
 
@@ -2344,12 +2537,15 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     drawer('Count stock',
       '<div><div class="eyebrow">Item</div><div style="font-weight:600;font-size:18px;margin-top:3px">' + esc(p.name) + '</div>' +
       (p.location ? '<div class="hint">' + esc(p.location) + '</div>' : '') + '</div>' +
-      '<div class="field"><label for="adj">How many are actually there</label>' +
-      '<input class="inp" id="adj" type="number" step="1" inputmode="numeric" value="' + n(p.qty) + '"></div>' +
+      '<div class="field"><label for="adj">' +
+      (shared(p) ? 'How many cars\u2019 worth is actually left' : 'How many are actually there') + '</label>' +
+      '<input class="inp" id="adj" type="number" step="1" min="0" inputmode="numeric" value="' +
+      qtyStr(shared(p) ? carsLeft(p) : n(p.qty)) + '"></div>' +
       '<div class="pick">' + [-5, -1, 1, 5, 10].map(function (d) {
         return '<button type="button" data-act="adj-step" data-d="' + d + '">' + (d > 0 ? '+' : '') + d + '</button>';
       }).join('') + '</div>' +
-      '<div class="hint">Use this after a stocktake, a breakage, or anything you used without putting it on a job.</div>',
+      '<div class="hint">' + (shared(p) ? 'One of these does ' + carsStr(uses(p)) + ', so count in cars and it works the rolls out. ' : '') +
+      'Use this after a stocktake, a breakage, or anything you used without putting it on a job.</div>',
       '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
       '<button class="btn primary" data-act="adj-save">' + ico('check') + 'Update</button>');
   }
@@ -2357,7 +2553,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   /* ========================== PASTE FROM A SHEET ======================== */
   function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
   var ALIAS = {
-    products: { item: 'name', part: 'name', product: 'name', description: 'name', whatisit: 'name', type: 'category', supplier: 'supplierId', vendor: 'supplierId', buyprice: 'cost', costprice: 'cost', unitcost: 'cost', whatitcostsyou: 'cost', sellprice: 'price', rrp: 'price', retail: 'price', whatyousellitfor: 'price', quantity: 'qty', stock: 'qty', instock: 'qty', onhand: 'qty', howmanyyouhave: 'qty', reorder: 'reorder', reorderpoint: 'reorder', warnmeat: 'reorder', partnumber: 'sku', code: 'sku', codeorpartnumber: 'sku', shelf: 'location', bin: 'location', whereitsits: 'location' },
+    products: { item: 'name', part: 'name', product: 'name', description: 'name', whatisit: 'name', type: 'category', supplier: 'supplierId', vendor: 'supplierId', buyprice: 'cost', whatonecostsyou: 'cost', costprice: 'cost', unitcost: 'cost', whatitcostsyou: 'cost', sellprice: 'price', rrp: 'price', retail: 'price', whatyousellitfor: 'price', quantity: 'qty', stock: 'qty', instock: 'qty', onhand: 'qty', howmanyyouhave: 'qty', uses: 'uses', cars: 'uses', carsperroll: 'uses', howmanycars: 'uses', howmanycarsdoesonedo: 'uses', reorder: 'reorder', reorderpoint: 'reorder', warnmeat: 'reorder', tellmewheniamdownto: 'reorder', partnumber: 'sku', code: 'sku', codeorpartnumber: 'sku', shelf: 'location', bin: 'location', whereitsits: 'location' },
     suppliers: { supplier: 'name', company: 'name', businessname: 'name', contactperson: 'contact', person: 'contact', personyoudealwith: 'contact', mobile: 'phone', tel: 'phone', wechat: 'whatsapp', web: 'website', url: 'website', leadtime: 'leadTime', leadtimedays: 'leadTime', howmanydaystheytake: 'leadTime', paymentterms: 'terms', whereitheyare: 'country', whereareyare: 'country', location: 'country' },
     expenses: { spend: 'amount', cost: 'amount', total: 'amount', howmuch: 'amount', when: 'date', whatkind: 'category', type: 'category', paidto: 'vendor', payee: 'vendor', supplier: 'vendor', whatfor: 'campaign', description: 'campaign', purpose: 'campaign', adplatform: 'platform', whichadplatform: 'platform', channel: 'platform' },
     jobs: { name: 'customer', client: 'customer', customername: 'customer', vehicle: 'car', make: 'car', model: 'car', plate: 'rego', registration: 'rego', when: 'date', amount: 'price', charged: 'price', total: 'price', priceyouarecharging: 'price', whereitisat: 'status', deposit: 'deposit' }
@@ -2595,6 +2791,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     var mat = document.getElementById('f_materials');
     if (mat && (!n(mat.value) || n(mat.value) === n(FORM.autoMat))) mat.value = matCost || '';
     FORM.autoMat = matCost;
+    syncKeep();
   }
 
   /* ---------------------------- chart read-out --------------------------- */
@@ -2707,8 +2904,11 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'line-add': {
         var host = document.getElementById('lines');
         if (!S.products.length) { toast('Add something to Stock first.'); break; }
-        var po = S.products.map(function (p) { return { v: p.id, l: p.name + (n(p.qty) ? '  (' + n(p.qty) + ' in stock)' : '  (none in stock)') }; });
-        host.insertAdjacentHTML('beforeend', lineRow({ productId: po[0].v, qty: 1, cost: n(S.products[0].cost) }, po));
+        var lk = host.getAttribute('data-kind') || 'jobs', p0 = S.products[0];
+        host.insertAdjacentHTML('beforeend', lineRow(
+          { productId: p0.id, qty: 1, cost: Math.round(lineCost(lk, p0) * 100) / 100, per: lk === 'jobs' ? uses(p0) : 1 },
+          prodOpts(lk), lk));
+        if (lk === 'jobs') syncKeep();
         break;
       }
       case 'line-del': el.closest('.itemline').remove(); break;
@@ -2733,7 +2933,11 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'adj-step': { var ai = document.getElementById('adj'); ai.value = n(ai.value) + n(el.getAttribute('data-d')); break; }
       case 'adj-save': {
         var ap = prod(ADJUST);
-        if (ap) { ap.qty = n(document.getElementById('adj').value); closeDrawer(); touch(); render(); toast('Count updated.'); }
+        if (ap) {
+          var counted = n(document.getElementById('adj').value);
+          ap.qty = Math.round((shared(ap) ? counted / uses(ap) : counted) * 1000) / 1000;
+          closeDrawer(); touch(); render(); toast('Count updated.');
+        }
         break;
       }
 
@@ -2842,6 +3046,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   document.addEventListener('input', function (ev) {
     var t = ev.target;
     if (t.id === 'q') { UI.q = t.value; render(); return; }
+    if (FORM && FORM.kind === 'jobs' && t.closest && t.closest('.drawer-b')) syncKeep();
+    if (FORM && FORM.kind === 'orders' && t.id && /^f_(ship|ordered)$/.test(t.id)) syncEta();
     if (t.id === 'paste') { previewPaste(); return; }
     if (t.hasAttribute && t.hasAttribute('data-set')) {
       S.meta[t.getAttribute('data-set')] = t.value;
@@ -2854,9 +3060,14 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   document.addEventListener('change', function (ev) {
     var t = ev.target;
     if (t.getAttribute && t.getAttribute('data-ik') === 'productId') {
-      var p = prod(t.value), row = t.closest('.itemline'), c = row && row.querySelector('[data-ik="cost"]');
-      if (p && c && !n(c.value)) c.value = n(p.cost);
+      var p = prod(t.value), row = t.closest('.itemline');
+      var lk = (FORM && FORM.kind) || 'jobs';
+      var c = row && row.querySelector('[data-ik="cost"]'), pr = row && row.querySelector('[data-ik="per"]');
+      if (p && pr) pr.value = lk === 'jobs' ? uses(p) : 1;
+      if (p && c) c.value = Math.round(lineCost(lk, p) * 100) / 100;
+      syncKeep();
     }
+    if (FORM && FORM.kind === 'orders' && t.id && /^f_(supplierId|ship|ordered)$/.test(t.id)) syncEta();
     if (t.getAttribute && t.getAttribute('data-set') === 'theme') { S.meta.theme = t.value; applyTheme(); touch(); }
   });
 

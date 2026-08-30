@@ -44,6 +44,15 @@ if data.get("v") and data["v"] < 3:
     data["v"] = 3
     print("migrated the carried-over data to v3")
 
+if data.get("v") and data["v"] < 4:
+    # stock used to be counted one-for-one; a roll stays one roll until you say
+    # how many cars it does, so no count moves
+    for pr in data.get("products") or []:
+        if not pr.get("uses"):
+            pr["uses"] = 1
+    data["v"] = 4
+    print("migrated the carried-over data to v4")
+
 out = BLOCK.sub(
     lambda m: m.group(1) + json.dumps(data).replace("<", "\\u003c") + m.group(3),
     SRC.read_text(encoding="utf-8"), count=1)

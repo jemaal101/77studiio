@@ -150,6 +150,28 @@ Defaults, applied to the starter list and by `migrate()` to any older saved
 state: anything matching wrap or chrome delete is `soon`, anything matching
 install or supply-only is `varies`, everything else `fixed`.
 
+## Stock that gets shared across cars
+
+A roll of tint is not one thing you sell, it is five cars' worth of a thing you
+use. A stock item therefore carries `uses` — how many cars one of them does —
+and everything downstream is counted in cars once that is above 1:
+
+- `carsLeft(p)` = `qty × uses`, `costPerCar(p)` = `cost ÷ uses`.
+- The low-stock threshold (`reorder`) is read in cars, so "tell me when I am
+  down to 2" means two cars, not two rolls.
+- Job lines are entered in cars' worth and cost the job `costPerCar`. Order
+  lines stay in whole rolls, because that is how you buy them.
+- Each job line snapshots `per` (the `uses` at the time), so `applyLines`
+  divides by it. Old lines still balance if you later change how many cars a
+  roll does.
+- `qty` therefore goes fractional. It is rounded to three decimals on every
+  move and shown as cars, with the roll count as a smaller second line.
+- A stocktake on a shared item is counted in cars too and divided back out.
+
+The Stock page carries a card that writes the sum out — `$150.00 ÷ 5 cars` →
+`$30.00 a car` — and the job drawer carries a live strip showing what the price
+is left with once the shelf and the materials are paid for.
+
 ## How the numbers work
 
 - A job counts as **money in** only when it is marked paid. Before that it sits
@@ -160,6 +182,28 @@ install or supply-only is `varies`, everything else `fixed`.
   logged again under Money. Only bills a job does not cover go there.
 - Stock moves itself: parts added to a job come off the count; an order marked
   arrived goes on. Edits compute the delta rather than re-applying.
+
+## Where a low count actually shows up
+
+Three places, and the field hint on `reorder` names all three so the answer is
+where the question gets asked:
+
+1. The item goes red on the Stock page (`levelBar`, plus the Low filter).
+2. It appears under **Needs doing** on Home with how many cars are left and
+   whether anything is on order.
+3. The Stock tab carries a count (`alerts()` → the `.pip` in `renderChrome`).
+
+## Buying from overseas
+
+Contacts default to Alibaba and China, because that is where nearly everything
+comes from. Each one holds a chat link (`link`, run through `safeUrl` so a
+`javascript:` string can never become an href) that surfaces on the card as
+"Open Alibaba", plus `leadTime` in days.
+
+An order's arrival date fills itself in from that lead time — or from the
+shipping method's typical days (`SHIP_DAYS`) when the supplier has none — and
+`syncEta` stands down the moment a real date is typed in. Open orders show how
+far through the window they are: "day 12 of about 40".
 
 ## How it saves
 
