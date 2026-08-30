@@ -1276,9 +1276,6 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       tile('Average job', money(r.avg), r.jobs ? 'Across ' + plural(r.jobs, 'paid job') : 'No paid jobs yet') +
       '</div>';
 
-    var todo = startHere();
-    if (todo) h += todo;
-
     h += secH('The board');
     h += stageStrip(m);
 
@@ -1293,6 +1290,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     h += '<div class="grid g2" style="margin-top:20px">' + comingUp() + needsDoing() + '</div>';
 
     if (S.jobs.some(function (j) { return j.status === 'Paid'; })) h += whereMoneyCame(m);
+    h += startHere();          // last on the page, out of the way
     return h;
   }
 
@@ -1322,15 +1320,17 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   function startHere() {
+    if (S.meta.hideStart) return '';
     var steps = [
-      { t: 'Put your prices in', s: 'Set what you charge once and every job fills itself in. Work that varies, or that you are not offering yet, can be marked as such.', done: S.services.some(function (x) { return n(x.price) > 0; }), act: 'tab', v: 'settings' },
-      { t: 'Book your first job', s: 'A car, what you are doing to it, and the price.', done: S.jobs.length > 0, act: 'new-job' },
+      { t: 'Put in the prices you know', s: 'Just the ones you are sure of. Leave the rest — you can set them as you go, or mark them as priced per job.', done: S.services.some(function (x) { return n(x.price) > 0; }), act: 'tab', v: 'settings' },
+      { t: 'Book a job', s: 'A car, what you are doing to it, and the price.', done: S.jobs.length > 0, act: 'new-job' },
       { t: 'Add the stock you hold', s: 'Film, vinyl, parts — anything you count.', done: S.products.length > 0, act: 'new-product' },
       { t: 'Save your supplier contacts', s: 'So you can call them from your phone.', done: S.suppliers.length > 0, act: 'new-supplier' }
     ];
     if (steps.every(function (x) { return x.done; })) return '';
     var done = steps.filter(function (x) { return x.done; }).length;
-    return secH('Start here', '<span class="chip acc">' + done + ' of ' + steps.length + '</span>') +
+    return secH('Getting set up', '<span class="chip">' + done + ' of ' + steps.length + '</span>' +
+      '<button class="btn ghost sm" data-act="hide-start">Hide this</button>') +
       '<section class="card"><div class="card-b flush">' + steps.map(function (x) {
         return '<div class="check' + (x.done ? ' done' : '') + '"' +
           (x.done ? '' : (x.act === 'tab' ? ' data-tab="' + x.v + '"' : ' data-act="' + x.act + '"') + ' style="cursor:pointer"') + '>' +
@@ -1946,7 +1946,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<select class="inp" id="set-theme" data-set="theme">' + ['system', 'light', 'dark'].map(function (o) {
         return '<option value="' + o + '"' + ((S.meta.theme || 'system') === o ? ' selected' : '') + '>' +
           (o === 'system' ? 'Match my phone' : o === 'light' ? 'Always light' : 'Always dark') + '</option>';
-      }).join('') + '</select></div></div></div></section>';
+      }).join('') + '</select></div></div>' +
+      (S.meta.hideStart ? '<div style="margin-top:15px;padding-top:15px;border-top:1px solid var(--rule)">' +
+        '<button class="btn sm" data-act="show-start">Show the setup list on Home again</button></div>' : '') +
+      '</div></section>';
 
     h += '<section class="card"><div class="card-h">' + ico('down') + '<h3>Your data</h3></div><div class="card-b stack">' +
       '<div class="hint">' + (ARTIFACT
@@ -2035,11 +2038,11 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       fields: [
         { k: 'name', l: 'What is it', t: 'text', req: true, full: true, ph: '3M Ceramic IR 35% roll' },
         { k: 'category', l: 'Type', t: 'combo', o: opts(STOCK_CATS) },
-        { k: 'supplierId', l: 'Who you buy it from', t: 'ref', ref: supOpts },
         { k: 'qty', l: 'How many you have', t: 'int' },
         { k: 'reorder', l: 'Warn me at', t: 'int', hint: 'You get a nudge at or below this' },
         { k: 'cost', l: 'What it costs you', t: 'money' },
         { k: 'price', l: 'What you sell it for', t: 'money' },
+        { k: 'supplierId', l: 'Who you buy it from', t: 'ref', ref: supOpts, adv: true },
         { k: 'sku', l: 'Code or part number', t: 'text', adv: true },
         { k: 'location', l: 'Where it sits', t: 'text', adv: true, ph: 'Rack A1' },
         { k: 'notes', l: 'Notes', t: 'textarea', full: true, adv: true }
@@ -2141,8 +2144,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (f.t === 'textarea') h += '<textarea class="inp" id="' + id + '" data-k="' + f.k + '" rows="3">' + esc(v) + '</textarea>';
     else if (f.t === 'select' || f.t === 'ref') {
       var list = f.t === 'ref' ? f.ref() : f.o;
+      if (f.t === 'ref' && !list.length) {
+        return h + '<input type="hidden" data-k="' + f.k + '" value="">' +
+          '<div class="hint">No contacts saved yet. You can add them later and come back to this.</div></div>';
+      }
       h += '<select class="inp" id="' + id + '" data-k="' + f.k + '">' +
-        (f.t === 'ref' ? '<option value="">— not set —</option>' : '') +
+        (f.t === 'ref' && !f.req ? '<option value="">Not sure yet</option>' : '') +
+        (f.t === 'ref' && f.req ? '<option value="">— pick one —</option>' : '') +
         list.map(function (o) {
           return '<option value="' + esc(o.v) + '"' + (String(v) === String(o.v) ? ' selected' : '') + '>' + esc(o.l) + '</option>';
         }).join('') + '</select>';
@@ -2652,6 +2660,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'month': UI.month = shiftMonth(UI.month, +el.getAttribute('data-d')); render(); break;
       case 'month-now': UI.month = curMonth(); render(); break;
       case 'job-filter': UI.jobFilter = el.getAttribute('data-v'); render(); break;
+      case 'hide-start': S.meta.hideStart = true; touch(); render(); toast('Hidden. Bring it back from Settings.'); break;
+      case 'show-start': S.meta.hideStart = false; touch(); render(); setTab('home'); break;
       case 'job-jump': UI.jobFilter = el.getAttribute('data-v'); UI.jobsView = 'list'; setTab('jobs'); break;
       case 'jobs-view': UI.jobsView = el.getAttribute('data-v'); UI.q = ''; render(); break;
       case 'cal-day': openDay(el.getAttribute('data-d')); break;
