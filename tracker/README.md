@@ -14,13 +14,36 @@ it.
   out, what is still owed and the average job. Under that: what is booked in,
   and what needs chasing (unpaid jobs, low stock, late orders). A "start here"
   checklist appears until the basics are filled in, then disappears.
-- **Jobs** — one card per car. Customer, vehicle, the work as chips, the price,
-  and one button that moves it along: Start it → Finished → Got paid.
+- **Jobs** — a list of cards, or a **month calendar**. Each card is one car:
+  customer, vehicle, the work as chips, the price, and one button that moves it
+  along: Start it → Finished → Got paid. The calendar shows every job on its day
+  colour-coded by status — tap a name to open that job, tap a day to see the
+  day and book into it. On a phone the days collapse to status dots.
 - **Stock** — what is on the shelf, plus an "on order" section underneath.
 - **Money** — bills and ad spend going out, paid jobs coming in, ROAS.
 - **Contacts** — suppliers with tap-to-call, WhatsApp and email.
 
 Settings holds the price list, the business name, light/dark, and backups.
+
+## Two ways to run it
+
+- **On the website** — `public/tracker.html`, built by `tracker/build.py` from the
+  source fragment, served at `/tracker.html`. No account, no sign-in, works on a
+  phone. `noindex`, its own favicon, and the meta tags that let iOS and Android
+  add it to the home screen as a full-screen app.
+- **As an Artifact** — the same source, published to claude.ai, where the
+  `artifact` capability syncs data between devices.
+
+The page detects which it is in: with the artifact runtime present it shows a
+Save button and publishes new versions; without it, every edit is written to
+`localStorage` immediately, the chip reads "Saved on this device", and backups
+download as real files through a blob URL.
+
+Rebuild the website copy after any source change:
+
+```bash
+python3 tracker/build.py     # tracker/kitted-lab-tracker.html -> public/tracker.html
+```
 
 ## Look and feel
 
@@ -28,9 +51,10 @@ Not a stock dashboard. A workshop job-card system:
 
 - **Graphite bezel** sidebar and tab bar in both themes, against a concrete
   ground. Flat panels, 3px radius, hairline rules — no drop shadows anywhere.
-- **Type**: Barlow for UI and hero figures, Barlow Condensed for stamped
-  uppercase labels, Roboto Mono for tabular figures only (never on a hero
-  number).
+- **Type**: Barlow throughout at 17px base, with Roboto Mono reserved for
+  figures that line up in columns (tables, axis ticks, calendar dates). Weight
+  and letter-spacing carry hierarchy instead of a condensed face, which was
+  hard to read at label sizes.
 - **Palette**: petrol teal `#0092A0` / `#2CA3AC` for money in, burnt orange
   `#B4531B` / `#D07A2C` for money out, green and red reserved for status.
   Both pairs pass the full six-check colour validator (lightness band, chroma
