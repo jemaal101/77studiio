@@ -31,8 +31,13 @@ Settings holds the price list, the business name, light/dark, and backups.
   source fragment, served at `/tracker.html`. No account, no sign-in, works on a
   phone. `noindex`, its own favicon, and the meta tags that let iOS and Android
   add it to the home screen as a full-screen app.
-- **As an Artifact** — the same source, published to claude.ai, where the
-  `artifact` capability syncs data between devices.
+- **As an Artifact** — the same source, published to claude.ai. This is the one
+  in daily use: the `artifact` capability carries the data between devices with
+  nothing to configure. It saves itself 12s after the last change (never while a
+  drawer is open, since publishing reloads the view) and immediately on
+  `visibilitychange` to hidden, which is the one moment a reload costs nothing.
+  If a publish ever resolves without the shell reloading, a 6s timer un-sticks
+  the save state rather than leaving it unable to save again.
 
 The page detects which it is in: with the artifact runtime present it shows a
 Save button and publishes new versions; without it, every edit is written to
@@ -81,11 +86,11 @@ with the container; `drawCharts()` re-runs on a debounced resize.
 
 No dual-axis charts, no pies, no value-ramps on nominal categories.
 
-## Sync across devices
+## Sync across devices (standalone build only)
 
-Optional, off until you turn it on, and only on the plain web page (the
-Artifact sandbox blocks outside calls, and publishing already carries the data
-there).
+Only relevant to the standalone `public/tracker.html`. The Artifact carries data
+between devices through publishing, so this whole path stays dormant there — the
+sandbox blocks outside calls anyway. Off until turned on.
 
 **No account.** One sync code — `kl-xxxx-xxxx-xxxx`, 60 bits of entropy — typed
 once per device. No email, no password, no reset.

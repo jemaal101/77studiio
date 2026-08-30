@@ -588,10 +588,23 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     S.stamp = Date.now(); DIRTY = true;
     try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
     pushSoon();
+    autosaveSoon();
     renderChrome();
   }
 
   /* --------------------------------------------------- self-publishing */
+  var AUTOSAVE = null;
+  /** Publishing reloads the view, so never do it mid-edit: wait for a pause
+      with no drawer open, or for the moment he leaves the page. */
+  function autosaveSoon() {
+    if (!ARTIFACT || READONLY || saving) return;
+    clearTimeout(AUTOSAVE);
+    AUTOSAVE = setTimeout(function () {
+      if (!DIRTY || saving || document.querySelector('.scrim')) { if (DIRTY) autosaveSoon(); return; }
+      save();
+    }, 12000);
+  }
+
   var BODY_MARKUP =
     '<div class="shell">\n' +
     '  <nav class="rail" id="rail" aria-label="Sections"></nav>\n' +
@@ -633,7 +646,15 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
     try { sessionStorage.setItem('kl.ui', JSON.stringify(UI)); } catch (e) {}
     renderChrome();
-    ARTIFACT.publish(serialize()).catch(function (err) {
+    ARTIFACT.publish(serialize()).then(function () {
+      // the shell reloads this view on success; if it ever does not, come back
+      // to life rather than sitting there unable to save again
+      setTimeout(function () {
+        if (!saving) return;
+        saving = false; DIRTY = false;
+        renderChrome();
+      }, 6000);
+    }).catch(function (err) {
       saving = false;
       var c = err && err.code;
       if (c === 'conflict') { toast('Someone saved before you — loading their version.'); return; }
@@ -1188,9 +1209,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         SYNC.state === 'error' || SYNC.state === 'conflict' ? 'bad' : 'off';
     } else if (READONLY) { cls = 'off'; txt = 'Look only'; }
     else if (saving) { cls = 'pending'; txt = 'Saving…'; }
-    else if (DIRTY && ARTIFACT) { cls = 'pending'; txt = 'Not saved yet'; }
+    else if (DIRTY && ARTIFACT) { cls = 'pending'; txt = 'Saving in a moment'; }
     else if (!ARTIFACT) { cls = ''; txt = 'Saved on this device'; }
-    else { cls = ''; txt = 'All saved'; }
+    else { cls = ''; txt = 'Saved to your devices'; }
     return '<span class="savechip" title="' + esc(txt) + '"><i class="dot ' + cls + '"></i>' +
       '<span class="lbl">' + esc(txt) + '</span></span>';
   }
@@ -1832,10 +1853,20 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   function syncCard() {
+    if (window.claude && window.claude.use) {
+      return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Your devices</h3>' +
+        '<div class="spacer"></div><span class="chip ' + (ARTIFACT ? 'good' : '') + '">' +
+        (ARTIFACT ? 'On' : 'Checking…') + '</span></div><div class="card-b stack">' +
+        '<div class="hint">Nothing to set up. This page saves itself, so the same link opens with all your ' +
+        'work on your phone, your laptop, anywhere you sign in. It saves on its own a few seconds after you ' +
+        'stop typing, and again whenever you leave the page.</div>' +
+        '<div><button class="btn primary" data-act="save">' + ico('check') + 'Save right now</button></div>' +
+        '<div class="hint">Only you can open the link unless you share it yourself.</div>' +
+        '</div></section>';
+    }
     if (!syncAvailable()) {
       return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Sync across devices</h3></div>' +
-        '<div class="card-b"><div class="hint">Not available here. Open the tracker at its own web address ' +
-        '(not inside Claude) and this turns on.</div></div></section>';
+        '<div class="card-b"><div class="hint">Not available in this browser.</div></div></section>';
     }
     var on = syncOn();
     return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Sync across devices</h3>' +
@@ -1931,7 +1962,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       ['Profit on a job', 'What you charged, minus the parts you took off the shelf, minus what the film or vinyl cost you.'],
       ['Profit for the month', 'Everything paid, minus what those jobs cost you, minus your bills and ad spend.'],
       ['Stock looks after itself', 'Put parts on a job and they come off your count. Mark an order arrived and they go back on.'],
-      ['Where it is kept', 'In this browser, on this device. No account, no login, no server. Download a backup before you clear your browsing data.']
+      ['Where it is kept', (window.claude && window.claude.use)
+        ? 'Inside this page. It saves itself, so opening the link on any device brings everything with it. Take a backup now and then anyway.'
+        : 'In this browser, on this device. Download a backup before you clear your browsing data.']
       ].map(function (x) {
         return '<div style="margin-bottom:15px"><div style="font-weight:600">' + esc(x[0]) + '</div>' +
           '<div class="hint" style="margin-top:2px">' + esc(x[1]) + '</div></div>';
@@ -2768,8 +2801,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   applyTheme();
   render();
 
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && DIRTY && ARTIFACT && !READONLY && !saving) save();
+  });
+
   if (window.claude && window.claude.use) {
-    window.claude.use('artifact').then(function (a) { ARTIFACT = a; renderChrome(); });
+    window.claude.use('artifact').then(function (a) {
+      ARTIFACT = a;
+      renderChrome();
+      if (DIRTY) autosaveSoon();
+    });
     window.claude.use('downloads').then(function (d) { DOWNLOADS = d; });
   }
 
