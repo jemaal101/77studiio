@@ -81,6 +81,37 @@ with the container; `drawCharts()` re-runs on a debounced resize.
 
 No dual-axis charts, no pies, no value-ramps on nominal categories.
 
+## Sync across devices
+
+Optional, off until you turn it on, and only on the plain web page (the
+Artifact sandbox blocks outside calls, and publishing already carries the data
+there).
+
+**No account.** One sync code — `kl-xxxx-xxxx-xxxx`, 60 bits of entropy — typed
+once per device. No email, no password, no reset.
+
+**The server cannot read it.** The client derives an AES-GCM key from the code
+with PBKDF2 (210k iterations, SHA-256, salted with the row id) and encrypts the
+whole state before it leaves the browser. The row is addressed by
+`SHA-256('kitted-lab-id|' + code)`, so knowing the address proves you knew the
+code. Losing the code loses the data — by design, and the UI says so twice.
+
+**The table is unreachable.** RLS is on with no policies and all grants revoked,
+so `anon` cannot read or write `public.sync` at all. The only public surface is
+two `SECURITY DEFINER` functions that require a 64-character id, which is what
+stops enumeration. Verified by running the real `anon` role against them; see
+`migrations/001_sync.sql`.
+
+**Divergence is tracked, not guessed.** `sync_push` is a compare-and-set against
+`p_base` — the version this device last agreed with. The client decides "I have
+unsent edits" from `stamp > base`, never by comparing wall-clock timestamps,
+which is what stops an edit made offline being thrown away when another device
+saved later. When both moved, neither is written: the page shows both and asks
+which to keep.
+
+Pulls on open and on tab focus, pushes 2.5s after a change, queues while
+offline and catches up when the signal returns.
+
 ## How the numbers work
 
 - A job counts as **money in** only when it is marked paid. Before that it sits

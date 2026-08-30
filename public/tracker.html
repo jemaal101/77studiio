@@ -118,7 +118,7 @@ a{color:var(--acc)}
 .top .spacer{flex:1}
 .savechip{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;color:var(--ink-2);font-weight:500;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--good);flex:none}
-.dot.pending{background:var(--s2)} .dot.off{background:var(--muted)}
+.dot.pending{background:var(--s2)} .dot.off{background:var(--muted)} .dot.bad{background:var(--bad)}
 .rail .savechip{color:var(--bezel-muted)}
 @media (max-width:680px){.top .savechip .lbl{display:none}.top .savechip{gap:0}}
 
@@ -584,7 +584,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (!S.meta) S.meta = emptyState().meta;
   }
 
-  function touch() { S.stamp = Date.now(); DIRTY = true; try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {} renderChrome(); }
+  function touch() {
+    S.stamp = Date.now(); DIRTY = true;
+    try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
+    pushSoon();
+    renderChrome();
+  }
 
   /* --------------------------------------------------- self-publishing */
   var BODY_MARKUP =
@@ -905,6 +910,231 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<span>' + q + '</span></span>';
   }
 
+
+  /* ============================ SYNC ====================================
+     Cross-device memory without an account. The data is encrypted in this
+     browser with a key derived from the sync code, so the server only ever
+     holds ciphertext, and the row is addressed by a hash of that same code —
+     knowing the address proves you knew the code.
+     ===================================================================== */
+  var SUPA_URL = 'https://vvjimnvubseaxumskbyz.supabase.co';
+  var SUPA_KEY = 'sb_publishable_x_HBNaJse0GAOFI2YaogDA_91iZwQeI';
+  var LS_CODE = 'kittedlab.sync.code';   // device-local: never inside the synced blob
+  var LS_BASE = 'kittedlab.sync.base';
+
+  var SYNC = {
+    code: null, id: null, key: null, found: false,
+    base: 0,            // the server version this device last agreed with
+    ready: false,       // true once the first pull has finished
+    state: 'off',       // off | working | ok | offline | error | conflict
+    at: 0,              // when we last agreed with the server
+    conflict: null,     // { theirs: state, updated: n }
+    timer: null, pulledAt: 0
+  };
+
+  function cryptoOk() {
+    return !!(window.crypto && window.crypto.subtle && window.isSecureContext !== false);
+  }
+  /** Sync only runs on the plain web page; inside an Artifact the sandbox
+      blocks outside calls and publishing already carries the data. */
+  function syncAvailable() { return cryptoOk() && !(window.claude && window.claude.use); }
+  function syncOn() { return !!(SYNC.code && syncAvailable()); }
+
+  function hex(buf) {
+    var b = new Uint8Array(buf), out = '';
+    for (var i = 0; i < b.length; i++) out += (b[i] < 16 ? '0' : '') + b[i].toString(16);
+    return out;
+  }
+  function b64(buf) {
+    var b = new Uint8Array(buf), s = '';
+    for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    return btoa(s);
+  }
+  function unb64(str) {
+    var s = atob(str), b = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i);
+    return b;
+  }
+
+  function makeCode() {
+    var alpha = '23456789abcdefghjkmnpqrstuvwxyz', out = [], r = new Uint8Array(12);
+    crypto.getRandomValues(r);
+    for (var i = 0; i < 12; i++) out.push(alpha[r[i] % alpha.length]);
+    return 'kl-' + out.slice(0, 4).join('') + '-' + out.slice(4, 8).join('') + '-' + out.slice(8, 12).join('');
+  }
+  function tidyCode(v) { return String(v || '').trim().toLowerCase().replace(/\s+/g, ''); }
+
+  function prepare(code) {
+    var enc = new TextEncoder();
+    return crypto.subtle.digest('SHA-256', enc.encode('kitted-lab-id|' + code)).then(function (d) {
+      var id = hex(d);
+      return crypto.subtle.importKey('raw', enc.encode(code), 'PBKDF2', false, ['deriveKey']).then(function (base) {
+        return crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: enc.encode('kitted-lab-key|' + id), iterations: 210000, hash: 'SHA-256' },
+          base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+        );
+      }).then(function (key) { return { id: id, key: key }; });
+    });
+  }
+
+  function seal(obj) {
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    var data = new TextEncoder().encode(JSON.stringify(obj));
+    return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, SYNC.key, data).then(function (ct) {
+      var joined = new Uint8Array(iv.length + ct.byteLength);
+      joined.set(iv, 0); joined.set(new Uint8Array(ct), iv.length);
+      return 'v1.' + b64(joined);
+    });
+  }
+  function unseal(blob) {
+    if (!blob || blob.slice(0, 3) !== 'v1.') return Promise.reject(new Error('unreadable'));
+    var raw = unb64(blob.slice(3));
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: raw.slice(0, 12) }, SYNC.key, raw.slice(12))
+      .then(function (pt) { return JSON.parse(new TextDecoder().decode(pt)); });
+  }
+
+  function rpc(fn, body) {
+    return fetch(SUPA_URL + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t.slice(0, 120)); });
+      return r.json();
+    });
+  }
+
+  function setSyncState(st) { SYNC.state = st; renderChrome(); }
+
+  function adoptRemote(remote, updated) {
+    ['services', 'jobs', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) {
+      if (!Array.isArray(remote[k])) remote[k] = [];
+    });
+    if (!remote.meta) remote.meta = emptyState().meta;
+    S = remote;
+    SYNC.base = updated;
+    try {
+      localStorage.setItem(LS, JSON.stringify(S));
+      localStorage.setItem(LS_BASE, String(updated));
+    } catch (e) {}
+    applyTheme();
+  }
+
+  /** Divergence is decided against SYNC.base — the version the server and this
+      device last agreed on — not against wall-clock stamps. Comparing stamps
+      throws away an edit made offline whenever the other device saved later. */
+  function pullNow(quiet) {
+    if (!syncOn()) return Promise.resolve();
+    if (!quiet) setSyncState('working');
+    SYNC.pulledAt = Date.now();
+    return rpc('sync_pull', { p_id: SYNC.id }).then(function (rows) {
+      var row = rows && rows[0];
+      SYNC.found = !!row;
+      SYNC.ready = true;
+      SYNC.at = Date.now();
+      var mine = n(S.stamp) > SYNC.base;          // edits the server has not seen
+
+      if (!row) { SYNC.base = 0; setSyncState('ok'); if (n(S.stamp) > 0) pushSoon(0); return; }
+
+      var theirVersion = n(row.updated);
+      if (theirVersion === SYNC.base) {           // server is where we left it
+        setSyncState('ok');
+        if (mine) pushSoon(0);
+        return;
+      }
+
+      return unseal(row.blob).then(function (theirs) {
+        if (!mine) { adoptRemote(theirs, theirVersion); setSyncState('ok'); render(); return; }
+        SYNC.conflict = { theirs: theirs, updated: theirVersion };
+        setSyncState('conflict'); render();
+      });
+    }).catch(function (e) {
+      SYNC.ready = true;
+      setSyncState(/unreadable|decrypt|operation-specific/i.test(String(e && e.message)) ? 'error' : 'offline');
+    });
+  }
+
+  function pushSoon(delay) {
+    if (!syncOn() || !SYNC.ready || SYNC.conflict) return;
+    clearTimeout(SYNC.timer);
+    SYNC.timer = setTimeout(pushNow, delay == null ? 2500 : delay);
+  }
+
+  function pushNow() {
+    if (!syncOn() || !SYNC.ready || SYNC.conflict) return Promise.resolve();
+    clearTimeout(SYNC.timer);
+    setSyncState('working');
+    var stamp = n(S.stamp);
+    return seal(S).then(function (blob) {
+      return rpc('sync_push', { p_id: SYNC.id, p_blob: blob, p_updated: stamp, p_base: SYNC.base });
+    }).then(function (rows) {
+      var r = rows && rows[0];
+      if (r && r.ok) {
+        SYNC.base = n(r.updated); SYNC.at = Date.now(); SYNC.conflict = null;
+        try { localStorage.setItem(LS_BASE, String(SYNC.base)); } catch (e) {}
+        setSyncState('ok');
+        return;
+      }
+      // another device moved on: hold both versions and let him choose
+      return unseal(r.blob).then(function (theirs) {
+        SYNC.conflict = { theirs: theirs, updated: n(r.updated) };
+        setSyncState('conflict'); render();
+      }).catch(function () { setSyncState('error'); });
+    }).catch(function () { setSyncState('offline'); });
+  }
+
+  function resolveConflict(keep) {
+    var c = SYNC.conflict;
+    if (!c) return;
+    SYNC.conflict = null;
+    if (keep === 'theirs') {
+      adoptRemote(c.theirs, c.updated);
+      setSyncState('ok'); render(); toast('Using the other device’s version.');
+    } else {
+      SYNC.base = c.updated;               // agree with where the server is, then overwrite
+      S.stamp = Math.max(Date.now(), c.updated + 1);
+      try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
+      render();
+      pushNow().then(function () { toast('Kept this device’s version.'); });
+    }
+  }
+
+  function startSync(code) {
+    code = tidyCode(code);
+    if (!code) return Promise.reject(new Error('no code'));
+    return prepare(code).then(function (p) {
+      SYNC.code = code; SYNC.id = p.id; SYNC.key = p.key; SYNC.ready = false;
+      SYNC.base = 0;
+      try {
+        localStorage.setItem(LS_CODE, code);
+        SYNC.base = n(localStorage.getItem(LS_BASE));
+      } catch (e) {}
+      setSyncState('working');
+      return pullNow(true).then(function () {
+        if (SYNC.state !== 'error') return pushNow();
+      });
+    });
+  }
+
+  function stopSync() {
+    SYNC.code = null; SYNC.id = null; SYNC.key = null; SYNC.ready = false; SYNC.conflict = null;
+    clearTimeout(SYNC.timer);
+    try { localStorage.removeItem(LS_CODE); localStorage.removeItem(LS_BASE); } catch (e) {}
+    setSyncState('off');
+  }
+
+  function syncLabel() {
+    if (SYNC.state === 'working') return 'Syncing…';
+    if (SYNC.state === 'conflict') return 'Two versions';
+    if (SYNC.state === 'offline') return 'Offline — will sync';
+    if (SYNC.state === 'error') return 'Sync code does not match';
+    if (SYNC.state === 'ok') {
+      var mins = Math.round((Date.now() - SYNC.at) / 60000);
+      return mins < 1 ? 'Synced just now' : mins === 1 ? 'Synced a minute ago' : 'Synced ' + mins + ' min ago';
+    }
+    return 'Saved on this device';
+  }
+
   /* ------------------------------------------------------------- chrome */
   var TABS = [
     { id: 'home', label: 'Home', icon: 'home' },
@@ -951,11 +1181,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (gear && window.innerWidth < 1000) gear.style.display = '';
   }
   function saveChip() {
-    var cls = '', txt = 'All saved';
-    if (READONLY) { cls = 'off'; txt = 'Look only'; }
+    var cls = '', txt;
+    if (syncOn()) {
+      txt = syncLabel();
+      cls = SYNC.state === 'working' ? 'pending' : SYNC.state === 'ok' ? '' :
+        SYNC.state === 'error' || SYNC.state === 'conflict' ? 'bad' : 'off';
+    } else if (READONLY) { cls = 'off'; txt = 'Look only'; }
     else if (saving) { cls = 'pending'; txt = 'Saving…'; }
-    else if (DIRTY) { cls = 'pending'; txt = 'Not saved yet'; }
+    else if (DIRTY && ARTIFACT) { cls = 'pending'; txt = 'Not saved yet'; }
     else if (!ARTIFACT) { cls = ''; txt = 'Saved on this device'; }
+    else { cls = ''; txt = 'All saved'; }
     return '<span class="savechip" title="' + esc(txt) + '"><i class="dot ' + cls + '"></i>' +
       '<span class="lbl">' + esc(txt) + '</span></span>';
   }
@@ -1587,9 +1822,67 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     }).join('') + '</div>';
   }
 
+  function conflictBanner() {
+    if (!SYNC.conflict) return '';
+    return '<div class="banner" style="margin-bottom:16px;border-color:var(--bad-rule);' +
+      'background:var(--bad-wash);color:var(--bad)">' + ico('alert') +
+      '<span class="spacer">Another device saved changes after this one did. Which do you want to keep?</span>' +
+      '<button class="btn sm" data-act="conflict-keep" data-v="theirs">Use the other one</button>' +
+      '<button class="btn sm" data-act="conflict-keep" data-v="mine">Keep this one</button></div>';
+  }
+
+  function syncCard() {
+    if (!syncAvailable()) {
+      return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Sync across devices</h3></div>' +
+        '<div class="card-b"><div class="hint">Not available here. Open the tracker at its own web address ' +
+        '(not inside Claude) and this turns on.</div></div></section>';
+    }
+    var on = syncOn();
+    return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Sync across devices</h3>' +
+      '<div class="spacer"></div><span class="chip ' + (on ? 'good' : '') + '">' + (on ? 'On' : 'Off') + '</span></div>' +
+      '<div class="card-b stack">' +
+      (on
+        ? '<div class="hint">Everything you change here reaches your other devices within a few seconds, ' +
+          'and theirs reaches you when you open the page. It keeps working with no signal and catches up later.</div>'
+        : '<div class="hint">Turn this on and your jobs, stock, money and contacts follow you to every phone and ' +
+          'computer you use. You get one code to type on each device — no account, no password. ' +
+          'Everything is scrambled before it leaves this browser, so the server cannot read it.</div>') +
+      (on
+        ? '<div><div class="eyebrow">Your sync code</div>' +
+          '<div class="num" style="font-size:22px;font-weight:600;margin-top:4px;word-break:break-all">' + esc(SYNC.code) + '</div>' +
+          '<div class="hint" style="margin-top:6px">' + esc(syncLabel()) + '</div></div>' +
+          '<div style="display:flex;gap:9px;flex-wrap:wrap">' +
+          '<button class="btn" data-act="sync-copy">Copy the code</button>' +
+          '<button class="btn" data-act="sync-now">' + ico('down') + 'Sync now</button>' +
+          '<button class="btn danger" data-act="sync-off">Turn off here</button></div>' +
+          '<div class="hint">Keep the code somewhere safe. It is the only way in, and nobody — including me — can ' +
+          'recover your data without it.</div>'
+        : '<div><button class="btn primary big" data-act="sync-open">' + ico('globe') + 'Turn on sync</button></div>') +
+      '</div></section>';
+  }
+
+  function openSyncSetup() {
+    var fresh = makeCode();
+    drawer('Sync across devices',
+      '<div class="hint">Your data is scrambled in this browser before it goes anywhere, using a key made from the ' +
+      'code below. The server only ever holds gibberish it cannot read.</div>' +
+      '<div><div class="eyebrow">Your new code</div>' +
+      '<div class="num" id="newcode" style="font-size:26px;font-weight:600;margin-top:6px;word-break:break-all">' + esc(fresh) + '</div></div>' +
+      '<div class="banner" style="border-color:var(--s2);background:var(--panel);color:var(--s2)">' + ico('alert') +
+      '<span class="spacer">Write this down before you carry on. Lose it and the data cannot be recovered by anyone.</span></div>' +
+      '<div style="border-top:1px solid var(--rule);padding-top:16px">' +
+      '<div class="field"><label for="joincode">Already using sync somewhere else?</label>' +
+      '<input class="inp" id="joincode" placeholder="kl-xxxx-xxxx-xxxx" autocomplete="off" spellcheck="false"></div>' +
+      '<button class="btn" data-act="sync-join" style="margin-top:10px">Use that code instead</button>' +
+      '<div class="hint" style="margin-top:8px">Whatever is on that code will replace what is on this device.</div></div>',
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      '<button class="btn primary" data-act="sync-new" data-v="' + esc(fresh) + '">' + ico('check') + 'Turn it on</button>');
+  }
+
   /* ============================== SETTINGS ============================== */
   function viewSettings() {
     var h = '<div class="grid g2">';
+    h += syncCard();
 
     h += '<section class="card"><div class="card-h">' + ico('spark') + '<h3>Your prices</h3><div class="spacer"></div>' +
       '<button class="btn sm" data-act="new-service">' + ico('plus') + 'Add</button></div><div class="card-b flush">' +
@@ -2161,7 +2454,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   var VIEWS = { home: viewHome, jobs: viewJobs, stock: viewStock, money: viewMoney, contacts: viewContacts, settings: viewSettings };
   function render() {
     var wasSearch = document.activeElement && document.activeElement.id === 'q';
-    document.getElementById('app').innerHTML = (VIEWS[UI.tab] || viewHome)();
+    document.getElementById('app').innerHTML = conflictBanner() + (VIEWS[UI.tab] || viewHome)();
     renderChrome();
     drawCharts();
     if (wasSearch) {
@@ -2360,6 +2653,49 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       }
       case 'confirm-yes': { var cb = PENDING; PENDING = null; closeDrawer(); if (cb) cb(); break; }
 
+      case 'sync-open': openSyncSetup(); break;
+      case 'sync-new': {
+        var code = el.getAttribute('data-v');
+        closeDrawer();
+        startSync(code).then(function () { render(); toast('Sync is on. Write the code down.'); })
+          .catch(function () { toast('Could not turn sync on. Check you are online.'); });
+        break;
+      }
+      case 'sync-join': {
+        var joined = tidyCode(document.getElementById('joincode').value);
+        if (!/^kl-/.test(joined) || joined.length < 12) { toast('That does not look like a sync code.'); break; }
+        closeDrawer();
+        startSync(joined).then(function () {
+          render();
+          if (SYNC.state === 'error') { toast('That code did not unlock anything — check you typed it right.'); return; }
+          if (!SYNC.found) {
+            confirmBox('Nothing stored under that code',
+              'There is no data saved against ' + joined + '. Either it is typed slightly wrong, or nothing has ' +
+              'been synced to it yet. This device has now claimed it — carry on and what is here becomes the copy ' +
+              'everything else pulls from.', 'Got it', false, function () {});
+            return;
+          }
+          toast('Connected. Your data is here.');
+        }).catch(function () { toast('Could not connect. Check you are online.'); });
+        break;
+      }
+      case 'sync-now': pullNow().then(function () { return pushNow(); }).then(function () { render(); }); break;
+      case 'sync-copy': {
+        var c = SYNC.code;
+        if (navigator.clipboard) navigator.clipboard.writeText(c).then(function () { toast('Code copied.'); },
+          function () { showText('sync-code.txt', c); });
+        else showText('sync-code.txt', c);
+        break;
+      }
+      case 'sync-off': {
+        confirmBox('Turn off sync here?', 'This device keeps what it already has, but stops sending and receiving. ' +
+          'Your data stays on the other devices. You can turn it back on with the same code.', 'Turn it off', true, function () {
+            stopSync(); render(); toast('Sync off on this device.');
+          });
+        break;
+      }
+      case 'conflict-keep': resolveConflict(el.getAttribute('data-v')); break;
+
       case 'paste': openPaste(kind); break;
       case 'paste-go': commitPaste(); break;
       case 'export': exportKind(kind); break;
@@ -2435,6 +2771,24 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   if (window.claude && window.claude.use) {
     window.claude.use('artifact').then(function (a) { ARTIFACT = a; renderChrome(); });
     window.claude.use('downloads').then(function (d) { DOWNLOADS = d; });
+  }
+
+  if (syncAvailable()) {
+    var savedCode = null;
+    try { savedCode = localStorage.getItem(LS_CODE); } catch (e) {}
+    if (savedCode) {
+      prepare(savedCode).then(function (pp) {
+        SYNC.code = savedCode; SYNC.id = pp.id; SYNC.key = pp.key;
+        try { SYNC.base = n(localStorage.getItem(LS_BASE)); } catch (e) {}
+        return pullNow();
+      });
+    }
+    // coming back to the tab is the moment another device's changes matter
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && syncOn() && Date.now() - SYNC.pulledAt > 20000) pullNow(true);
+    });
+    window.addEventListener('online', function () { if (syncOn()) pullNow(true).then(pushNow); });
+    setInterval(function () { if (syncOn() && SYNC.state === 'ok') renderChrome(); }, 60000);
   }
 })();
 </script>
