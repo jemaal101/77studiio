@@ -549,21 +549,49 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   /* -------------------------------------------------------------- state */
   var S, UI, DIRTY = false, ARTIFACT = null, DOWNLOADS = null, READONLY = false, saving = false;
 
+  /** How a service is charged. Not everything has a set price: an install
+      depends on the part, and some work is not being offered yet. */
+  var MODES = { fixed: 'Set price', varies: 'Depends on the job', soon: 'Not offering it yet' };
+  function svcMode(sv) { return sv && MODES[sv.mode] ? sv.mode : 'fixed'; }
+  function offered(sv) { return svcMode(sv) !== 'soon'; }
+
+  function defaultMode(name) {
+    var nm = String(name || '').toLowerCase();
+    if (/wrap|chrome delete/.test(nm)) return 'soon';
+    if (/install|supply only|per hour|labour/.test(nm)) return 'varies';
+    return 'fixed';
+  }
+
   function emptyState() {
     return {
-      v: 2, stamp: 0,
+      v: 3, stamp: 0,
       meta: { business: 'Kitted Lab', currency: '$', theme: 'system' },
-      services: STARTER_SERVICES.map(function (nm) { return { id: uid('sv'), name: nm, price: 0, cost: 0 }; }),
+      services: STARTER_SERVICES.map(function (nm) {
+        return { id: uid('sv'), name: nm, price: 0, cost: 0, mode: defaultMode(nm) };
+      }),
       jobs: [], products: [], orders: [], expenses: [], suppliers: []
     };
+  }
+
+  /** Carry an older saved state forward. Runs on whichever copy wins the
+      load, so it does not matter which device saw the new version first. */
+  function migrate(st) {
+    if (!st || !st.v) return st;
+    if (st.v < 3) {
+      (st.services || []).forEach(function (sv) { if (!sv.mode) sv.mode = defaultMode(sv.name); });
+      st.v = 3;
+    }
+    return st;
   }
 
   function loadState() {
     var emb = null, local = null;
     try { emb = JSON.parse(document.getElementById('app-data').textContent); } catch (e) {}
     try { local = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) {}
-    if (!emb || emb.fresh || emb.v !== 2) emb = emptyState();
-    if (local && local.v === 2 && (local.stamp || 0) > (emb.stamp || 0)) { S = local; DIRTY = true; }
+    if (!emb || emb.fresh || !(emb.v >= 2)) emb = emptyState();
+    emb = migrate(emb);
+    local = migrate(local);
+    if (local && local.v >= 2 && (local.stamp || 0) > (emb.stamp || 0)) { S = local; DIRTY = true; }
     else { S = emb; DIRTY = false; try { localStorage.removeItem(LS); } catch (e) {} }
     ['services', 'jobs', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) {
       if (!Array.isArray(S[k])) S[k] = [];
@@ -1295,7 +1323,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   function startHere() {
     var steps = [
-      { t: 'Put your prices in', s: 'Tint, detail, wrap, install — set what you charge once and every job fills itself in.', done: S.services.some(function (x) { return n(x.price) > 0; }), act: 'tab', v: 'settings' },
+      { t: 'Put your prices in', s: 'Set what you charge once and every job fills itself in. Work that varies, or that you are not offering yet, can be marked as such.', done: S.services.some(function (x) { return n(x.price) > 0; }), act: 'tab', v: 'settings' },
       { t: 'Book your first job', s: 'A car, what you are doing to it, and the price.', done: S.jobs.length > 0, act: 'new-job' },
       { t: 'Add the stock you hold', s: 'Film, vinyl, parts — anything you count.', done: S.products.length > 0, act: 'new-product' },
       { t: 'Save your supplier contacts', s: 'So you can call them from your phone.', done: S.suppliers.length > 0, act: 'new-supplier' }
@@ -1905,13 +1933,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     h += '<section class="card"><div class="card-h">' + ico('spark') + '<h3>Your prices</h3><div class="spacer"></div>' +
       '<button class="btn sm" data-act="new-service">' + ico('plus') + 'Add</button></div><div class="card-b flush">' +
       '<div class="hint" style="padding:14px 16px 0">Set what you charge once. Booking a job then becomes: pick the work, and the price fills itself in.</div>' +
-      (S.services.length ? '<div class="rows" style="margin-top:10px">' + S.services.map(function (sv) {
-        return '<div class="row tap" data-act="edit-service" data-id="' + sv.id + '">' +
-          '<span class="grow"><span class="t truncate">' + esc(sv.name) + '</span>' +
-          (n(sv.cost) ? '<br><span class="s">materials about ' + money(sv.cost) + '</span>' : '') + '</span>' +
-          '<span class="num ' + (n(sv.price) ? '' : 'amb') + '" style="font-weight:600">' + (n(sv.price) ? money(sv.price) : 'set price') + '</span>' +
-          '<button class="btn icon sm" data-act="del" data-kind="services" data-id="' + sv.id + '" aria-label="Delete">' + ico('trash') + '</button></div>';
-      }).join('') + '</div>' : emptyBlock('spark', 'No services yet', 'Add the work you do and what you charge for it.')) +
+      (S.services.length ? serviceRows() : emptyBlock('spark', 'No services yet', 'Add the work you do and what you charge for it.')) +
       '</div></section>';
 
     h += '<section class="card"><div class="card-h">' + ico('cog') + '<h3>Basics</h3></div><div class="card-b">' +
@@ -1958,6 +1980,32 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       }).join('') + '</div></section>';
 
     return h + '</div>';
+  }
+
+  function serviceRow(sv) {
+    var mode = svcMode(sv), right;
+    if (mode === 'soon') right = '<span class="chip">Coming soon</span>';
+    else if (mode === 'varies') right = '<span class="chip acc">Per job</span>';
+    else right = '<span class="num ' + (n(sv.price) ? '' : 'amb') + '" style="font-weight:600">' +
+      (n(sv.price) ? money(sv.price) : 'set price') + '</span>';
+    return '<div class="row tap" data-act="edit-service" data-id="' + sv.id + '">' +
+      '<span class="grow"><span class="t truncate">' + esc(sv.name) + '</span>' +
+      (n(sv.cost) ? '<br><span class="s">materials about ' + money(sv.cost) + '</span>' : '') + '</span>' +
+      right +
+      '<button class="btn icon sm" data-act="del" data-kind="services" data-id="' + sv.id + '" aria-label="Delete">' + ico('trash') + '</button></div>';
+  }
+
+  function serviceRows() {
+    var live = S.services.filter(offered), soon = S.services.filter(function (sv) { return !offered(sv); });
+    var h = '<div class="rows" style="margin-top:10px">' + live.map(serviceRow).join('') + '</div>';
+    if (soon.length) {
+      h += '<div style="padding:14px 16px 6px;border-top:1px solid var(--rule-hard);background:var(--sunk)">' +
+        '<div class="eyebrow">Coming soon</div>' +
+        '<div class="hint" style="margin-top:3px">Kept here for later. These stay off the job screen until you give ' +
+        'one a price or mark it as per job.</div></div>' +
+        '<div class="rows">' + soon.map(serviceRow).join('') + '</div>';
+    }
+    return h;
   }
 
   /* ========================== ENTITY DEFINITIONS ======================== */
@@ -2043,7 +2091,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       label: 'Services', one: 'service', title: 'Service', icon: 'spark', noPaste: true, noExport: true,
       fields: [
         { k: 'name', l: 'What is the job called', t: 'text', req: true, full: true, ph: 'Window tint — full car' },
-        { k: 'price', l: 'What you charge', t: 'money' },
+        { k: 'mode', l: 'How you charge for it', t: 'select', full: true,
+          o: Object.keys(MODES).map(function (m) { return { v: m, l: MODES[m] }; }),
+          hint: 'Pick "depends on the job" for work like installs, where the part decides the price' },
+        { k: 'price', l: 'What you charge', t: 'money', hint: 'Only used when it is a set price' },
         { k: 'cost', l: 'What materials cost you', t: 'money', hint: 'Fills in on every job so profit is right' }
       ]
     }
@@ -2057,6 +2108,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (kind === 'jobs') { o.status = 'Booked'; o.price = 0; }
     if (kind === 'orders') { o.status = 'Ordered'; o.eta = ''; o.applied = false; }
     if (kind === 'expenses') { o.category = 'Ads'; }
+    if (kind === 'services') { o.mode = 'fixed'; }
     if (kind === 'products') { o.reorder = 2; }
     return o;
   }
@@ -2111,19 +2163,22 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   function servicesPicker(ids) {
     ids = ids || [];
-    if (!S.services.length) {
+    // anything marked "not offering it yet" stays out of the way, unless this
+    // job already has it on — never hide something already booked
+    var list = S.services.filter(function (sv) { return offered(sv) || ids.indexOf(sv.id) >= 0; });
+    if (!list.length) {
       return '<div class="field full"><label>What are you doing?</label>' +
         '<div class="hint">No services set up yet. <button class="more" data-act="new-service">Add one</button></div>' +
         '<input type="hidden" data-k="serviceIds" value=""></div>';
     }
     return '<div class="field full"><label>What are you doing?</label>' +
-      '<div class="pick" id="svcpick">' + S.services.map(function (sv) {
+      '<div class="pick" id="svcpick">' + list.map(function (sv) {
         var on = ids.indexOf(sv.id) >= 0;
         return '<button type="button" data-svc="' + sv.id + '" aria-pressed="' + on + '">' +
-          (on ? ico('check') : '') + esc(sv.name) + '</button>';
+          (on ? ico('check') : '') + esc(sv.name) + (svcMode(sv) === 'varies' ? ' <span style="opacity:.65">·&nbsp;quote</span>' : '') + '</button>';
       }).join('') + '</div>' +
       '<input type="hidden" data-k="serviceIds" id="f_serviceIds" value="' + esc(ids.join(',')) + '">' +
-      '<div class="hint">Tap everything you are doing. The price fills in from your price list — change it if this one is different.</div></div>';
+      '<div class="hint" id="svchint">Tap everything you are doing. Anything with a set price fills the box below in.</div></div>';
   }
 
   function linesEditor(kind, rows) {
@@ -2499,8 +2554,21 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     var hidden = document.getElementById('f_serviceIds'), price = document.getElementById('f_price');
     if (!hidden || !price || !FORM) return;
     var ids = hidden.value.split(',').filter(Boolean);
-    var sum = 0, matCost = 0;
-    ids.forEach(function (id) { var sv = svc(id); if (sv) { sum += n(sv.price); matCost += n(sv.cost); } });
+    var sum = 0, matCost = 0, quotes = [];
+    ids.forEach(function (id) {
+      var sv = svc(id);
+      if (!sv) return;
+      matCost += n(sv.cost);
+      if (svcMode(sv) === 'varies') { quotes.push(sv.name); return; }   // no set price to add
+      sum += n(sv.price);
+    });
+    var hintEl = document.getElementById('svchint');
+    if (hintEl) {
+      hintEl.innerHTML = quotes.length
+        ? esc(quotes.join(' and ')) + ' ' + (quotes.length > 1 ? 'are' : 'is') +
+          ' priced per job — put in what you are charging for this one.'
+        : 'Tap everything you are doing. Anything with a set price fills the box below in.';
+    }
     if (n(price.value) === n(FORM.autoPrice) || !n(price.value)) price.value = sum || '';
     FORM.autoPrice = sum;
     var mat = document.getElementById('f_materials');
@@ -2562,7 +2630,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       if (at >= 0) ids.splice(at, 1); else ids.push(id);
       hidden.value = ids.join(',');
       svcBtn.setAttribute('aria-pressed', at < 0);
-      svcBtn.innerHTML = (at < 0 ? ico('check') : '') + esc(svcName(id));
+      var svcRec = svc(id);
+      svcBtn.innerHTML = (at < 0 ? ico('check') : '') + esc(svcName(id)) +
+        (svcMode(svcRec) === 'varies' ? ' <span style="opacity:.65">·&nbsp;quote</span>' : '');
       syncPrice();
       return;
     }
@@ -2728,8 +2798,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'restore': {
         var data;
         try { data = JSON.parse(document.getElementById('jsonin').value); } catch (e) { toast('That is not a backup file.'); break; }
-        if (!data || data.v !== 2) { toast('That backup is from a different version.'); break; }
-        S = data;
+        if (!data || !(data.v >= 2)) { toast('That backup is from a different version.'); break; }
+        S = migrate(data);
         ['services', 'jobs', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; });
         if (!S.meta) S.meta = emptyState().meta;
         closeDrawer(); applyTheme(); touch(); render(); toast('Backup is back. Press Save to keep it.');

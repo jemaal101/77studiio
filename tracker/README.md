@@ -117,6 +117,39 @@ which to keep.
 Pulls on open and on tab focus, pushes 2.5s after a change, queues while
 offline and catches up when the signal returns.
 
+## Changing it without losing data
+
+The source ships an empty starter blob, so republishing it as-is would drop
+whatever is in the live artifact. Never do that. The sequence is:
+
+1. `Artifact` `action: "read"` on the live URL.
+2. `python3 tracker/prepare_publish.py --live <that file> --out /tmp/publish.html`
+   — lifts the live `app-data` blob, migrates it, and drops it into a fresh
+   build. The output goes outside the repo; the owner's data is never committed.
+3. Publish `/tmp/publish.html` with `url:` set to the artifact.
+
+Three things back this up: `loadState` keeps whichever copy has the newer
+`stamp`, so a device holding real data wins over an empty published page and
+re-saves it; `migrate()` runs on whichever copy wins, so it does not matter
+which device saw the new version first; and the artifact keeps version history
+to roll back to.
+
+## Service charging modes
+
+Not everything has a set price. Each service carries a `mode`:
+
+- `fixed` — a set price that auto-fills the job.
+- `varies` — priced per job (an install depends on the part). Offered when
+  booking, marked "quote", contributes nothing to the auto-filled price, and
+  the form says which of the picked services is per-job.
+- `soon` — not being offered yet. Kept in Settings under a "Coming soon"
+  heading and hidden from the job screen, unless a job already has it on, in
+  which case it still shows so nothing already booked can vanish.
+
+Defaults, applied to the starter list and by `migrate()` to any older saved
+state: anything matching wrap or chrome delete is `soon`, anything matching
+install or supply-only is `varies`, everything else `fixed`.
+
 ## How the numbers work
 
 - A job counts as **money in** only when it is marked paid. Before that it sits
