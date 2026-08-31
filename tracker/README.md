@@ -8,7 +8,7 @@ Ships completely empty. The only thing pre-filled is a starter price list of the
 services a shop like this sells — every price on it is zero until the owner sets
 it.
 
-## The five screens
+## The six screens
 
 - **Home** — profit for the month in one number, then what came in, what went
   out, what is still owed and the average job. Under that: what is booked in,
@@ -182,6 +182,36 @@ is left with once the shelf and the materials are paid for.
   logged again under Money. Only bills a job does not cover go there.
 - Stock moves itself: parts added to a job come off the count; an order marked
   arrived goes on. Edits compute the delta rather than re-applying.
+
+## Invoices
+
+An invoice belongs to a job — `j.inv` — and is only created when you press
+Invoice on that job. Nothing is invented up front, and no number is spent
+until one is actually raised (`meta.invNext` increments then, not before).
+
+- The first draft is seeded from the job: each fixed-price service becomes its
+  own line, and whatever is left against the agreed price becomes one more,
+  named after the per-job work if there is any. Then the lines are yours to
+  rewrite — an invoice says whatever you want it to say.
+- `meta.biz` holds everything printed on it, filled in once under Settings →
+  What goes on an invoice: name, ABN, address, contact, bank details, number
+  prefix, days to pay, GST, and a footer.
+- GST is treated the Australian way: prices already include it, so the sheet
+  shows the ex-GST subtotal, the GST inside the price, and the same total.
+- A deposit already on the job comes off and leaves an amount due.
+- `invoiceSheet()` builds the paper; `PAPER_CSS` is one string used both by the
+  app (injected into `<head>` at boot) and by the standalone file, so what is
+  printed is exactly what was on screen. Print uses a media query that hides
+  the app shell; Save a copy writes a complete self-contained HTML document.
+- An invoice raised but not marked sent shows on Home under Needs doing.
+
+## Orders
+
+Orders run exactly like jobs, on their own tab: a board across the top
+(placed / paid / on its way / landed) you tap into, then cards you step forward
+one button at a time (`nextOrderStep`). The Stock page keeps only the "coming
+in" summary and a link across. The late count sits on the Orders tab's badge;
+Stock's badge is low stock alone.
 
 ## Where a low count actually shows up
 

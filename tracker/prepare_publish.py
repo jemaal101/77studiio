@@ -53,6 +53,14 @@ if data.get("v") and data["v"] < 4:
     data["v"] = 4
     print("migrated the carried-over data to v4")
 
+if data.get("v") and data["v"] < 5:
+    # invoices arrive empty; nothing existing has one and none is invented
+    meta = data.setdefault("meta", {})
+    meta.setdefault("biz", {"terms": 14, "gst": False, "gstRate": 10, "prefix": "INV-"})
+    meta.setdefault("invNext", 1)
+    data["v"] = 5
+    print("migrated the carried-over data to v5")
+
 out = BLOCK.sub(
     lambda m: m.group(1) + json.dumps(data).replace("<", "\\u003c") + m.group(3),
     SRC.read_text(encoding="utf-8"), count=1)
