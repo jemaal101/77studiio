@@ -199,6 +199,11 @@ the job behind it. No number is spent until one is actually raised
    list, filterable by not sent / not paid / paid, with the totals above it.
 3. **Make an invoice** on any job card, which seeds it from that job.
 
+- **The number is one field.** You type the whole next number the way it
+  should read — `INV-0010` — and `setNextNo` splits it: trailing digits are the
+  count, everything in front is the prefix, and how many digits you typed is
+  how wide it stays. Two fields (a prefix and a hidden counter) invited a whole
+  number into the prefix box; the v6 migration repairs one typed that way.
 - A job-seeded draft takes each fixed-price service as its own line, and
   whatever is left against the agreed price becomes one more, named after the
   per-job work if there is any. Then the lines are yours to rewrite — an

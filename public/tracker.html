@@ -675,6 +675,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       // an invoice used to hang off a job; it is its own record now, so it can
       // be found in one list and written from scratch. Nothing is lost.
       if (!Array.isArray(st.invoices)) st.invoices = [];
+      // a whole number typed into the old "starts with" box, e.g. INV-0010,
+      // becomes the prefix, the width and the count it was always meant to be
+      if (st.meta && st.meta.biz) {
+        var pm = String(st.meta.biz.prefix || '').match(/^(.*?)(\d+)$/);
+        if (pm) {
+          st.meta.biz.prefix = pm[1];
+          st.meta.biz.numWidth = pm[2].length;
+          if ((n(st.meta.invNext) || 1) <= 1) st.meta.invNext = Math.max(1, parseInt(pm[2], 10) || 1);
+        }
+      }
       (st.jobs || []).forEach(function (j) {
         if (j.inv && j.inv.no) {
           st.invoices.push({
@@ -1674,8 +1684,29 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
      actually raise one.
      ===================================================================== */
   function biz() { if (!S.meta.biz) S.meta.biz = {}; return S.meta.biz; }
-  function pad4(x) { var v = String(Math.max(1, Math.floor(n(x) || 1))); while (v.length < 4) v = '0' + v; return v; }
-  function nextInvNo() { return (biz().prefix || 'INV-') + pad4(S.meta.invNext || 1); }
+  function padNo(x, w) {
+    var v = String(Math.max(1, Math.floor(n(x) || 1)));
+    while (v.length < (w || 4)) v = '0' + v;
+    return v;
+  }
+  function nextInvNo() {
+    var b = biz();
+    return (b.prefix == null ? 'INV-' : b.prefix) + padNo(S.meta.invNext || 1, n(b.numWidth) || 4);
+  }
+  /** You type the whole next number, the way it should read. The trailing
+      digits are the count, everything in front of them is the prefix, and how
+      many digits you typed is how wide it stays. */
+  function setNextNo(v) {
+    var b = biz(), str = String(v == null ? '' : v).trim();
+    var m = str.match(/^(.*?)(\d+)$/);
+    if (m) {
+      b.prefix = m[1];
+      b.numWidth = m[2].length;
+      S.meta.invNext = Math.max(1, parseInt(m[2], 10) || 1);
+    } else {
+      b.prefix = str;
+    }
+  }
   function addDays(iso, d) {
     var t = new Date(iso + 'T00:00:00');
     if (isNaN(t.getTime())) return iso;
@@ -2720,9 +2751,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       f('phone', 'Phone') +
       f('email', 'Email') +
       f('addr', 'Address') +
-      '<div class="field"><label for="bz_prefix">Invoice numbers start with</label>' +
-      '<input class="inp" id="bz_prefix" data-biz="prefix" value="' + esc(b.prefix || 'INV-') + '" maxlength="10">' +
-      '<div class="hint">Next one out: ' + esc(nextInvNo()) + '</div></div>' +
+      '<div class="field"><label for="bz_nextno">Your next invoice number</label>' +
+      '<input class="inp" id="bz_nextno" data-nextno="1" value="' + esc(nextInvNo()) + '" spellcheck="false">' +
+      '<div class="hint">Write it exactly how you want it to read. After that they count up on their own.</div></div>' +
       '<div class="field"><label for="bz_terms">Days to pay</label>' +
       '<input class="inp" id="bz_terms" type="number" step="1" min="0" inputmode="numeric" data-biz="terms" value="' +
       esc(n(b.terms) || 14) + '"></div>' +
@@ -3765,6 +3796,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (t.hasAttribute && t.hasAttribute('data-vk')) invRunning();
     if (FORM && FORM.kind === 'orders' && t.id && /^f_(ship|ordered)$/.test(t.id)) syncEta();
     if (t.id === 'paste') { previewPaste(); return; }
+    if (t.hasAttribute && t.hasAttribute('data-nextno')) { setNextNo(t.value); touch(); return; }
     if (t.hasAttribute && t.hasAttribute('data-biz')) {
       biz()[t.getAttribute('data-biz')] = t.type === 'checkbox' ? t.checked : t.value;
       touch();

@@ -63,6 +63,7 @@ if data.get("v") and data["v"] < 5:
 
 if data.get("v") and data["v"] < 6:
     # an invoice used to hang off a job; it is its own record now
+    meta = data.setdefault("meta", {})
     data.setdefault("invoices", [])
     for i, j in enumerate(data.get("jobs") or []):
         inv = j.pop("inv", None)
@@ -73,6 +74,14 @@ if data.get("v") and data["v"] < 6:
                 "lines": inv.get("lines") or [], "note": inv.get("note") or "",
                 "sent": bool(inv.get("sent")),
             })
+    biz = meta.setdefault("biz", {})
+    m = re.match(r"^(.*?)(\d+)$", str(biz.get("prefix") or ""))
+    if m:
+        # a whole number typed into the old "starts with" box
+        biz["prefix"] = m.group(1)
+        biz["numWidth"] = len(m.group(2))
+        if int(meta.get("invNext") or 1) <= 1:
+            meta["invNext"] = max(1, int(m.group(2)))
     data["v"] = 6
     print("migrated the carried-over data to v6")
 
