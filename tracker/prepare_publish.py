@@ -61,6 +61,21 @@ if data.get("v") and data["v"] < 5:
     data["v"] = 5
     print("migrated the carried-over data to v5")
 
+if data.get("v") and data["v"] < 6:
+    # an invoice used to hang off a job; it is its own record now
+    data.setdefault("invoices", [])
+    for i, j in enumerate(data.get("jobs") or []):
+        inv = j.pop("inv", None)
+        if inv and inv.get("no"):
+            data["invoices"].append({
+                "id": "iv%d" % i, "jobId": j.get("id"), "no": inv.get("no"),
+                "date": inv.get("date"), "due": inv.get("due"),
+                "lines": inv.get("lines") or [], "note": inv.get("note") or "",
+                "sent": bool(inv.get("sent")),
+            })
+    data["v"] = 6
+    print("migrated the carried-over data to v6")
+
 out = BLOCK.sub(
     lambda m: m.group(1) + json.dumps(data).replace("<", "\\u003c") + m.group(3),
     SRC.read_text(encoding="utf-8"), count=1)

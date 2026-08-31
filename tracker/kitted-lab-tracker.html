@@ -370,6 +370,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 .sub2{display:block;font-size:13.5px;line-height:1.35;color:var(--muted);margin-top:2px;
   white-space:nowrap;font-family:"Roboto Mono",ui-monospace,monospace}
 /* the invoice, full screen over everything, so it reads like the paper it is */
+/* one tap to drop a price you already set onto an invoice */
+.picks{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.pick-b{border:1px solid var(--rule-hard);background:var(--panel);color:var(--ink-2);border-radius:3px;
+  padding:8px 11px;font:inherit;font-size:14.5px;font-weight:500;cursor:pointer;display:inline-flex;
+  align-items:center;gap:8px;max-width:100%}
+.pick-b:hover{border-color:var(--acc-fill);color:var(--acc);background:var(--acc-wash)}
+.pick-b .num{color:var(--muted);font-weight:600}
 .switch{display:flex;align-items:center;gap:11px;font-size:16px;font-weight:500;cursor:pointer;
   padding:11px 13px;border:1px solid var(--rule-hard);border-radius:3px;background:var(--sunk)}
 .switch input{width:20px;height:20px;flex:none;accent-color:var(--acc-fill);cursor:pointer}
@@ -618,7 +625,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   function emptyState() {
     return {
-      v: 5, stamp: 0,
+      v: 6, stamp: 0,
       meta: {
         business: 'Kitted Lab', currency: '$', theme: 'system', invNext: 1,
         biz: { legal: '', abn: '', addr: '', phone: '', email: '', bank: '', bsb: '', acct: '',
@@ -627,7 +634,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       services: STARTER_SERVICES.map(function (nm) {
         return { id: uid('sv'), name: nm, price: 0, cost: 0, mode: defaultMode(nm) };
       }),
-      jobs: [], products: [], orders: [], expenses: [], suppliers: []
+      jobs: [], invoices: [], products: [], orders: [], expenses: [], suppliers: []
     };
   }
 
@@ -651,6 +658,21 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       if (!st.meta.invNext) st.meta.invNext = 1;
       st.v = 5;
     }
+    if (st.v < 6) {
+      // an invoice used to hang off a job; it is its own record now, so it can
+      // be found in one list and written from scratch. Nothing is lost.
+      if (!Array.isArray(st.invoices)) st.invoices = [];
+      (st.jobs || []).forEach(function (j) {
+        if (j.inv && j.inv.no) {
+          st.invoices.push({
+            id: uid('iv'), jobId: j.id, no: j.inv.no, date: j.inv.date, due: j.inv.due,
+            lines: j.inv.lines || [], note: j.inv.note || '', sent: !!j.inv.sent
+          });
+        }
+        delete j.inv;
+      });
+      st.v = 6;
+    }
     return st;
   }
 
@@ -663,7 +685,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     local = migrate(local);
     if (local && local.v >= 2 && (local.stamp || 0) > (emb.stamp || 0)) { S = local; DIRTY = true; }
     else { S = emb; DIRTY = false; try { localStorage.removeItem(LS); } catch (e) {} }
-    ['services', 'jobs', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) {
+    ['services', 'jobs', 'invoices', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) {
       if (!Array.isArray(S[k])) S[k] = [];
     });
     if (!S.meta) S.meta = emptyState().meta;
@@ -1133,7 +1155,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function setSyncState(st) { SYNC.state = st; renderChrome(); }
 
   function adoptRemote(remote, updated) {
-    ['services', 'jobs', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) {
+    ['services', 'jobs', 'invoices', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) {
       if (!Array.isArray(remote[k])) remote[k] = [];
     });
     if (!remote.meta) remote.meta = emptyState().meta;
@@ -1364,7 +1386,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     h += '<div class="tiles">' +
       tile('Money in', money(r.in), plural(r.jobs, 'job') + ' paid', 'jobs') +
       tile('Costs & bills', money(r.cost + r.out), 'Jobs ' + money(r.cost) + ' · bills ' + money(r.out), 'money') +
-      tile('Still owed', money(owed), owed ? plural(unpaidJobs().length, 'job') + ' to chase' : 'Nothing outstanding', 'jobs') +
+      tile('Still owed', money(owed), owed ? plural(unpaidJobs().length, 'job') + ' to chase' : 'Nothing outstanding',
+        null, ['go-invoices', 'unpaid']) +
       tile('Average job', money(r.avg), r.jobs ? 'Across ' + plural(r.jobs, 'paid job') : 'No paid jobs yet') +
       '</div>';
 
@@ -1387,8 +1410,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     return h;
   }
 
-  function tile(lab, val, sub, tab) {
-    return '<div class="tile' + (tab ? ' tap' : '') + '"' + (tab ? ' data-tab="' + tab + '"' : '') + '>' +
+  function tile(lab, val, sub, tab, act) {
+    var go = act ? ' data-act="' + act[0] + '" data-v="' + esc(act[1] || '') + '"' : tab ? ' data-tab="' + tab + '"' : '';
+    return '<div class="tile' + (go ? ' tap' : '') + '"' + go + '>' +
       '<div class="lab">' + esc(lab) + '</div><div class="val">' + esc(val) + '</div>' +
       '<div class="sub">' + esc(sub) + '</div></div>';
   }
@@ -1418,7 +1442,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       { t: 'Put in the prices you know', s: 'Just the ones you are sure of. Leave the rest — you can set them as you go, or mark them as priced per job.', done: S.services.some(function (x) { return n(x.price) > 0; }), act: 'tab', v: 'settings' },
       { t: 'Book a job', s: 'A car, what you are doing to it, and the price.', done: S.jobs.length > 0, act: 'new-job' },
       { t: 'Add the stock you hold', s: 'Film, vinyl, parts — anything you count.', done: S.products.length > 0, act: 'new-product' },
-      { t: 'Save your supplier contacts', s: 'So you can call them from your phone.', done: S.suppliers.length > 0, act: 'new-supplier' }
+      { t: 'Save your supplier contacts', s: 'So you can call them from your phone.', done: S.suppliers.length > 0, act: 'new-supplier' },
+      { t: 'Set up your invoices', s: 'Your ABN and bank details go in once, then every invoice comes out finished.',
+        done: !!(biz().abn || biz().bank || biz().legal), act: 'tab', v: 'settings' }
     ];
     if (steps.every(function (x) { return x.done; })) return '';
     var done = steps.filter(function (x) { return x.done; }).length;
@@ -1456,7 +1482,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   function unsentInvoices() {
-    return S.jobs.filter(function (j) { return hasInv(j) && !j.inv.sent && j.status !== 'Cancelled'; });
+    return S.invoices.filter(function (v) { var j = invJob(v); return !v.sent && (!j || j.status !== 'Cancelled'); });
   }
   function needsDoing() {
     var unpaid = unpaidJobs(), low = lowStock(), late = lateOrders(), unsent = unsentInvoices();
@@ -1466,11 +1492,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (!total) return h + emptyBlock('check', 'Nothing to chase',
       'Every invoice is out, everyone has paid, nothing is low and nothing is late.') + '</section>';
     h += '<div class="card-b flush"><div class="rows">';
-    h += unsent.map(function (j) {
-      return '<div class="row tap" data-act="invoice" data-id="' + j.id + '">' +
-        '<span class="grow"><span class="t truncate">' + esc(j.inv.no) + ' is not out yet</span>' +
-        '<br><span class="s truncate">' + esc(j.customer || 'No name') + ' · ' + esc(jobTitle(j)) + '</span></span>' +
-        '<span class="chip amb num">' + money(invTotals(j).due) + '</span></div>';
+    h += unsent.map(function (v) {
+      var vj = invJob(v);
+      return '<div class="row tap" data-act="open-invoice" data-id="' + v.id + '">' +
+        '<span class="grow"><span class="t truncate">' + esc(v.no) + ' has not gone out yet</span>' +
+        '<br><span class="s truncate">' + esc(vj ? (vj.customer || 'No name') : 'Job deleted') +
+        (vj ? ' · ' + esc(jobTitle(vj)) : '') + '</span></span>' +
+        '<span class="chip amb num">' + money(invTotals(v).due) + '</span></div>';
     }).join('');
     h += unpaid.map(function (j) {
       return '<div class="row tap" data-act="edit-job" data-id="' + j.id + '">' +
@@ -1600,8 +1628,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       acts += '<button class="btn sm ok" data-act="job-status" data-id="' + j.id + '" data-v="Done">' + ico('check') + 'Finished</button>';
     if (j.status === 'Done')
       acts += '<button class="btn sm primary" data-act="job-paid" data-id="' + j.id + '">' + ico('money') + 'Got paid ' + money(owing) + '</button>';
-    acts += '<button class="btn sm" data-act="invoice" data-id="' + j.id + '">' + ico('doc') +
-      (hasInv(j) ? esc(j.inv.no) : 'Invoice') + '</button>';
+    var jinv = invOfJob(j.id);
+    acts += '<button class="btn sm' + (jinv ? '' : ' ok') + '" data-act="invoice" data-id="' + j.id + '">' + ico('doc') +
+      (jinv ? 'Open ' + esc(jinv.no) : 'Make an invoice') + '</button>';
     acts += '<span class="spacer"></span>' +
       '<button class="btn icon sm" data-act="edit-job" data-id="' + j.id + '" aria-label="Edit job">' + ico('pencil') + '</button>' +
       '<button class="btn icon sm" data-act="del" data-kind="jobs" data-id="' + j.id + '" aria-label="Delete job">' + ico('trash') + '</button>';
@@ -1616,8 +1645,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       }).join('') + '</span></div>' : '') +
       '<div class="job-meta">' + statusChip(j) +
       '<span class="job-when">' + esc(whenLabel(j.date)) + '</span>' +
-      (hasInv(j) ? '<span class="chip ' + (j.inv.sent ? 'acc' : '') + '">' +
-        esc(j.inv.no) + (j.inv.sent ? ' sent' : ' not sent') + '</span>' : '') +
+      (jinv ? '<span class="chip ' + (jinv.sent ? 'acc' : 'amb') + '">' +
+        esc(jinv.no) + (jinv.sent ? ' sent' : ' not sent') + '</span>' : '') +
       (j.status === 'Paid' ? '<span class="job-when num ' + (profit >= 0 ? 'pos' : 'neg') + '">' + money(profit) + ' profit</span>' :
         (n(j.deposit) ? '<span class="job-when num">' + money(j.deposit) + ' deposit</span>' : '')) +
       '</div></div><div class="job-acts">' + acts + '</div></article>';
@@ -1640,12 +1669,23 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     t.setDate(t.getDate() + (n(d) || 0));
     return t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate());
   }
-  function hasInv(j) { return !!(j && j.inv && j.inv.no); }
+  function invJob(inv) { return inv ? byId(S.jobs, inv.jobId) : null; }
+  function invOfJob(id) {
+    for (var i = 0; i < S.invoices.length; i++) if (S.invoices[i].jobId === id) return S.invoices[i];
+    return null;
+  }
+  function invPaid(inv) { var j = invJob(inv); return !!j && j.status === 'Paid'; }
+  function unsentInvoices() {
+    return S.invoices.filter(function (v) { var j = invJob(v); return !v.sent && (!j || j.status !== 'Cancelled'); });
+  }
+  function unpaidInvoices() {
+    return S.invoices.filter(function (v) { var j = invJob(v); return j && j.status !== 'Paid' && j.status !== 'Cancelled'; });
+  }
 
-  /** Build the first draft from the job. Fixed-price services become their
-      own lines; whatever is left over against the agreed price becomes one
-      more, named after the per-job work if there is any. */
-  function seedInvoice(j) {
+  /** Build the first draft from a job. Fixed-price services become their own
+      lines; whatever is left over against the agreed price becomes one more,
+      named after the per-job work if there is any. */
+  function seedLines(j) {
     var lines = [], fixed = 0, quotes = [];
     (j.serviceIds || []).forEach(function (id) {
       var sv = svc(id);
@@ -1655,36 +1695,41 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       else quotes.push(sv.name);
     });
     var rest = Math.round((n(j.price) - fixed) * 100) / 100;
-    if (!lines.length) {
-      lines.push({ desc: quotes.length ? quotes.join(' + ') : jobTitle(j), qty: 1, each: n(j.price) });
-    } else if (Math.abs(rest) >= 0.01) {
-      lines.push({ desc: quotes.length ? quotes.join(' + ') : 'Extra work agreed', qty: 1, each: rest });
-    }
-    return {
-      no: nextInvNo(), date: todayISO(),
-      due: addDays(todayISO(), n(biz().terms) || 14),
-      lines: lines, note: '', sent: false
-    };
+    if (!lines.length) return [{ desc: quotes.length ? quotes.join(' + ') : jobTitle(j), qty: 1, each: n(j.price) }];
+    if (Math.abs(rest) >= 0.01) lines.push({ desc: quotes.length ? quotes.join(' + ') : 'Extra work agreed', qty: 1, each: rest });
+    return lines;
   }
 
-  function invTotals(j) {
-    var inv = j.inv || { lines: [] }, b = biz();
-    var total = (inv.lines || []).reduce(function (a, l) { return a + n(l.qty) * n(l.each); }, 0);
-    total = Math.round(total * 100) / 100;
+  /** Raise one against a job, burning the next number as it goes. */
+  function raiseInvoice(job, lines) {
+    var inv = {
+      id: uid('iv'), jobId: job.id, no: nextInvNo(), date: todayISO(),
+      due: addDays(todayISO(), n(biz().terms) || 14),
+      lines: lines || seedLines(job), note: '', sent: false
+    };
+    S.invoices.push(inv);
+    S.meta.invNext = (n(S.meta.invNext) || 1) + 1;
+    return inv;
+  }
+
+  function invTotal(inv) {
+    return Math.round((inv.lines || []).reduce(function (a, l) { return a + n(l.qty) * n(l.each); }, 0) * 100) / 100;
+  }
+  function invTotals(inv) {
+    var b = biz(), j = invJob(inv), total = invTotal(inv);
     var rate = b.gst ? (n(b.gstRate) || 10) : 0;
     var gst = rate ? Math.round((total - total / (1 + rate / 100)) * 100) / 100 : 0;
-    var dep = Math.min(n(j.deposit), total);
+    var dep = j ? Math.min(n(j.deposit), total) : 0;
     return { total: total, gst: gst, ex: Math.round((total - gst) * 100) / 100, rate: rate,
              dep: dep, due: Math.round((total - dep) * 100) / 100 };
   }
 
   /** The sheet itself. Same markup on screen and in the saved file, so what
       is printed is exactly what was looked at. */
-  function invoiceSheet(j) {
-    var inv = j.inv, b = biz(), t = invTotals(j);
+  function invoiceSheet(inv) {
+    var j = invJob(inv) || {}, b = biz(), t = invTotals(inv);
     var br = function (x) { return esc(x).replace(/\n+/g, '<br>'); };   // the name is already the heading
-    var who = [b.abn ? 'ABN ' + b.abn : '', b.addr, b.phone, b.email]
-      .filter(Boolean).map(br).join('<br>');
+    var who = [b.abn ? 'ABN ' + b.abn : '', b.addr, b.phone, b.email].filter(Boolean).map(br).join('<br>');
     var bill = [j.customer || 'Customer', j.phone, j.car, j.rego ? 'Rego ' + j.rego : '']
       .filter(Boolean).map(br).join('<br>');
     var pay = [b.bank, b.bsb ? 'BSB ' + b.bsb : '', b.acct ? 'Acct ' + b.acct : '']
@@ -1706,11 +1751,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         '<tr class="big"><td>Amount due</td><td class="m">' + money2(t.due) + '</td></tr>';
     }
 
-    return '<div class="paper"><div class="pap-h">' +
+    return '<div class="paper' + (invPaid(inv) ? ' is-paid' : '') + '"><div class="pap-h">' +
       '<div><div class="pap-name">' + esc(b.legal || S.meta.business || 'Kitted Lab') + '</div>' +
       '<div class="pap-sub">' + who + '</div></div>' +
-      '<div class="pap-t"><div class="pap-word">' + (t.due <= 0 && j.status === 'Paid' ? 'Receipt' : 'Tax invoice') + '</div>' +
-      '<div class="pap-no">' + esc(inv.no) + '</div></div></div>' +
+      '<div class="pap-t"><div class="pap-word">' + (invPaid(inv) ? 'Receipt' : 'Tax invoice') + '</div>' +
+      '<div class="pap-no">' + esc(inv.no) + '</div>' +
+      (invPaid(inv) ? '<div class="pap-paid">Paid — thank you</div>' : '') + '</div></div>' +
       '<div class="pap-cols">' +
       '<div><div class="pap-lab">Bill to</div><div>' + bill + '</div></div>' +
       '<div><div class="pap-lab">Date</div><div>' + esc(fullDate(inv.date) || inv.date) + '</div>' +
@@ -1739,6 +1785,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     '.paper .pap-t{text-align:right;flex:none}',
     '.paper .pap-word{font-size:13px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#5F6B65}',
     '.paper .pap-no{font-family:"Roboto Mono",ui-monospace,monospace;font-size:21px;font-weight:600;margin-top:3px}',
+    '.paper .pap-paid{margin-top:7px;display:inline-block;border:1.5px solid #197A4B;color:#197A4B;',
+    '  border-radius:3px;padding:3px 9px;font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}',
     '.paper .pap-cols{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;margin:22px 0 26px}',
     '.paper .pap-lab{font-size:12px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;',
     '  color:#5F6B65;margin-bottom:4px}',
@@ -1764,49 +1812,149 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   } catch (e) {}
 
   var INVOICE = null;
-  function openInvoice(id) {
-    var j = byId(S.jobs, id);
+  /** Open the invoice for a job, raising one first if it has none. */
+  function invoiceJob(jobId) {
+    var j = byId(S.jobs, jobId);
     if (!j) return;
-    if (!hasInv(j)) {
-      j.inv = seedInvoice(j);
-      S.meta.invNext = (n(S.meta.invNext) || 1) + 1;   // the number is spent now
-      touch();
-    }
+    var inv = invOfJob(jobId);
+    if (!inv) { inv = raiseInvoice(j); touch(); }
+    openInvoice(inv.id);
+  }
+  function openInvoice(id) {
+    if (!byId(S.invoices, id)) return;
     INVOICE = id;
     renderInvoice();
   }
-  function closeInvoice() { INVOICE = null; document.getElementById('layer').innerHTML = ''; }
+  function closeInvoice() { INVOICE = null; document.getElementById('layer').innerHTML = ''; render(); }
   function renderInvoice() {
-    var j = byId(S.jobs, INVOICE);
-    if (!j) return closeInvoice();
+    var inv = byId(S.invoices, INVOICE);
+    if (!inv) return closeInvoice();
+    var j = invJob(inv) || {};
     document.getElementById('layer').innerHTML =
       '<div class="invwrap"><div class="invbar">' +
       '<button class="btn icon ghost" data-act="inv-close" aria-label="Close">' + ico('x') + '</button>' +
-      '<strong class="truncate">' + esc(j.inv.no) + ' · ' + esc(j.customer || 'Customer') + '</strong>' +
+      '<strong class="truncate">' + esc(inv.no) + ' · ' + esc(j.customer || 'Customer') + '</strong>' +
       '<div class="spacer"></div>' +
       '<button class="btn sm" data-act="inv-edit">' + ico('pencil') + 'Change it</button>' +
-      '<button class="btn sm" data-act="inv-save">' + ico('down') + 'Save a copy</button>' +
+      '<button class="btn sm" data-act="inv-save-file">' + ico('down') + 'Save a copy</button>' +
       '<button class="btn sm primary" data-act="inv-print">' + ico('print') + 'Print</button>' +
-      (j.inv.sent ? '' : '<button class="btn sm ok" data-act="inv-sent">' + ico('check') + 'Mark as sent</button>') +
-      '</div><div class="invpage">' + invoiceSheet(j) + '</div></div>';
+      (inv.sent ? '' : '<button class="btn sm ok" data-act="inv-sent">' + ico('check') + 'Mark as sent</button>') +
+      (j.id && j.status !== 'Paid' && inv.sent
+        ? '<button class="btn sm ok" data-act="inv-paid">' + ico('money') + 'They paid it</button>' : '') +
+      '</div><div class="invpage">' + invoiceSheet(inv) + '</div></div>';
   }
 
   /** A standalone file: the sheet plus the styles it needs, nothing else.
       Opens and prints anywhere, with no trace of the app around it. */
-  function invoiceFile(j) {
+  function invoiceFile(inv) {
+    var j = invJob(inv) || {};
     return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1">' +
-      '<title>' + esc(j.inv.no + ' ' + (j.customer || '')) + '</title><style>' + PAPER_CSS +
+      '<title>' + esc(inv.no + ' ' + (j.customer || '')) + '</title><style>' + PAPER_CSS +
       'body{margin:0;background:#f4f4f2;padding:22px;font-family:Barlow,-apple-system,BlinkMacSystemFont,' +
       '"Segoe UI",Roboto,sans-serif;color:#141A17}' +
       '@media print{body{background:#fff;padding:0}.paper{box-shadow:none;border:0;margin:0}}' +
-      '</style></head><body>' + invoiceSheet(j) + '</body></html>';
+      '</style></head><body>' + invoiceSheet(inv) + '</body></html>';
+  }
+
+  /* ---------------------------------------------- writing one from scratch */
+  /** An invoice is one car and one price, which is exactly what a job is. So
+      writing one straight out creates the job behind it and the numbers keep
+      adding up on their own. */
+  function openNewInvoice() {
+    drawer('Write an invoice',
+      '<div class="hint" style="margin-bottom:15px">Who it is for, what you did, what it costs. ' +
+      'This also puts the job on your Jobs page, so the money still counts itself.</div>' +
+      '<div class="fgrid">' +
+      '<div class="field full"><label for="ni_customer">Who is it for? *</label>' +
+      '<input class="inp" id="ni_customer" placeholder="Jamie Nguyen"></div>' +
+      '<div class="field"><label for="ni_phone">Their phone</label><input class="inp" type="tel" id="ni_phone"></div>' +
+      '<div class="field"><label for="ni_car">Car</label><input class="inp" id="ni_car" placeholder="2019 Toyota GR86"></div>' +
+      '<div class="field"><label for="ni_rego">Rego</label><input class="inp" id="ni_rego"></div>' +
+      '<div class="field"><label for="ni_date">Dated</label>' +
+      '<input class="inp" type="date" id="ni_date" value="' + todayISO() + '"></div>' +
+      '</div>' +
+      '<div class="field full" style="margin-top:15px"><label>What you are charging for</label>' +
+      '<div class="linebox"><div id="ivlines">' +
+      invLineRow(null) + '</div>' +
+      '<button type="button" class="btn sm" data-act="iv-add" style="align-self:flex-start">' + ico('plus') + 'Add a line</button>' +
+      '</div>' + pickHint() + servicePicks() + '</div>' +
+      '<div class="field full"><label for="ni_note">Anything to add</label>' +
+      '<textarea class="inp" id="ni_note" rows="2" placeholder="Thanks for your business"></textarea></div>' +
+      '<div class="keep" id="ivtotal"></div>',
+      '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
+      '<button class="btn primary" data-act="ni-save">' + ico('doc') + 'Make the invoice</button>');
+    invRunning();
+  }
+  function pickHint() {
+    var live = S.services.filter(function (sv) { return offered(sv) && n(sv.price) > 0; });
+    return '<div class="hint">' + (live.length
+      ? 'Tap one of your prices below, or write it yourself.'
+      : 'Write whatever you are charging for. Set your prices in Settings and they turn up here as buttons.') + '</div>';
+  }
+
+  /** The total, live, so there is never a surprise at the bottom of the page. */
+  function invRunning() {
+    var box = document.getElementById('ivtotal');
+    if (!box) return;
+    var lines = readInvLines(), b = biz();
+    var total = Math.round(lines.reduce(function (a, l) { return a + n(l.qty) * n(l.each); }, 0) * 100) / 100;
+    var rate = b.gst ? (n(b.gstRate) || 10) : 0;
+    var gst = rate ? Math.round((total - total / (1 + rate / 100)) * 100) / 100 : 0;
+    box.innerHTML = '<div class="kr' + (rate ? '' : ' tot') + '"><span>' +
+      (rate ? 'Subtotal' : 'This invoice comes to') + '</span><span class="num">' +
+      money2(rate ? total - gst : total) + '</span></div>' +
+      (rate ? '<div class="kr"><span>GST ' + rate + '%</span><span class="num">' + money2(gst) + '</span></div>' +
+        '<div class="kr tot"><span>This invoice comes to</span><span class="num">' + money2(total) + '</span></div>' : '');
+  }
+
+  /** One tap to drop a priced service onto the invoice. */
+  function servicePicks() {
+    var live = S.services.filter(function (sv) { return offered(sv) && n(sv.price) > 0; });
+    if (!live.length) return '';
+    return '<div class="picks">' + live.slice(0, 10).map(function (sv) {
+      return '<button type="button" class="pick-b" data-act="iv-pick" data-v="' + esc(sv.id) + '">' +
+        esc(sv.name) + ' <span class="num">' + money(sv.price) + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function readInvLines() {
+    var host = document.querySelector('.drawer-b'), lines = [];
+    if (!host) return lines;
+    host.querySelectorAll('.itemline.inv').forEach(function (row) {
+      var o = {};
+      row.querySelectorAll('[data-vk]').forEach(function (el) { o[el.getAttribute('data-vk')] = el.value; });
+      if (String(o.desc || '').trim()) lines.push({ desc: String(o.desc).trim(), qty: n(o.qty) || 1, each: n(o.each) });
+    });
+    return lines;
+  }
+  function saveNewInvoice() {
+    var who = String((document.getElementById('ni_customer') || {}).value || '').trim();
+    if (!who) { toast('Put in who it is for first.'); var e = document.getElementById('ni_customer'); if (e) e.focus(); return; }
+    var lines = readInvLines();
+    if (!lines.length) { toast('Put in at least one thing you are charging for.'); return; }
+    var total = lines.reduce(function (a, l) { return a + n(l.qty) * n(l.each); }, 0);
+    var date = document.getElementById('ni_date').value || todayISO();
+    var job = {
+      id: uid('jb'), customer: who,
+      phone: String(document.getElementById('ni_phone').value || '').trim(),
+      car: String(document.getElementById('ni_car').value || '').trim(),
+      rego: String(document.getElementById('ni_rego').value || '').trim(),
+      date: date, serviceIds: [], price: Math.round(total * 100) / 100,
+      status: 'Done', deposit: 0, materials: 0, parts: [], notes: ''
+    };
+    S.jobs.push(job);
+    var inv = raiseInvoice(job, lines);
+    inv.date = date;
+    inv.due = addDays(date, n(biz().terms) || 14);
+    inv.note = String(document.getElementById('ni_note').value || '').trim();
+    closeDrawer(); touch(); render();
+    openInvoice(inv.id);
+    toast(inv.no + ' is ready.');
   }
 
   function openInvoiceEdit(id) {
-    var j = byId(S.jobs, id);
-    if (!j || !hasInv(j)) return;
-    var inv = j.inv;
+    var inv = byId(S.invoices, id);
+    if (!inv) return;
     drawer('Change the invoice',
       '<div class="fgrid">' +
       '<div class="field"><label for="iv_no">Invoice number</label>' +
@@ -1819,36 +1967,53 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<div class="field full" style="margin-top:15px"><label>What you are charging for</label>' +
       '<div class="linebox"><div id="ivlines">' + (inv.lines || []).map(invLineRow).join('') + '</div>' +
       '<button type="button" class="btn sm" data-act="iv-add" style="align-self:flex-start">' + ico('plus') + 'Add a line</button>' +
-      '</div><div class="hint">Write it however you want it read. This is what the customer sees.</div></div>' +
+      '</div><div class="hint">Write it however you want it read. This is what the customer sees.</div>' +
+      servicePicks() + '</div>' +
       '<div class="field full"><label for="iv_note">Anything to add</label>' +
-      '<textarea class="inp" id="iv_note" rows="2" placeholder="Thanks for your business">' + esc(inv.note || '') + '</textarea></div>',
+      '<textarea class="inp" id="iv_note" rows="2" placeholder="Thanks for your business">' + esc(inv.note || '') + '</textarea></div>' +
+      '<div class="keep" id="ivtotal"></div>',
       '<button class="btn ghost" data-act="close">Cancel</button><div class="spacer"></div>' +
-      '<button class="btn primary" data-act="iv-save" data-id="' + j.id + '">' + ico('check') + 'Save</button>');
+      '<button class="btn primary" data-act="iv-save" data-id="' + inv.id + '">' + ico('check') + 'Save</button>');
+    invRunning();
   }
   function invLineRow(l) {
-    l = l || { desc: '', qty: 1, each: 0 };
+    l = l || { desc: '', qty: 1, each: '' };
     return '<div class="itemline inv">' +
       '<input class="inp full2" data-vk="desc" value="' + esc(l.desc || '') + '" placeholder="What for" aria-label="What for">' +
       '<input class="inp" type="number" step="1" min="0" inputmode="numeric" data-vk="qty" value="' + esc(l.qty) + '" placeholder="Qty" aria-label="How many">' +
       '<input class="inp" type="number" step="0.01" min="0" inputmode="decimal" data-vk="each" value="' + esc(l.each) + '" placeholder="Each" aria-label="Price each">' +
       '<button type="button" class="btn icon" data-act="iv-del" aria-label="Remove line">' + ico('x') + '</button></div>';
   }
+  /** Dropping a priced service in fills the first empty line, or adds one. */
+  function pickService(id) {
+    var sv = svc(id), host = document.getElementById('ivlines');
+    if (!sv || !host) return;
+    var rows = host.querySelectorAll('.itemline.inv');
+    var target = null;
+    for (var i = 0; i < rows.length; i++) {
+      if (!String(rows[i].querySelector('[data-vk="desc"]').value || '').trim()) { target = rows[i]; break; }
+    }
+    if (!target) {
+      host.insertAdjacentHTML('beforeend', invLineRow(null));
+      target = host.lastElementChild;
+    }
+    target.querySelector('[data-vk="desc"]').value = sv.name;
+    target.querySelector('[data-vk="qty"]').value = 1;
+    target.querySelector('[data-vk="each"]').value = n(sv.price);
+  }
   function saveInvoiceEdit(id) {
-    var j = byId(S.jobs, id);
-    if (!j || !hasInv(j)) return;
-    var host = document.querySelector('.drawer-b'), lines = [];
-    host.querySelectorAll('.itemline.inv').forEach(function (row) {
-      var o = {};
-      row.querySelectorAll('[data-vk]').forEach(function (el) { o[el.getAttribute('data-vk')] = el.value; });
-      if (String(o.desc || '').trim()) lines.push({ desc: String(o.desc).trim(), qty: n(o.qty) || 1, each: n(o.each) });
-    });
+    var inv = byId(S.invoices, id);
+    if (!inv) return;
+    var lines = readInvLines();
     if (!lines.length) { toast('An invoice needs at least one line.'); return; }
-    j.inv.no = String(document.getElementById('iv_no').value || '').trim() || j.inv.no;
-    j.inv.date = document.getElementById('iv_date').value || j.inv.date;
-    j.inv.due = document.getElementById('iv_due').value || j.inv.due;
-    j.inv.note = String(document.getElementById('iv_note').value || '').trim();
-    j.inv.lines = lines;
-    closeDrawer(); touch(); renderInvoice(); render(); toast('Invoice updated.');
+    inv.no = String(document.getElementById('iv_no').value || '').trim() || inv.no;
+    inv.date = document.getElementById('iv_date').value || inv.date;
+    inv.due = document.getElementById('iv_due').value || inv.due;
+    inv.note = String(document.getElementById('iv_note').value || '').trim();
+    inv.lines = lines;
+    var j = invJob(inv);
+    if (j && j.status !== 'Paid') j.price = invTotal(inv);   // keep the job in step
+    closeDrawer(); touch(); renderInvoice(); toast('Invoice updated.');
   }
 
   /* ============================ CALENDAR ================================
@@ -2191,12 +2356,19 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '</div>';
 
     h += '<div class="toolbar" style="margin-top:16px">' +
-      seg('money-view', [{ v: 'out', l: 'Going out' }, { v: 'in', l: 'Coming in' }], UI.moneyView) +
-      (UI.moneyView === 'out'
-        ? '<button class="btn primary" data-act="new-expense">' + ico('plus') + 'Add a bill</button>' +
-          '<button class="btn" data-act="paste" data-kind="expenses">' + ico('clip') + 'Paste a list</button>'
-        : '') + '</div>';
+      seg('money-view', [
+        { v: 'invoices', l: 'Invoices', n: unpaidInvoices().length || '' },
+        { v: 'in', l: 'Coming in' },
+        { v: 'out', l: 'Going out' }
+      ], UI.moneyView) +
+      (UI.moneyView === 'invoices'
+        ? '<button class="btn primary" data-act="new-invoice">' + ico('doc') + 'Write an invoice</button>'
+        : UI.moneyView === 'out'
+          ? '<button class="btn primary" data-act="new-expense">' + ico('plus') + 'Add a bill</button>' +
+            '<button class="btn" data-act="paste" data-kind="expenses">' + ico('clip') + 'Paste a list</button>'
+          : '') + '</div>';
 
+    if (UI.moneyView === 'invoices') return h + invoicesView();
     if (UI.moneyView === 'in') return h + moneyIn(m);
 
     var list = sortBy(S.expenses.filter(function (e) { return mKey(e.date) === m; }), function (e) { return e.date; }, 'desc');
@@ -2241,6 +2413,67 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         emptyBlock('calendar', 'Nothing in ' + mLabel(m), 'No bills logged for this month.') + '</section>';
     }
     return h + moneyNote();
+  }
+
+  /* ---------------------------------------------- every invoice, one list */
+  function invoicesView() {
+    if (!S.invoices.length) {
+      return '<section class="card">' + emptyBlock('doc', 'No invoices yet',
+        'Write one from scratch and it makes the job for you, or press Invoice on any job you have already booked. ' +
+        'It comes out with your name, ABN and bank details on it, ready to print or send.',
+        '<button class="btn primary big" data-act="new-invoice">' + ico('doc') + 'Write your first invoice</button>' +
+        '<button class="btn big" data-tab="settings">' + ico('cog') + 'Put my details in first</button>') + '</section>';
+    }
+    var f = UI.invFilter || 'all';
+    var all = sortBy(S.invoices, function (v) { return v.date || ''; }, 'desc');
+    var list = all.filter(function (v) {
+      var j = invJob(v);
+      if (f === 'unsent' && v.sent) return false;
+      if (f === 'unpaid' && invPaid(v)) return false;
+      if (f === 'paid' && !invPaid(v)) return false;
+      return hit([v.no, v.note, j ? j.customer : '', j ? j.car : '', j ? j.rego : ''].join(' '));
+    });
+    var owed = unpaidInvoices().reduce(function (a, v) { return a + invTotals(v).due; }, 0);
+    var thisMonth = all.filter(function (v) { return mKey(v.date) === UI.month; });
+
+    var h = '<div class="tiles" style="margin-top:0;margin-bottom:16px">' +
+      tile('Raised in ' + mLabel(UI.month), money(thisMonth.reduce(function (a, v) { return a + invTotal(v); }, 0)),
+        plural(thisMonth.length, 'invoice')) +
+      tile('Still to be paid', money(owed), plural(unpaidInvoices().length, 'invoice') + ' outstanding') +
+      tile('Not sent yet', unsentInvoices().length + '', unsentInvoices().length ? 'sitting here waiting on you' : 'every one is out') +
+      tile('All up', plural(all.length, 'invoice'), 'Next number ' + nextInvNo()) +
+      '</div>';
+
+    h += '<div class="toolbar">' + searchBar('Search a number, name or car…') +
+      seg('inv-filter', [
+        { v: 'all', l: 'All', n: all.length || '' },
+        { v: 'unsent', l: 'Not sent', n: unsentInvoices().length || '' },
+        { v: 'unpaid', l: 'Not paid', n: unpaidInvoices().length || '' },
+        { v: 'paid', l: 'Paid', n: '' }
+      ], f) + '</div>';
+
+    if (!list.length) {
+      return h + '<section class="card">' + emptyBlock('search', 'Nothing here',
+        UI.q.trim() ? 'Try another number, name or car.' : 'Try another tab above.') + '</section>';
+    }
+    return h + '<section class="card"><div class="card-b flush"><div class="rows">' +
+      list.map(invRow).join('') + '</div></div></section>';
+  }
+
+  function invRow(v) {
+    var j = invJob(v), t = invTotals(v), paid = invPaid(v);
+    var late = !paid && v.due && days(v.due) != null && days(v.due) < 0;
+    return '<div class="row tap" data-act="open-invoice" data-id="' + v.id + '">' +
+      '<span class="grow"><span class="t truncate"><span class="num">' + esc(v.no) + '</span> · ' +
+      esc(j ? (j.customer || 'No name') : 'Job deleted') + '</span>' +
+      '<br><span class="s truncate">' + esc(dLabel(v.date)) +
+      (j && j.car ? ' · ' + esc(j.car) : '') +
+      (paid ? '' : ' · due ' + esc(dLabel(v.due))) + '</span></span>' +
+      '<span class="chips" style="flex:none">' +
+      (v.sent ? '' : '<span class="chip amb">not sent</span>') +
+      (paid ? '<span class="chip good">paid</span>' : late ? '<span class="chip bad">overdue</span>' : '') +
+      '</span>' +
+      '<span class="num" style="font-weight:600;flex:none">' + money(t.total) + '</span></div>';
   }
 
   function moneyNote() {
@@ -2426,8 +2659,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<button class="btn" data-act="import-json">' + ico('up') + 'Put a backup back</button></div>' +
       '<div class="eyebrow" style="margin-top:4px">Send a list to a spreadsheet</div>' +
       '<div style="display:flex;gap:9px;flex-wrap:wrap">' +
-      ['jobs', 'products', 'orders', 'expenses', 'suppliers'].map(function (k) {
-        return '<button class="btn sm" data-act="export" data-kind="' + k + '">' + esc(KIND[k].label) + '</button>';
+      ['jobs', 'invoices', 'products', 'orders', 'expenses', 'suppliers'].map(function (k) {
+        return '<button class="btn sm" data-act="export" data-kind="' + k + '">' +
+          esc(k === 'invoices' ? 'Invoices' : KIND[k].label) + '</button>';
       }).join('') + '</div>' +
       '<div style="margin-top:6px;padding-top:15px;border-top:1px solid var(--rule)">' +
       '<button class="btn danger" data-act="wipe">' + ico('trash') + 'Delete everything</button></div>' +
@@ -2461,7 +2695,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
           : '<input class="inp" id="bz_' + k + '" data-biz="' + k + '" value="' + esc(b[k] == null ? '' : b[k]) + '"' + (attrs || '') + '>') +
         (hint ? '<div class="hint">' + esc(hint) + '</div>' : '') + '</div>';
     };
-    var raised = S.jobs.filter(hasInv).length, out = unsentInvoices().length;
+    var raised = S.invoices.length, out = unsentInvoices().length;
     return '<section class="card"><div class="card-h">' + ico('doc') + '<h3>What goes on an invoice</h3>' +
       '<div class="spacer"></div>' + (raised ? '<span class="chip">' + plural(raised, 'raised') + '</span>' : '') +
       (out ? '<span class="chip amb">' + out + ' not sent</span>' : '') + '</div><div class="card-b">' +
@@ -2917,6 +3151,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   /* --------------------------- quick add sheet -------------------------- */
   function openQuick() {
     var acts = [
+      { a: 'new-invoice', i: 'doc', t: 'Write an invoice', s: 'Bill someone — print it or save it to send' },
       { a: 'new-job', i: 'car', t: 'Book a job', s: 'A car in for tint, detail, wrap or install' },
       { a: 'new-expense', i: 'wallet', t: 'Money going out', s: 'Ads, rent, materials, tools, fuel' },
       { a: 'new-product', i: 'box', t: 'Add stock', s: 'Film, vinyl, parts — anything you count' },
@@ -3092,6 +3327,20 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         });
       });
       return out.join('\n');
+    }
+    if (kind === 'invoices') {
+      var iv = [['Invoice', 'Date', 'Due', 'Customer', 'Car', 'Rego', 'What for', 'Qty', 'Each',
+        'Line total', 'Invoice total', 'Sent', 'Paid'].map(csv).join(',')];
+      S.invoices.forEach(function (v) {
+        var j = invJob(v) || {}, t = invTotals(v);
+        var ls = (v.lines || []).length ? v.lines : [{ desc: '', qty: 0, each: 0 }];
+        ls.forEach(function (l, i) {
+          iv.push([v.no, v.date, v.due, j.customer, j.car, j.rego, l.desc, n(l.qty), n(l.each),
+            n(l.qty) * n(l.each), i ? '' : t.total, i ? '' : (v.sent ? 'yes' : 'no'),
+            i ? '' : (invPaid(v) ? 'yes' : 'no')].map(csv).join(','));
+        });
+      });
+      return iv.join('\n');
     }
     var fields = KIND[kind].fields.filter(function (f) { return f.t !== 'lines'; });
     var head = fields.map(function (f) { return csv(f.l); });
@@ -3280,7 +3529,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'cal-day': openDay(el.getAttribute('data-d')); break;
       case 'new-job-on': closeDrawer(); openForm('jobs', null, { date: el.getAttribute('data-d') }); break;
       case 'stock-filter': UI.stockFilter = el.getAttribute('data-v'); render(); break;
-      case 'money-view': UI.moneyView = el.getAttribute('data-v'); render(); break;
+      case 'money-view': UI.moneyView = el.getAttribute('data-v'); UI.q = ''; render(); break;
+      case 'inv-filter': UI.invFilter = el.getAttribute('data-v'); render(); break;
+      case 'go-invoices': UI.moneyView = 'invoices'; UI.invFilter = el.getAttribute('data-v') || 'all'; UI.q = ''; setTab('money'); break;
       case 'order-filter': UI.orderFilter = el.getAttribute('data-v'); UI.q = ''; setTab('orders'); break;
       case 'order-status': {
         var oo = byId(S.orders, id);
@@ -3288,12 +3539,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         break;
       }
 
-      case 'invoice': openInvoice(id); break;
+      case 'invoice': invoiceJob(id); break;
+      case 'open-invoice': openInvoice(id); break;
+      case 'new-invoice': closeDrawer(); openNewInvoice(); break;
+      case 'ni-save': saveNewInvoice(); break;
+      case 'iv-pick': pickService(el.getAttribute('data-v')); invRunning(); break;
       case 'inv-close': closeInvoice(); break;
       case 'inv-edit': openInvoiceEdit(INVOICE); break;
-      case 'inv-save': {
-        var ij = byId(S.jobs, INVOICE);
-        if (ij) offerFile(ij.inv.no.replace(/[^A-Za-z0-9-]/g, '') + '.html', invoiceFile(ij));
+      case 'inv-save-file': {
+        var ij = byId(S.invoices, INVOICE);
+        if (ij) offerFile(ij.no.replace(/[^A-Za-z0-9-]/g, '') + '.html', invoiceFile(ij));
         break;
       }
       case 'inv-print': {
@@ -3302,14 +3557,23 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         break;
       }
       case 'inv-sent': {
-        var sj = byId(S.jobs, INVOICE);
-        if (sj) { sj.inv.sent = true; touch(); renderInvoice(); render(); toast('Marked as sent.'); }
+        var sv2 = byId(S.invoices, INVOICE);
+        if (sv2) { sv2.sent = true; touch(); renderInvoice(); toast('Marked as sent.'); }
+        break;
+      }
+      case 'inv-paid': {
+        var pv = byId(S.invoices, INVOICE), pj = invJob(pv);
+        if (pj) {
+          pj.status = 'Paid'; pj.deposit = n(pj.price);
+          touch(); renderInvoice(); toast('Paid. It counts as money in now.');
+        }
         break;
       }
       case 'iv-add':
         document.getElementById('ivlines').insertAdjacentHTML('beforeend', invLineRow(null));
+        invRunning();
         break;
-      case 'iv-del': el.closest('.itemline').remove(); break;
+      case 'iv-del': el.closest('.itemline').remove(); invRunning(); break;
       case 'iv-save': saveInvoiceEdit(id); break;
 
       case 'new-job': openForm('jobs'); break;
@@ -3392,6 +3656,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'del': {
         var rec = byId(S[kind], id);
         if (!rec) break;
+        if (kind === 'jobs') S.invoices = S.invoices.filter(function (v) { return v.jobId !== id; });
         var name = rec.customer || rec.name || rec.ref || rec.campaign || rec.vendor || 'this';
         var extra = '';
         if (kind === 'jobs' && (rec.parts || []).length) extra = ' The parts on it go back onto your stock count.';
@@ -3464,7 +3729,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         try { data = JSON.parse(document.getElementById('jsonin').value); } catch (e) { toast('That is not a backup file.'); break; }
         if (!data || !(data.v >= 2)) { toast('That backup is from a different version.'); break; }
         S = migrate(data);
-        ['services', 'jobs', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; });
+        ['services', 'jobs', 'invoices', 'products', 'orders', 'expenses', 'suppliers'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; });
         if (!S.meta) S.meta = emptyState().meta;
         closeDrawer(); applyTheme(); touch(); render(); toast('Backup is back. Press Save to keep it.');
         break;
@@ -3484,6 +3749,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     var t = ev.target;
     if (t.id === 'q') { UI.q = t.value; render(); return; }
     if (FORM && FORM.kind === 'jobs' && t.closest && t.closest('.drawer-b')) syncKeep();
+    if (t.hasAttribute && t.hasAttribute('data-vk')) invRunning();
     if (FORM && FORM.kind === 'orders' && t.id && /^f_(ship|ordered)$/.test(t.id)) syncEta();
     if (t.id === 'paste') { previewPaste(); return; }
     if (t.hasAttribute && t.hasAttribute('data-biz')) {
@@ -3530,7 +3796,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   /* ================================ INIT ================================ */
   loadState();
-  UI = { tab: 'home', month: curMonth(), q: '', jobFilter: 'open', jobsView: 'list', stockFilter: 'all', moneyView: 'out', orderFilter: 'open' };
+  UI = { tab: 'home', month: curMonth(), q: '', jobFilter: 'open', jobsView: 'list', stockFilter: 'all', moneyView: 'invoices', invFilter: 'all', orderFilter: 'open' };
   try {
     var saved = JSON.parse(sessionStorage.getItem('kl.ui') || 'null');
     if (saved && saved.tab) { UI = saved; UI.q = ''; }

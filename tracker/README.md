@@ -185,14 +185,28 @@ is left with once the shelf and the materials are paid for.
 
 ## Invoices
 
-An invoice belongs to a job — `j.inv` — and is only created when you press
-Invoice on that job. Nothing is invented up front, and no number is spent
-until one is actually raised (`meta.invNext` increments then, not before).
+An invoice is its own record in `S.invoices`, always carrying the `jobId` of
+the job behind it. No number is spent until one is actually raised
+(`meta.invNext` increments in `raiseInvoice`, not before).
 
-- The first draft is seeded from the job: each fixed-price service becomes its
-  own line, and whatever is left against the agreed price becomes one more,
-  named after the per-job work if there is any. Then the lines are yours to
-  rewrite — an invoice says whatever you want it to say.
+**Three ways in, because one was not findable:**
+
+1. **+ Add something → Write an invoice**, the first entry on the list. This
+   asks who, which car, and what for, and *creates the job behind it* — an
+   invoice is one car and one price, which is exactly what a job is, so the
+   money keeps counting itself and nothing is double-entered.
+2. **Money → Invoices**, the tab Money now opens on: every invoice in one
+   list, filterable by not sent / not paid / paid, with the totals above it.
+3. **Make an invoice** on any job card, which seeds it from that job.
+
+- A job-seeded draft takes each fixed-price service as its own line, and
+  whatever is left against the agreed price becomes one more, named after the
+  per-job work if there is any. Then the lines are yours to rewrite — an
+  invoice says whatever you want it to say. Priced services show as one-tap
+  buttons under the line editor, and the total runs live as you type.
+- Marking one paid from the sheet marks the job paid, so it lands in the
+  month's money in.
+- Deleting a job deletes its invoice with it.
 - `meta.biz` holds everything printed on it, filled in once under Settings →
   What goes on an invoice: name, ABN, address, contact, bank details, number
   prefix, days to pay, GST, and a footer.
