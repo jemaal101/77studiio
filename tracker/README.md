@@ -274,6 +274,23 @@ shipping method's typical days (`SHIP_DAYS`) when the supplier has none — and
 `syncEta` stands down the moment a real date is typed in. Open orders show how
 far through the window they are: "day 12 of about 40".
 
+## Sharing it
+
+The data lives inside the page, so **sharing the link shares the data** —
+customers, prices, invoices, bank details, the lot. Settings says so in as many
+words rather than leaving it to be discovered.
+
+The safe way out is `freshDoc()`: `buildDoc()` runs over `emptyState()` instead
+of `S`, producing the whole working app with nothing personal in it — no jobs,
+no invoices, no contacts, no ABN or bank details, and every starter price at
+zero. Settings → Sharing it → **Give someone a blank copy** saves it as a file
+they open and own. `share.js` asserts the file is a complete document, runs
+standalone, and contains none of the owner's strings anywhere in it.
+
+A viewer who opens a shared link cannot save (`publish` returns `not_writer`).
+That used to surface only as a toast on the first save attempt; it now sets a
+banner at the top of every screen saying their changes stay on their device.
+
 ## How it saves
 
 No server. Data lives in the HTML:

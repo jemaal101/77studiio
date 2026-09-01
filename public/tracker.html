@@ -773,18 +773,23 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     '&amp;family=Roboto+Mono:wght@400;500;600&amp;display=swap">';
 
   /** Rebuild the whole page from its own stylesheet, script and current data. */
-  function serialize() {
+  function buildDoc(state, title) {
     var css = document.getElementById('app-css').outerHTML;
     var js = document.getElementById('app-js').textContent;
-    var data = JSON.stringify(S).replace(/</g, '\\u003c');
+    var data = JSON.stringify(state).replace(/</g, '\\u003c');
     return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n' +
-      '<title>Kitted Lab Tracker</title>\n' +
+      '<title>' + esc(title) + '</title>\n' +
       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
       HEAD_LINKS + '\n' + css + '\n</head>\n<body>\n' +
       '<' + 'script type="application/json" id="app-data">' + data + '<\/script>\n' +
       BODY_MARKUP + '\n' +
       '<' + 'script id="app-js">' + js + '<\/script>\n</body>\n</html>';
   }
+  function serialize() { return buildDoc(S, 'Kitted Lab Tracker'); }
+
+  /** The same app with nothing of yours in it: no jobs, no customers, no
+      prices, no bank details. Safe to hand to anybody. */
+  function freshDoc() { return buildDoc(emptyState(), 'Job & stock tracker'); }
 
   function save() {
     if (saving) return;
@@ -807,7 +812,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       var c = err && err.code;
       if (c === 'conflict') { toast('Someone saved before you — loading their version.'); return; }
       if (c === 'not_writer' || c === 'not_granted' || c === 'not_declared' || c === 'consent_required') {
-        READONLY = true; toast('This view can only look, not save. Your changes stay on this device.');
+        READONLY = true; toast('This view can only look, not save. Your changes stay on this device.'); render();
       } else if (c === 'rate_limited') { toast('Saving too fast — wait a moment, then press Save again.'); }
       else if (c === 'too_large') { toast('Too much to save at once. Download a backup and clear old rows.'); }
       else { toast('Save did not go through. Your work is safe on this device — press Save again.'); }
@@ -2596,6 +2601,14 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     }).join('') + '</div>';
   }
 
+  function readonlyBanner() {
+    if (!READONLY) return '';
+    return '<div class="banner" style="margin-bottom:16px;border-color:var(--s2);' +
+      'background:var(--panel);color:var(--s2)">' + ico('alert') +
+      '<span class="spacer">You are looking at someone else\u2019s tracker. Have a look around, ' +
+      'but anything you change stays on this device \u2014 it does not reach them.</span></div>';
+  }
+
   function conflictBanner() {
     if (!SYNC.conflict) return '';
     return '<div class="banner" style="margin-bottom:16px;border-color:var(--bad-rule);' +
@@ -2689,6 +2702,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
     h += invoiceSettings();
 
+    h += shareCard();
+
     h += '<section class="card"><div class="card-h">' + ico('down') + '<h3>Your data</h3></div><div class="card-b stack">' +
       '<div class="hint">' + (ARTIFACT
         ? 'Everything lives inside this page. Press <strong>Save</strong> at the top and it follows you to your other devices.'
@@ -2721,6 +2736,26 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       }).join('') + '</div></section>';
 
     return h + '</div>';
+  }
+
+  /** Sharing is not obvious and getting it wrong is expensive, so say plainly
+      what travels with the link and offer the safe way instead. */
+  function shareCard() {
+    var mine = (window.claude && window.claude.use);
+    return '<section class="card"><div class="card-h">' + ico('users') + '<h3>Sharing it</h3></div>' +
+      '<div class="card-b stack">' +
+      (mine
+        ? '<div class="banner" style="border-color:var(--s2);background:var(--panel);color:var(--s2)">' + ico('alert') +
+          '<span class="spacer">Share this link and everything in it goes too \u2014 your customers, ' +
+          'your prices, your invoices and your bank details.</span></div>' +
+          '<div class="hint">Whoever you send it to can look but not save, so nothing they type ever ' +
+          'reaches you. If you want someone to actually use it, give them their own copy instead.</div>'
+        : '<div class="hint">This page is yours alone \u2014 nothing here is on the internet. ' +
+          'To give someone their own, send them a blank copy.</div>') +
+      '<div><button class="btn primary" data-act="share-copy">' + ico('down') + 'Give someone a blank copy</button></div>' +
+      '<div class="hint">A whole working tracker with none of your details in it. Send them the file, ' +
+      'they open it, and what they put in stays theirs.</div>' +
+      '</div></section>';
   }
 
   /** Everything that ends up printed on an invoice, in one place, so a job
@@ -3437,7 +3472,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     money: viewMoney, contacts: viewContacts, settings: viewSettings };
   function render() {
     var wasSearch = document.activeElement && document.activeElement.id === 'q';
-    document.getElementById('app').innerHTML = conflictBanner() + (VIEWS[UI.tab] || viewHome)();
+    document.getElementById('app').innerHTML = readonlyBanner() + conflictBanner() + (VIEWS[UI.tab] || viewHome)();
     renderChrome();
     drawCharts();
     if (wasSearch) {
@@ -3756,6 +3791,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
       case 'paste': openPaste(kind); break;
       case 'paste-go': commitPaste(); break;
+      case 'share-copy': offerFile('job-and-stock-tracker.html', freshDoc()); break;
       case 'export': exportKind(kind); break;
       case 'import-json': openImportJson(); break;
       case 'copy-all': {
