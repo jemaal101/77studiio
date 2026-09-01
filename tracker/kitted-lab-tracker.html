@@ -614,6 +614,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   /* -------------------------------------------------------------- state */
   var S, UI, DIRTY = false, ARTIFACT = null, DOWNLOADS = null, READONLY = false, saving = false;
+  var ASKED = false;      // the artifact capability has answered, one way or the other
 
   /** How a service is charged. Not everything has a set price: an install
       depends on the part, and some work is not being offered yet. */
@@ -775,8 +776,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function serialize() { return buildDoc(S, 'Kitted Lab Tracker'); }
 
   /** The same app with nothing of yours in it: no jobs, no customers, no
-      prices, no bank details. Safe to hand to anybody. */
-  function freshDoc() { return buildDoc(emptyState(), 'Job & stock tracker'); }
+      prices, no bank details, not even your name on it. Safe to hand to anybody. */
+  function freshDoc() {
+    var fresh = emptyState();
+    fresh.meta.business = 'My Workshop';
+    return buildDoc(fresh, 'Job & Stock Tracker');
+  }
 
   function save() {
     if (saving) return;
@@ -2606,6 +2611,15 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   function syncCard() {
+    if (window.claude && window.claude.use && ASKED && !ARTIFACT) {
+      return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Where this is kept</h3></div>' +
+        '<div class="card-b stack">' +
+        '<div class="hint">This copy keeps everything in this browser, on this device. It is yours ' +
+        'and nobody else can see it \u2014 but it does not follow you to another phone or computer, ' +
+        'and clearing your browsing data clears it.</div>' +
+        '<div><button class="btn" data-act="export" data-kind="backup">' + ico('down') + 'Download a backup</button></div>' +
+        '</div></section>';
+    }
     if (window.claude && window.claude.use) {
       return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Your devices</h3>' +
         '<div class="spacer"></div><span class="chip ' + (ARTIFACT ? 'good' : '') + '">' +
@@ -2714,7 +2728,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       ['It goes booked, done, paid', 'Three buttons, in that order. It only counts as money in once it is paid.'],
       ['Profit', 'What you charged, minus the shelf, minus the film or vinyl.'],
       ['Stock looks after itself', 'Parts on a job come off. An order marked arrived goes back on.'],
-      ['Where it is kept', (window.claude && window.claude.use)
+      ['Where it is kept', ARTIFACT
         ? 'Inside this page. It saves itself, so the link opens with everything on any device.'
         : 'In this browser, on this device. Take a backup before clearing your browsing data.']
       ].map(function (x) {
@@ -3874,10 +3888,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   if (window.claude && window.claude.use) {
     window.claude.use('artifact').then(function (a) {
-      ARTIFACT = a;
-      renderChrome();
+      ARTIFACT = a; ASKED = true;
+      render();
       if (DIRTY) autosaveSoon();
-    });
+    }, function () { ASKED = true; render(); });
     window.claude.use('downloads').then(function (d) { DOWNLOADS = d; });
   }
 
