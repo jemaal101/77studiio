@@ -85,6 +85,19 @@ if data.get("v") and data["v"] < 6:
     data["v"] = 6
     print("migrated the carried-over data to v6")
 
+if data.get("v") and data["v"] < 7:
+    # the in-between states fold into the one either side of them
+    for j in data.get("jobs") or []:
+        if j.get("status") in ("Enquiry", "In progress"):
+            j["status"] = "Booked"
+    for o in data.get("orders") or []:
+        if o.get("status") == "Paid for":
+            o["status"] = "Ordered"
+        elif o.get("status") in ("In transit", "At customs"):
+            o["status"] = "On the way"
+    data["v"] = 7
+    print("migrated the carried-over data to v7")
+
 out = BLOCK.sub(
     lambda m: m.group(1) + json.dumps(data).replace("<", "\\u003c") + m.group(3),
     SRC.read_text(encoding="utf-8"), count=1)

@@ -52,7 +52,7 @@
 html,body{margin:0;padding:0}
 body{background:var(--ground);color:var(--ink);
   font-family:Barlow,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+  font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
 h1,h2,h3{margin:0;font-weight:700;letter-spacing:.01em}
 .num{font-family:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -74,7 +74,7 @@ a{color:var(--acc)}
 .brand-mark{width:38px;height:38px;border-radius:3px;background:var(--acc-fill);color:var(--acc-ink);
   display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
 .brand-name{font-weight:700;font-size:19px;line-height:1.15}
-.brand-sub{font-size:12.5px;color:var(--bezel-muted);letter-spacing:.16em;text-transform:uppercase;font-weight:600}
+.brand-sub{font-size:13px;color:var(--bezel-muted);letter-spacing:.14em;text-transform:uppercase;font-weight:600}
 .navbtn{display:flex;align-items:center;gap:13px;padding:12px;border-radius:3px;border:0;background:transparent;
   color:var(--bezel-ink);cursor:pointer;text-align:left;font-weight:500;font-size:17px;width:100%;
   border-left:3px solid transparent;transition:background .1s}
@@ -105,7 +105,7 @@ a{color:var(--acc)}
 .top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:13px 16px;
   background:var(--ground);border-bottom:1px solid var(--rule-hard)}
 @media (min-width:1000px){.top{padding:15px 28px}}
-.top h1{font-size:27px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;
+.top h1{font-size:28px;font-weight:700;letter-spacing:-.01em;
   min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top .spacer{flex:1}
 .savechip{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;color:var(--ink-2);font-weight:500;white-space:nowrap}
@@ -149,15 +149,14 @@ a{color:var(--acc)}
 .card{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px}
 .card-h{display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:1px solid var(--rule);
   min-width:0;background:var(--sunk)}
-.card-h h3{font-size:18px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
-  min-width:0;overflow-wrap:anywhere}
+.card-h h3{font-size:20px;font-weight:700;letter-spacing:-.01em;min-width:0;overflow-wrap:anywhere}
 .card-h .spacer{flex:1}
 .card-h>svg{width:19px;height:19px;flex:none;color:var(--muted)}
 .card-b{padding:16px}
 .card-b.flush{padding:0}
-.eyebrow{font-size:13.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.eyebrow{font-size:15px;color:var(--ink-2);font-weight:700}
 .sec-h{display:flex;align-items:center;gap:10px 14px;margin:26px 0 12px;flex-wrap:wrap}
-.sec-h h2{font-size:21px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.sec-h h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
 .sec-h .line{flex:1 1 24px;min-width:24px;height:1px;background:var(--rule-hard)}
 .grid{display:grid;gap:14px;min-width:0;align-items:start}
 .g2{grid-template-columns:minmax(0,1fr)}
@@ -170,23 +169,25 @@ a{color:var(--acc)}
 .headline-l{padding:20px 22px 18px}
 .headline-r{padding:16px 18px;border-top:1px solid var(--rule)}
 @media (min-width:760px){.headline-r{border-top:0;border-left:1px solid var(--rule)}}
-.headline .lab{font-size:14.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.headline .lab{font-size:16px;color:var(--ink-2);font-weight:700}
 .headline .big{font-size:clamp(44px,11vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:5px}
-.headline .sub{margin-top:10px;color:var(--ink-2);font-size:16.5px}
+.headline .sub{margin-top:11px;color:var(--ink-2);font-size:17.5px;line-height:1.5}
 .tiles{display:grid;gap:1px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px;
   background:var(--rule-hard);border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
 @media (min-width:900px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.tile{background:var(--panel);padding:14px 16px}
-.tile .lab{font-size:13.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.tile .val{font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
-.tile .sub{font-size:15px;color:var(--muted);margin-top:2px}
+.tile{background:var(--panel);padding:15px 17px}
+.tile .lab{font-size:15px;color:var(--ink-2);font-weight:700}
+.tile .val{font-size:31px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
+.tile .sub{font-size:15.5px;color:var(--muted);margin-top:2px}
 .tile.tap{cursor:pointer} .tile.tap:hover{background:var(--sunk)}
 .pos{color:var(--good)} .neg{color:var(--bad)} .amb{color:var(--s2)}
 
 /* ------------------------------------------------------------- stage ---- */
-.stages{display:grid;gap:1px;grid-template-columns:repeat(2,minmax(0,1fr));
+.stages{display:grid;gap:1px;grid-template-columns:minmax(0,1fr);margin-top:14px;
   background:var(--rule-hard);border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
-@media (min-width:880px){.stages{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (min-width:620px){.stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:880px){.stages{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stages.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .stage{background:var(--panel);padding:13px 15px;border-top:3px solid var(--rule-hard);cursor:pointer;
   text-align:left;font:inherit;color:inherit;border-left:0;border-right:0;border-bottom:0}
 .stage:hover{background:var(--sunk)}
@@ -194,12 +195,13 @@ a{color:var(--acc)}
 .stage.s-prog{border-top-color:var(--s2)}
 .stage.s-owed{border-top-color:var(--bad)}
 .stage.s-paid{border-top-color:var(--good)}
-.stage .n{font-size:29px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
-.stage .l{font-size:13.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.stage .v{font-size:15px;color:var(--muted);margin-top:2px}
+.stage{padding:16px 18px}
+.stage .n{font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:1.05;margin-top:2px}
+.stage .l{font-size:15px;color:var(--ink-2);font-weight:700}
+.stage .v{font-size:16px;color:var(--muted);margin-top:3px}
 
 /* ------------------------------------------------------------- tags ----- */
-.chip{display:inline-flex;align-items:center;gap:6px;font-size:14.5px;font-weight:600;padding:3px 10px;
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:600;padding:4px 11px;
   border-radius:2px;border:1px solid var(--rule-hard);background:var(--sunk);color:var(--ink-2);white-space:nowrap}
 .chip.good{background:var(--good-wash);border-color:var(--good-rule);color:var(--good)}
 .chip.bad{background:var(--bad-wash);border-color:var(--bad-rule);color:var(--bad)}
@@ -208,7 +210,7 @@ a{color:var(--acc)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 
 /* ------------------------------------------------------------- jobs ----- */
-.jobs{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.jobs{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);align-items:start}
 @media (min-width:880px){.jobs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1560px){.jobs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .job{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;display:flex;flex-direction:column;
@@ -222,18 +224,18 @@ a{color:var(--acc)}
 .job-row1{display:flex;align-items:flex-start;gap:12px}
 .job-who{flex:1;min-width:0}
 .job-who .n{font-weight:700;font-size:21px;line-height:1.18;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.job-who .c{font-size:15.5px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job-who .c{font-size:16.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .job-price{font-size:23px;font-weight:700;letter-spacing:-.02em;text-align:right;flex:none}
 .job-meta{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap}
-.job-when{font-size:15px;color:var(--muted);font-weight:500}
+.job-when{font-size:16px;color:var(--muted);font-weight:500}
 .job-acts{display:flex;gap:8px;padding:11px 16px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap}
 .job-acts .spacer{flex:1}
 
 /* ---------------------------------------------------------- calendar ---- */
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--rule-hard);
   border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
-.cal-head{background:var(--sunk);padding:9px 4px;text-align:center;font-size:13.5px;font-weight:700;
-  letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.cal-head{background:var(--sunk);padding:10px 4px;text-align:center;font-size:14.5px;font-weight:700;
+  color:var(--muted)}
 .cal-day{background:var(--panel);min-height:118px;padding:8px;display:flex;flex-direction:column;gap:5px;
   cursor:pointer;text-align:left;border:0;font:inherit;color:inherit;align-items:stretch}
 .cal-day:hover{background:var(--sunk)}
@@ -262,20 +264,20 @@ a{color:var(--acc)}
 
 /* ------------------------------------------------------------- rows ----- */
 .rows{display:flex;flex-direction:column}
-.row{display:flex;align-items:center;gap:13px;padding:13px 16px;border-bottom:1px solid var(--rule-2)}
+.row{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--rule-2)}
 .row:last-child{border-bottom:0}
 .row.tap{cursor:pointer} .row.tap:hover{background:var(--sunk)}
 .row>svg{width:19px;height:19px;flex:none;color:var(--muted)}
 .row .grow{flex:1;min-width:0}
-.row .t{font-weight:600;font-size:16.5px}
-.row .s{font-size:15px;color:var(--muted)}
+.row .t{font-weight:600;font-size:17.5px}
+.row .s{font-size:16px;color:var(--muted)}
 .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ------------------------------------------------------------ tables ---- */
 .tablewrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:16.5px}
-thead th{text-align:left;font-size:13.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
-  font-weight:700;padding:11px 14px;border-bottom:1px solid var(--rule-hard);white-space:nowrap;background:var(--sunk)}
+thead th{text-align:left;font-size:15px;color:var(--ink-2);
+  font-weight:700;padding:12px 14px;border-bottom:1px solid var(--rule-hard);white-space:nowrap;background:var(--sunk)}
 tbody td{padding:12px 14px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:var(--sunk)}
@@ -283,7 +285,7 @@ td.num,th.num{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-n
   white-space:nowrap;letter-spacing:-.02em}
 th.wcol{width:34%}
 .rowtitle{font-weight:600}
-.rowsub{font-size:14.5px;color:var(--muted)}
+.rowsub{font-size:15.5px;color:var(--muted)}
 .acts{display:flex;gap:6px;justify-content:flex-end}
 @media (max-width:719px){
   .responsive thead{display:none}
@@ -293,8 +295,8 @@ th.wcol{width:34%}
   .responsive tbody td{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border:0;text-align:left}
   .responsive tbody td.num{justify-content:space-between;flex-wrap:wrap}
   .responsive tbody td.num .sub2{flex:0 0 100%;text-align:right;white-space:normal;margin-top:0}
-  .responsive tbody td[data-l]::before{content:attr(data-l);font-size:13.5px;letter-spacing:.09em;
-    text-transform:uppercase;color:var(--muted);font-weight:700;flex:none}
+  .responsive tbody td[data-l]::before{content:attr(data-l);font-size:15px;
+    color:var(--muted);font-weight:700;flex:none}
   .responsive tbody td.wide{display:block;padding-bottom:7px}
   .responsive tbody td.actcell{padding-top:11px}
   .responsive tbody td.actcell .acts{justify-content:flex-start}
@@ -346,11 +348,11 @@ th.wcol{width:34%}
 
 /* ------------------------------------------------------------ inputs ---- */
 .field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:14.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.field label{font-size:16px;color:var(--ink-2);font-weight:600}
 .inp{width:100%;background:var(--raised);border:1px solid var(--rule-hard);border-radius:3px;padding:12px 13px;font-size:17px}
 .inp:focus{outline:3px solid var(--acc-fill);outline-offset:-1px;border-color:var(--acc-fill)}
 textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
-.hint{font-size:15.5px;color:var(--muted);line-height:1.5}
+.hint{font-size:16.5px;color:var(--muted);line-height:1.55}
 /* the running sum at the foot of a job: charge, minus the shelf, what is left */
 .keep{margin-top:18px;border:1px solid var(--rule-hard);border-radius:4px;background:var(--sunk);padding:13px 15px}
 .keep .kr{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:4px 0;
@@ -432,7 +434,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   @keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
 }
 .drawer-h{display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--rule-hard);background:var(--sunk)}
-.drawer-h h3{font-size:22px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;flex:1;min-width:0}
+.drawer-h h3{font-size:23px;font-weight:700;letter-spacing:-.01em;flex:1;min-width:0}
 .drawer-b{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
 .drawer-b.flush{padding:0;gap:0}
 .drawer-f{display:flex;gap:10px;padding:14px 18px calc(14px + env(safe-area-inset-bottom));
@@ -453,8 +455,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 .empty{padding:26px 18px;display:flex;gap:16px;align-items:flex-start}
 .empty>svg{width:28px;height:28px;color:var(--muted);flex:none;margin-top:2px}
 .empty .body{flex:1;min-width:0}
-.empty h3{font-size:20px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
-.empty p{margin:0 0 14px;max-width:52ch;font-size:16px;color:var(--muted)}
+.empty h3{font-size:22px;font-weight:700;letter-spacing:-.01em;margin-bottom:7px}
+.empty p{margin:0 0 15px;max-width:52ch;font-size:17px;color:var(--muted);line-height:1.55}
 .empty .acts2{display:flex;gap:10px;flex-wrap:wrap}
 .banner{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:3px;
   border:1px solid var(--acc-rule);background:var(--acc-wash);color:var(--acc);font-size:16px;font-weight:500}
@@ -477,8 +479,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 .check.done .bx{background:var(--good);border-color:var(--good);color:var(--panel)}
 .check.done .t{color:var(--muted);text-decoration:line-through}
 .check .grow{flex:1;min-width:0}
-.check .t{font-weight:600;font-size:16.5px}
-.check .s{font-size:15px;color:var(--muted)}
+.check .t{font-weight:600;font-size:17.5px}
+.check .s{font-size:16px;color:var(--muted);line-height:1.5}
 </style>
 
 <script type="application/json" id="app-data">{"v":2,"fresh":true}</script>
@@ -591,10 +593,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function plural(count, one, many) { return count + ' ' + (count === 1 ? one : (many || one + 's')); }
 
   /* ---------------------------------------------------------- constants */
-  var JOB_STATUS = ['Enquiry', 'Booked', 'In progress', 'Done', 'Paid', 'Cancelled'];
-  var OPEN_JOB = ['Enquiry', 'Booked', 'In progress'];
-  var ORDER_STATUS = ['Ordered', 'Paid for', 'In transit', 'At customs', 'Arrived', 'Cancelled'];
-  var OPEN_ORDER = ['Ordered', 'Paid for', 'In transit', 'At customs'];
+  /* Three states, not six. You are not sitting in this app all day marking a
+     car as started and then finished — a job is booked, then it is done, then
+     it is paid. Same for an order: ordered, on the way, landed. */
+  var JOB_STATUS = ['Booked', 'Done', 'Paid', 'Cancelled'];
+  var OPEN_JOB = ['Booked'];
+  var ORDER_STATUS = ['Ordered', 'On the way', 'Arrived', 'Cancelled'];
+  var OPEN_ORDER = ['Ordered', 'On the way'];
   var EXP_CATS = ['Ads', 'Materials', 'Freight & duty', 'Tools & equipment', 'Rent', 'Wages', 'Software', 'Fees', 'Fuel & travel', 'Other'];
   var AD_PLATFORMS = ['Meta', 'Instagram', 'Google', 'TikTok', 'YouTube', 'Other'];
   var BUY_FROM = ['Alibaba', 'AliExpress', '1688', 'Taobao', 'Direct factory', 'Local supplier', 'Other'];
@@ -625,7 +630,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
   function emptyState() {
     return {
-      v: 6, stamp: 0,
+      v: 7, stamp: 0,
       meta: {
         business: 'Kitted Lab', currency: '$', theme: 'system', invNext: 1,
         biz: { legal: '', abn: '', addr: '', phone: '', email: '', bank: '', bsb: '', acct: '',
@@ -682,6 +687,18 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         delete j.inv;
       });
       st.v = 6;
+    }
+    if (st.v < 7) {
+      // the in-between states nobody had time to keep up with fold into the
+      // one either side of them; nothing is lost, only simplified
+      (st.jobs || []).forEach(function (j) {
+        if (j.status === 'Enquiry' || j.status === 'In progress') j.status = 'Booked';
+      });
+      (st.orders || []).forEach(function (o) {
+        if (o.status === 'Paid for') o.status = 'Ordered';
+        if (o.status === 'In transit' || o.status === 'At customs') o.status = 'On the way';
+      });
+      st.v = 7;
     }
     return st;
   }
@@ -1393,17 +1410,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<div class="headline-r"><div class="eyebrow" style="margin-bottom:6px">Profit, last 6 months</div>' +
       chartHost('spark', 74) + '</div></div>';
 
-    h += '<div class="tiles">' +
-      tile('Money in', money(r.in), plural(r.jobs, 'job') + ' paid', 'jobs') +
-      tile('Costs & bills', money(r.cost + r.out), 'Jobs ' + money(r.cost) + ' · bills ' + money(r.out), 'money') +
-      tile('Still owed', money(owed), owed ? plural(unpaidJobs().length, 'job') + ' to chase' : 'Nothing outstanding',
-        null, ['go-invoices', 'unpaid']) +
-      tile('Average job', money(r.avg), r.jobs ? 'Across ' + plural(r.jobs, 'paid job') : 'No paid jobs yet') +
-      '</div>';
-
-    h += secH('Where every job is at');
     h += stageStrip(m);
-    h += '<div class="hint" style="margin-top:9px">Every job you have sits in one of these four. Tap one to see them.</div>';
+
+    h += '<div class="grid g2" style="margin-top:20px">' + needsDoing() + comingUp() + '</div>';
 
     h += secH('Month by month');
     h += '<section class="card"><div class="card-b">' +
@@ -1413,9 +1422,6 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       chartHost('months', 196) +
       '<div class="hint" style="margin-top:8px">Tap a month to open it.</div></div></section>';
 
-    h += '<div class="grid g2" style="margin-top:20px">' + comingUp() + needsDoing() + '</div>';
-
-    if (S.jobs.some(function (j) { return j.status === 'Paid'; })) h += whereMoneyCame(m);
     h += startHere();          // last on the page, out of the way
     return h;
   }
@@ -1427,9 +1433,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<div class="sub">' + esc(sub) + '</div></div>';
   }
 
+  /** Three cards, in the order the work happens: booked, done, paid. */
   function stageStrip(m) {
-    var booked = S.jobs.filter(function (j) { return j.status === 'Booked' || j.status === 'Enquiry'; });
-    var prog = S.jobs.filter(function (j) { return j.status === 'In progress'; });
+    var booked = S.jobs.filter(jobOpen);
     var owed = S.jobs.filter(function (j) { return j.status === 'Done'; });
     var paid = S.jobs.filter(function (j) { return j.status === 'Paid' && mKey(j.date) === m; });
     var sum = function (l, f) { return l.reduce(function (a, j) { return a + f(j); }, 0); };
@@ -1438,11 +1444,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         '<div class="l">' + esc(label) + '</div><div class="n">' + list.length + '</div>' +
         '<div class="v">' + esc(value) + '</div></button>';
     };
-    return '<div class="stages">' +
-      cell('s-book', 'Not started yet', booked, money(sum(booked, function (j) { return n(j.price); })) + ' of work coming', 'open') +
-      cell('s-prog', 'Car is in now', prog, money(sum(prog, function (j) { return n(j.price); })) + ' being worked on', 'open') +
-      cell('s-owed', 'Done, not paid yet', owed, money(sum(owed, jobOwing)) + ' they still owe you', 'done') +
-      cell('s-paid', 'Paid this month', paid, money(sum(paid, function (j) { return n(j.price); })) + ' in the bank', 'paid') +
+    return '<div class="stages three">' +
+      cell('s-book', 'Booked in', booked, money(sum(booked, function (j) { return n(j.price); })) + ' coming', 'open') +
+      cell('s-owed', 'Waiting to be paid', owed, money(sum(owed, jobOwing)) + ' owed to you', 'done') +
+      cell('s-paid', 'Paid this month', paid, money(sum(paid, function (j) { return n(j.price); })) + ' banked', 'paid') +
       '</div>';
   }
 
@@ -1548,9 +1553,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     var rows = sortBy(Object.keys(agg).map(function (k) { return { n: k, v: agg[k] }; }), function (x) { return x.v; }, 'desc').slice(0, 8);
     if (!rows.length) return '';
     var total = rows.reduce(function (a, x) { return a + x.v; }, 0) || 1;
-    return secH('What earned the most in ' + mLabel(m)) +
-      '<section class="card"><div class="card-b">' + hbars(rows, total) +
-      '<div class="hint">A job with two services splits its price evenly between them.</div></div></section>';
+    return '<section class="card" style="margin-bottom:14px"><div class="card-h">' + ico('spark') +
+      '<h3>What earned the most in ' + esc(mLabel(m)) + '</h3></div><div class="card-b">' + hbars(rows, total) +
+      '</div></section>';
   }
 
   /* =============================== JOBS ================================= */
@@ -1567,11 +1572,14 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function hit(text) { var q = UI.q.trim().toLowerCase(); return !q || String(text).toLowerCase().indexOf(q) >= 0; }
   function statusCls(j) {
     return j.status === 'Paid' ? 's-paid' : j.status === 'Done' ? 's-owed' :
-      j.status === 'In progress' ? 's-prog' : j.status === 'Cancelled' ? '' : 's-book';
+      j.status === 'Cancelled' ? '' : 's-book';
+  }
+  function statusWord(j) {
+    return j.status === 'Done' ? 'Waiting to be paid' : j.status === 'Booked' ? 'Booked in' : j.status;
   }
   function statusChip(j) {
-    var c = j.status === 'Paid' ? 'good' : j.status === 'In progress' ? 'amb' : j.status === 'Done' ? 'bad' : '';
-    return '<span class="chip ' + c + '">' + esc(j.status === 'Done' ? 'Waiting on payment' : j.status) + '</span>';
+    var c = j.status === 'Paid' ? 'good' : j.status === 'Done' ? 'amb' : '';
+    return '<span class="chip ' + c + '">' + esc(statusWord(j)) + '</span>';
   }
 
   function viewJobs() {
@@ -1632,15 +1640,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     var names = (j.serviceIds || []).map(svcName).filter(Boolean);
     var profit = jobProfit(j), owing = jobOwing(j);
     var acts = '';
-    if (j.status === 'Enquiry' || j.status === 'Booked')
-      acts += '<button class="btn sm" data-act="job-status" data-id="' + j.id + '" data-v="In progress">Start it</button>';
-    if (jobOpen(j))
-      acts += '<button class="btn sm ok" data-act="job-status" data-id="' + j.id + '" data-v="Done">' + ico('check') + 'Finished</button>';
+    if (j.status === 'Booked')
+      acts += '<button class="btn sm ok" data-act="job-status" data-id="' + j.id + '" data-v="Done">' + ico('check') + 'It is done</button>';
     if (j.status === 'Done')
-      acts += '<button class="btn sm primary" data-act="job-paid" data-id="' + j.id + '">' + ico('money') + 'Got paid ' + money(owing) + '</button>';
+      acts += '<button class="btn sm primary" data-act="job-paid" data-id="' + j.id + '">' + ico('money') + 'They paid ' + money(owing) + '</button>';
     var jinv = invOfJob(j.id);
-    acts += '<button class="btn sm' + (jinv ? '' : ' ok') + '" data-act="invoice" data-id="' + j.id + '">' + ico('doc') +
-      (jinv ? 'Open ' + esc(jinv.no) : 'Make an invoice') + '</button>';
+    acts += '<button class="btn sm" data-act="invoice" data-id="' + j.id + '">' + ico('doc') +
+      (jinv ? esc(jinv.no) : 'Invoice') + '</button>';
     acts += '<span class="spacer"></span>' +
       '<button class="btn icon sm" data-act="edit-job" data-id="' + j.id + '" aria-label="Edit job">' + ico('pencil') + '</button>' +
       '<button class="btn icon sm" data-act="del" data-kind="jobs" data-id="' + j.id + '" aria-label="Delete job">' + ico('trash') + '</button>';
@@ -1894,8 +1900,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       adding up on their own. */
   function openNewInvoice() {
     drawer('Write an invoice',
-      '<div class="hint" style="margin-bottom:15px">Who it is for, what you did, what it costs. ' +
-      'This also puts the job on your Jobs page, so the money still counts itself.</div>' +
+      '<div class="hint" style="margin-bottom:15px">This also puts the job on your Jobs page, ' +
+      'so the money counts itself.</div>' +
       '<div class="fgrid">' +
       '<div class="field full"><label for="ni_customer">Who is it for? *</label>' +
       '<input class="inp" id="ni_customer" placeholder="Jamie Nguyen"></div>' +
@@ -2230,20 +2236,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (o.status === 'Arrived') return 'landed';
     if (o.status === 'Cancelled') return 'off';
     if (o.status === 'Ordered') return 'placed';
-    if (o.status === 'Paid for') return 'paid';
-    return 'moving';                     // In transit, At customs
+    return 'moving';
   }
   function nextOrderStep(o) {
-    if (o.status === 'Ordered') return { v: 'Paid for', l: 'I paid for it' };
-    if (o.status === 'Paid for') return { v: 'In transit', l: 'It shipped' };
-    if (o.status === 'In transit') return { v: 'At customs', l: 'It is at customs' };
+    if (o.status === 'Ordered') return { v: 'On the way', l: 'It shipped' };
     return null;
   }
   function orderMoney(list) { return list.reduce(function (a, o) { return a + orderTotal(o); }, 0); }
 
   function orderBoard() {
     var placed = S.orders.filter(function (o) { return orderStage(o) === 'placed'; });
-    var paid = S.orders.filter(function (o) { return orderStage(o) === 'paid'; });
     var moving = S.orders.filter(function (o) { return orderStage(o) === 'moving'; });
     var landed = S.orders.filter(function (o) { return o.status === 'Arrived'; });
     var cell = function (cls, label, list, sub, filter) {
@@ -2251,11 +2253,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         '<div class="l">' + esc(label) + '</div><div class="n">' + list.length + '</div>' +
         '<div class="v">' + esc(sub) + '</div></button>';
     };
-    return '<div class="stages">' +
-      cell('s-book', 'Placed, not paid', placed, money(orderMoney(placed)) + ' to pay', 'placed') +
-      cell('s-prog', 'Paid, not shipped', paid, money(orderMoney(paid)) + ' waiting', 'paid') +
-      cell('s-owed', 'On its way', moving, money(orderMoney(moving)) + ' on the water', 'moving') +
-      cell('s-paid', 'Landed', landed, plural(landed.reduce(function (a, o) { return a + orderUnits(o); }, 0), 'unit') + ' in', 'landed') +
+    return '<div class="stages three">' +
+      cell('s-book', 'Not shipped yet', placed, money(orderMoney(placed)) + ' of it', 'placed') +
+      cell('s-prog', 'On the way', moving, money(orderMoney(moving)) + ' of it', 'moving') +
+      cell('s-paid', 'Landed', landed, plural(landed.length, 'order') + ' in', 'landed') +
       '</div>';
   }
 
@@ -2265,7 +2266,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       var st = orderStage(o);
       if (f === 'open' && !orderOpen(o)) return false;
       if (f === 'late' && !orderLate(o)) return false;
-      if (['placed', 'paid', 'moving', 'landed'].indexOf(f) >= 0 && st !== f) return false;
+      if (['placed', 'moving', 'landed'].indexOf(f) >= 0 && st !== f) return false;
       return hit([o.ref, supName(o.supplierId), o.status, o.tracking, o.ship, o.notes].join(' '));
     });
     list = sortBy(list, function (o) { return (orderOpen(o) ? '0' : '1') + (o.eta || '9999'); });
@@ -2282,8 +2283,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
     if (!S.orders.length) {
       return h + '<section class="card">' + emptyBlock('truck', 'Nothing on order yet',
-        'Put an order in the moment you place it. From then on you always know what you have paid for, ' +
-        'where it is, when it lands and what it is worth.',
+        'Put one in when you place it and you always know what is coming and when it lands.',
         '<button class="btn primary big" data-act="new-order">' + ico('plus') + 'Put your first order in</button>') + '</section>';
     }
 
@@ -2400,7 +2400,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
           : '') + '</div>';
 
     if (UI.moneyView === 'invoices') return h + invoicesView();
-    if (UI.moneyView === 'in') return h + moneyIn(m);
+    if (UI.moneyView === 'in') return h + whereMoneyCame(m) + moneyIn(m);
 
     var list = sortBy(S.expenses.filter(function (e) { return mKey(e.date) === m; }), function (e) { return e.date; }, 'desc');
     if (!S.expenses.length) {
@@ -2450,8 +2450,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   function invoicesView() {
     if (!S.invoices.length) {
       return '<section class="card">' + emptyBlock('doc', 'No invoices yet',
-        'Write one from scratch and it makes the job for you, or press Invoice on any job you have already booked. ' +
-        'It comes out with your name, ABN and bank details on it, ready to print or send.',
+        'Write one and it makes the job for you. It comes out with your name, ABN and bank details on it.',
         '<button class="btn primary big" data-act="new-invoice">' + ico('doc') + 'Write your first invoice</button>' +
         '<button class="btn big" data-tab="settings">' + ico('cog') + 'Put my details in first</button>') + '</section>';
     }
@@ -2508,9 +2507,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   function moneyNote() {
-    return '<div class="hint" style="margin-top:16px;max-width:70ch">Parts and materials you use on a job are counted on that job, ' +
-      'so you do not need to log them here as well. Log the invoice here only for things a job does not cover — ' +
-      'rent, ads, tools, fuel, software.</div>';
+    return '<div class="hint" style="margin-top:16px;max-width:70ch">Parts and materials are counted on the job, ' +
+      'so only put things here that no job covers \u2014 rent, ads, tools, fuel.</div>';
   }
 
   function moneyIn(m) {
@@ -2599,11 +2597,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Your devices</h3>' +
         '<div class="spacer"></div><span class="chip ' + (ARTIFACT ? 'good' : '') + '">' +
         (ARTIFACT ? 'On' : 'Checking…') + '</span></div><div class="card-b stack">' +
-        '<div class="hint">Nothing to set up. This page saves itself, so the same link opens with all your ' +
-        'work on your phone, your laptop, anywhere you sign in. It saves on its own a few seconds after you ' +
-        'stop typing, and again whenever you leave the page.</div>' +
+        '<div class="hint">Nothing to set up. It saves itself, so the same link opens with all your work ' +
+        'on any device you sign in on. Only you can open it unless you share it.</div>' +
         '<div><button class="btn primary" data-act="save">' + ico('check') + 'Save right now</button></div>' +
-        '<div class="hint">Only you can open the link unless you share it yourself.</div>' +
         '</div></section>';
     }
     if (!syncAvailable()) {
@@ -2659,7 +2655,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 
     h += '<section class="card"><div class="card-h">' + ico('spark') + '<h3>Your prices</h3><div class="spacer"></div>' +
       '<button class="btn sm" data-act="new-service">' + ico('plus') + 'Add</button></div><div class="card-b flush">' +
-      '<div class="hint" style="padding:14px 16px 0">Set what you charge once. Booking a job then becomes: pick the work, and the price fills itself in.</div>' +
+      '<div class="hint" style="padding:14px 16px 0">Set these once and booking a job fills the price in for you.</div>' +
       (S.services.length ? serviceRows() : emptyBlock('spark', 'No services yet', 'Add the work you do and what you charge for it.')) +
       '</div></section>';
 
@@ -2699,14 +2695,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '</div></section>';
 
     h += '<section class="card"><div class="card-h">' + ico('clip') + '<h3>How it adds up</h3></div><div class="card-b">' +
-      [['A job is one car', 'Whoever it is, whatever car, whatever you do to it — tint, detail, wrap, install, parts. One card, one price.'],
-      ['Money in means paid', 'A job only counts as money in once you mark it paid. Until then it sits under "still owed".'],
-      ['Profit on a job', 'What you charged, minus the parts you took off the shelf, minus what the film or vinyl cost you.'],
-      ['Profit for the month', 'Everything paid, minus what those jobs cost you, minus your bills and ad spend.'],
-      ['Stock looks after itself', 'Put parts on a job and they come off your count. Mark an order arrived and they go back on.'],
+      [['A job is one car', 'One card, one price — tint, detail, wrap, install, parts, whatever it is.'],
+      ['It goes booked, done, paid', 'Three buttons, in that order. It only counts as money in once it is paid.'],
+      ['Profit', 'What you charged, minus the shelf, minus the film or vinyl.'],
+      ['Stock looks after itself', 'Parts on a job come off. An order marked arrived goes back on.'],
       ['Where it is kept', (window.claude && window.claude.use)
-        ? 'Inside this page. It saves itself, so opening the link on any device brings everything with it. Take a backup now and then anyway.'
-        : 'In this browser, on this device. Download a backup before you clear your browsing data.']
+        ? 'Inside this page. It saves itself, so the link opens with everything on any device.'
+        : 'In this browser, on this device. Take a backup before clearing your browsing data.']
       ].map(function (x) {
         return '<div style="margin-bottom:15px"><div style="font-weight:600">' + esc(x[0]) + '</div>' +
           '<div class="hint" style="margin-top:2px">' + esc(x[1]) + '</div></div>';
@@ -2730,8 +2725,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     return '<section class="card"><div class="card-h">' + ico('doc') + '<h3>What goes on an invoice</h3>' +
       '<div class="spacer"></div>' + (raised ? '<span class="chip">' + plural(raised, 'raised') + '</span>' : '') +
       (out ? '<span class="chip amb">' + out + ' not sent</span>' : '') + '</div><div class="card-b">' +
-      '<div class="hint" style="margin-bottom:14px">Fill this in once. Every invoice you raise from a job then ' +
-      'comes out finished, with nothing left to type.</div>' +
+      '<div class="hint" style="margin-bottom:14px">Fill this in once and every invoice comes out finished.</div>' +
       '<div class="fgrid">' +
       f('legal', 'Business name as it should read', 'Leave it empty to use ' + (S.meta.business || 'Kitted Lab')) +
       f('abn', 'ABN') +
@@ -2794,14 +2788,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     jobs: {
       label: 'Jobs', one: 'job', title: 'Job', icon: 'car',
       fields: [
-        { k: 'customer', l: 'Customer name', t: 'text', req: true, full: true, ph: 'Jamie Nguyen' },
-        { k: 'phone', l: 'Phone', t: 'tel' },
-        { k: 'date', l: 'When', t: 'date' },
+        { k: 'customer', l: 'Who is it for?', t: 'text', req: true, full: true, ph: 'Jamie Nguyen' },
         { k: 'car', l: 'Car', t: 'text', ph: '2019 Toyota GR86' },
-        { k: 'rego', l: 'Rego', t: 'text' },
+        { k: 'date', l: 'When', t: 'date' },
         { k: 'serviceIds', l: 'What are you doing?', t: 'services', full: true },
-        { k: 'price', l: 'Price you are charging', t: 'money', req: true },
-        { k: 'status', l: 'Where it is at', t: 'select', o: opts(JOB_STATUS) },
+        { k: 'price', l: 'What you are charging', t: 'money', req: true },
+        { k: 'status', l: 'Where it is at', t: 'select', o: JOB_STATUS.map(function (v) {
+          return { v: v, l: v === 'Done' ? 'Waiting to be paid' : v === 'Booked' ? 'Booked in' : v };
+        }) },
+        { k: 'phone', l: 'Phone', t: 'tel', adv: true },
+        { k: 'rego', l: 'Rego', t: 'text', adv: true },
         { k: 'deposit', l: 'Deposit taken', t: 'money', adv: true },
         { k: 'materials', l: 'Film, vinyl or polish used', t: 'money', adv: true, hint: 'Roughly what the materials cost you' },
         { k: 'parts', l: 'Parts off your shelf', t: 'lines', full: true, adv: true },
@@ -2815,11 +2811,11 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         { k: 'category', l: 'Type', t: 'combo', o: opts(STOCK_CATS) },
         { k: 'qty', l: 'How many you have', t: 'int', hint: 'Rolls, boxes, sets \u2014 however you buy it' },
         { k: 'uses', l: 'How many cars does one do?', t: 'int',
-          hint: 'A roll of tint that gets you through 5 cars \u2192 put 5. If you sell the thing itself, like a bumper, leave it at 1.' },
+          hint: 'A roll that does 5 cars \u2192 put 5. Selling the thing itself, like a bumper? Leave it at 1.' },
         { k: 'cost', l: 'What one costs you', t: 'money', hint: 'What you pay for the whole roll or box' },
         { k: 'price', l: 'What you sell it for', t: 'money' },
         { k: 'reorder', l: 'Tell me when I am down to', t: 'int',
-          hint: 'Counted in cars. Hit it and the item goes red on the Stock page, shows up under Needs doing on Home, and the Stock tab gets a number on it.' },
+          hint: 'Counted in cars. Hit it and it turns red on Stock and shows up on Home.' },
         { k: 'supplierId', l: 'Who you buy it from', t: 'ref', ref: supOpts, adv: true },
         { k: 'sku', l: 'Code or part number', t: 'text', adv: true },
         { k: 'location', l: 'Where it sits', t: 'text', adv: true, ph: 'Rack A1' },
@@ -2834,7 +2830,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         { k: 'ordered', l: 'Ordered on', t: 'date' },
         { k: 'ship', l: 'How it is coming', t: 'combo', o: opts(SHIP_WAYS) },
         { k: 'eta', l: 'Should arrive', t: 'date',
-          hint: 'Fills itself in from how long they usually take. Change it the moment you know better.' },
+          hint: 'Fills itself in from how long they usually take.' },
         { k: 'status', l: 'Where it is at', t: 'select', o: opts(ORDER_STATUS) },
         { k: 'items', l: 'What is in it', t: 'lines', full: true },
         { k: 'freight', l: 'Freight', t: 'money', adv: true },
@@ -2863,9 +2859,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         { k: 'platform', l: 'Where you buy from them', t: 'combo', o: opts(BUY_FROM) },
         { k: 'link', l: 'Link to your chat with them', t: 'text', full: true,
           ph: 'https://message.alibaba.com/\u2026',
-          hint: 'Paste the Alibaba, WeChat or WhatsApp chat link. One tap from their card and you are back in the conversation.' },
+          hint: 'Paste the Alibaba or WeChat chat link and their card gets a button straight back to it.' },
         { k: 'leadTime', l: 'How long they take, in days', t: 'int',
-          hint: 'From paying to it landing. Sea from China is usually 30\u201345 days, air 7\u201314, express about a week.' },
+          hint: 'Door to door. Sea from China is about 30\u201345 days, air 7\u201314.' },
         { k: 'whatsapp', l: 'WhatsApp or WeChat', t: 'tel' },
         { k: 'country', l: 'Where they are', t: 'text' },
         { k: 'phone', l: 'Phone', t: 'tel', adv: true },
@@ -2999,9 +2995,8 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         : '<div class="hint">Add something to Stock first, then you can put it on here.</div>') +
       '</div>' +
       (kind === 'jobs'
-        ? '<div class="hint">Count in cars, not rolls. One car\u2019s worth of a $150 roll that does 5 cars ' +
-          'costs this job $30, and takes a fifth of a roll off your stock.</div>'
-        : '<div class="hint">These go onto your stock count when you mark the order arrived.</div>') + '</div>';
+        ? '<div class="hint">Count in cars, not rolls. One car of a $150 roll that does 5 costs this job $30.</div>'
+        : '<div class="hint">These go onto your stock when you mark it arrived.</div>') + '</div>';
   }
   function lineRow(r, po, kind) {
     var job = kind === 'jobs';

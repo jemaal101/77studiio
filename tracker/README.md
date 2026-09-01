@@ -172,6 +172,26 @@ The Stock page carries a card that writes the sum out — `$150.00 ÷ 5 cars` �
 `$30.00 a car` — and the job drawer carries a live strip showing what the price
 is left with once the shelf and the materials are paid for.
 
+## Three states, not six
+
+Nobody running a shop sits in an app marking a car as started and then
+finished. A job is **Booked → Done → Paid** (plus Cancelled), and an order is
+**Ordered → On the way → Arrived**. Enquiry and In progress fold into Booked;
+Paid for folds into Ordered, and In transit / At customs into On the way. The
+v7 migration does the folding, so nothing is lost — only simplified.
+
+A card therefore shows **one** forward button at a time: "It is done", then
+"They paid $X". Home is one board of three cards in that same order, with no
+separate row of tiles repeating the same figures above it.
+
+## Reading it
+
+All-caps is harder to read, so it is kept for short labels only — the page
+title and section headings. Card titles, form labels, empty-state headings and
+eyebrows are sentence case. Base type is 18px. `simple.js` asserts both: no
+`text-transform: uppercase` on `.card-h h3`, `.field label` or `.empty h3`, and
+a body size of at least 18px.
+
 ## How the numbers work
 
 - A job counts as **money in** only when it is marked paid. Before that it sits
