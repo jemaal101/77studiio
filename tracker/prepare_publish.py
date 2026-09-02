@@ -98,6 +98,14 @@ if data.get("v") and data["v"] < 7:
     data["v"] = 7
     print("migrated the carried-over data to v7")
 
+if data.get("v") and data["v"] < 8:
+    # an already-paid job gets a payment date so its receipt reads properly
+    for j in data.get("jobs") or []:
+        if j.get("status") == "Paid" and not j.get("paidOn"):
+            j["paidOn"] = j.get("date") or ""
+    data["v"] = 8
+    print("migrated the carried-over data to v8")
+
 out = BLOCK.sub(
     lambda m: m.group(1) + json.dumps(data).replace("<", "\\u003c") + m.group(3),
     SRC.read_text(encoding="utf-8"), count=1)

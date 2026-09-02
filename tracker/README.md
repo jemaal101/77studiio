@@ -244,6 +244,41 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## Receipts are the same document, settled
+
+There is one document, not two. Unpaid it is a **Tax invoice** with a due date
+and how to pay; the moment the job is marked paid it becomes a **Receipt** —
+same number — carrying a PAID badge, when and how they paid, "paid in full,
+nothing owing", and no request for payment. `invoiceSheet()` branches on
+`invPaid(inv)` throughout, so the two can never disagree.
+
+Getting paid asks the two things a receipt needs: **how** (`paidHow`, from
+`PAY_WAYS`) and **when** (`paidOn`). For cash work with no invoice behind it,
+**+ Add something → Write a receipt** takes the same form as an invoice, plus
+how they paid, and creates the job already marked paid.
+
+## Your logo
+
+`meta.biz.logo` holds a data URI, set from Settings with a file picker.
+`readLogo()` re-encodes whatever is handed over through a canvas at 660px wide,
+so a 4MB phone photo does not end up inside every saved copy; anything that is
+not an image, or over 12MB, is refused. It renders at the head of the sheet and
+travels inside the saved file, so a printed or emailed copy carries it with no
+hosting anywhere.
+
+## Emailing one
+
+`emailBody()` writes the whole document out as plain words — lines, totals, GST,
+how to pay or when it was paid, and a sign-off — so the customer reads it in the
+mail itself with nothing to open. **Email it** opens a drawer with their address
+(from the job), a subject, and that text, editable. **Open my email** builds a
+`mailto:` and clicks it; **Copy the message** is always there because a
+sandboxed frame may refuse the handoff silently.
+
+Note that a drawer and the invoice sheet share `#layer`, so `closeDrawer()`
+re-renders the sheet when `INVOICE` still names one — otherwise closing the
+email or edit drawer used to drop you out of the document.
+
 ## Orders
 
 Orders run exactly like jobs, on their own tab: a board across the top
