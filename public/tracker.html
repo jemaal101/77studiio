@@ -633,10 +633,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     'Ceramic coating', 'Full detail', 'Interior detail', 'Cut & polish', 'Paint correction',
     'Full wrap', 'Partial wrap', 'Chrome delete', 'Paint protection film', 'Parts installation', 'Parts supply only'];
   var LS = 'kittedlab.tracker.v2';
+  var LS_THEME = 'kittedlab.theme';        // light or dark is per device, never shared
 
   /* -------------------------------------------------------------- state */
   var S, UI, DIRTY = false, ARTIFACT = null, DOWNLOADS = null, READONLY = false, saving = false;
   var ASKED = false;      // the artifact capability has answered, one way or the other
+  var ROWS = ['services', 'jobs', 'invoices', 'products', 'orders', 'expenses', 'suppliers'];
 
   /** How a service is charged. Not everything has a set price: an install
       depends on the part, and some work is not being offered yet. */
@@ -748,14 +750,207 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     });
     if (!S.meta) S.meta = emptyState().meta;
     if (!S.meta.biz) S.meta.biz = emptyState().meta.biz;
+    try {
+      var th = localStorage.getItem(LS_THEME);
+      if (th) S.meta.theme = th;
+    } catch (e) {}
   }
 
   function touch() {
     S.stamp = Date.now(); DIRTY = true;
     try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) {}
+    if (SHARED.on) { SHARED.dirty = true; pushShared(); renderChrome(); return; }
     pushSoon();
     autosaveSoon();
     renderChrome();
+  }
+
+  /* ======================= THE SHARED WORKSHOP ==========================
+     Three people run this business, so the tracker cannot be a page one of
+     them owns and the others read. When the store is there the rows live
+     outside the page, one document each, and everybody reads and writes the
+     same ones — an edit on a phone is on the laptop a second later. With no
+     store (a copy saved to disk, a blank one handed out) nothing changes:
+     the page keeps its own rows the way it always did.
+     ===================================================================== */
+  var SHARED = {
+    db: null,
+    on: false,
+    state: 'off',        // off | starting | ok | saving | offline | full | readonly
+    at: 0,
+    dirty: false,
+    timer: null,
+    stop: [],
+    shadow: null         // what the store is believed to hold, so only real changes are written
+  };
+
+  /** Key order has to be stable or every read looks like a change. */
+  function stable(v) {
+    if (v === null || typeof v !== 'object') return JSON.stringify(v === undefined ? null : v);
+    if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
+    return '{' + Object.keys(v).sort().map(function (k) {
+      return JSON.stringify(k) + ':' + stable(v[k]);
+    }).join(',') + '}';
+  }
+  function plain(o) { return JSON.parse(JSON.stringify(o === undefined ? null : o)); }
+  function metaDoc() {
+    var m = plain(S.meta);
+    delete m.theme;                       // light or dark is this device's business
+    return { v: S.v || 8, meta: m };
+  }
+  function freshShadow() {
+    var sh = { meta: '' };
+    ROWS.forEach(function (k) { sh[k] = {}; });
+    return sh;
+  }
+
+  function sharedState(st) { SHARED.state = st; renderChrome(); }
+  function sharedFail(e) {
+    var c = e && e.code;
+    if (c === 'quota_exceeded') { sharedState('full'); return; }
+    if (c === 'invalid_argument') { sharedState('readonly'); return; }
+    if (c === 'revoked') { SHARED.on = false; sharedState('readonly'); return; }
+    sharedState('offline');
+  }
+
+  /** Write only what actually changed, one document per row. */
+  function pushShared() {
+    if (!SHARED.on) return;
+    clearTimeout(SHARED.timer);
+    SHARED.timer = setTimeout(function () {
+      if (!SHARED.on) return;
+      var db = SHARED.db, jobs = [];
+      ROWS.forEach(function (k) {
+        var here = {};
+        (S[k] || []).forEach(function (r) {
+          if (!r || !r.id) return;
+          here[r.id] = 1;
+          var body = stable(r);
+          if (SHARED.shadow[k][r.id] === body) return;
+          SHARED.shadow[k][r.id] = body;
+          jobs.push({ path: k + '/' + r.id, body: plain(r) });
+        });
+        Object.keys(SHARED.shadow[k]).forEach(function (id) {
+          if (here[id]) return;
+          delete SHARED.shadow[k][id];
+          jobs.push({ path: k + '/' + id, gone: true });
+        });
+      });
+      var m = stable(metaDoc());
+      if (SHARED.shadow.meta !== m) { SHARED.shadow.meta = m; jobs.push({ path: 'meta/settings', body: metaDoc() }); }
+      if (!jobs.length) { SHARED.dirty = false; DIRTY = false; sharedState('ok'); return; }
+      sharedState('saving');
+      runWrites(db, jobs, function (bad) {
+        if (bad) { sharedFail(bad); return; }
+        SHARED.dirty = false; DIRTY = false; SHARED.at = Date.now();
+        sharedState('ok');
+      });
+    }, 400);
+  }
+
+  /** A few at a time: a burst of writes trips the per-viewer budget. */
+  function runWrites(db, jobs, done) {
+    var i = 0, bad = null;
+    (function step() {
+      if (i >= jobs.length) return done(bad);
+      var batch = jobs.slice(i, i + 5);
+      i += 5;
+      Promise.all(batch.map(function (jb) {
+        var ref = db.doc(jb.path);
+        return (jb.gone ? ref.delete() : ref.set(jb.body)).catch(function (e) { bad = bad || e; });
+      })).then(function () { setTimeout(step, 90); });
+    })();
+  }
+
+  function adoptRows(k, snap) {
+    var out = [];
+    snap.docs.forEach(function (d) {
+      var o = d.data();
+      if (!o) return;
+      o = plain(o); o.id = d.id;
+      out.push(o);
+      SHARED.shadow[k][d.id] = stable(o);
+    });
+    var live = {};
+    out.forEach(function (r) { live[r.id] = 1; });
+    Object.keys(SHARED.shadow[k]).forEach(function (id) { if (!live[id]) delete SHARED.shadow[k][id]; });
+    S[k] = out;
+  }
+
+  function watchShared() {
+    var db = SHARED.db;
+    ROWS.forEach(function (k) {
+      SHARED.stop.push(db.collection(k).onSnapshot(function (snap) {
+        adoptRows(k, snap);
+        SHARED.at = Date.now();
+        if (!SHARED.dirty) sharedState('ok');
+        render();
+      }, sharedFail));
+    });
+    SHARED.stop.push(db.doc('meta/settings').onSnapshot(function (d) {
+      if (!d.exists) return;
+      var body = plain(d.data() || {});
+      if (body.meta) {
+        var mine = S.meta.theme;
+        S.meta = body.meta;
+        S.meta.theme = mine || 'system';
+        if (!S.meta.biz) S.meta.biz = emptyState().meta.biz;
+      }
+      if (body.v) S.v = body.v;
+      SHARED.shadow.meta = stable(metaDoc());
+      SHARED.at = Date.now();
+      if (!SHARED.dirty) sharedState('ok');
+      render();
+    }, sharedFail));
+  }
+
+  /** First one in puts what the page came with into the store; the others
+      just read it. A short lease keeps three people opening at once from
+      each seeding their own copy. */
+  function startShared(db) {
+    SHARED.db = db;
+    SHARED.shadow = freshShadow();
+    sharedState('starting');
+    return db.doc('meta/settings').get().then(function (d) {
+      if (d.exists) { SHARED.on = true; watchShared(); return; }
+      return db.doc('meta/settings').acquire({ holder: 'seed', ttlMs: 20000 }).then(function (lease) {
+        if (!lease || !lease.acquired) {          // somebody else is doing it
+          SHARED.on = true; watchShared(); return;
+        }
+        return db.doc('meta/settings').get().then(function (again) {
+          if (again.exists) { SHARED.on = true; watchShared(); return; }
+          var jobs = [];
+          ROWS.forEach(function (k) {
+            (S[k] || []).forEach(function (r) {
+              if (r && r.id) jobs.push({ path: k + '/' + r.id, body: plain(r) });
+            });
+          });
+          jobs.push({ path: 'meta/settings', body: metaDoc() });
+          return new Promise(function (resolve) {
+            runWrites(db, jobs, function (bad) {
+              if (bad) { sharedFail(bad); resolve(); return; }
+              ROWS.forEach(function (k) {
+                (S[k] || []).forEach(function (r) { if (r && r.id) SHARED.shadow[k][r.id] = stable(r); });
+              });
+              SHARED.shadow.meta = stable(metaDoc());
+              SHARED.on = true;
+              watchShared();
+              resolve();
+            });
+          });
+        });
+      });
+    }).catch(function (e) { sharedFail(e); });
+  }
+
+  function sharedLabel() {
+    if (SHARED.state === 'starting') return 'Opening…';
+    if (SHARED.state === 'saving') return 'Saving…';
+    if (SHARED.state === 'offline') return 'Offline — will catch up';
+    if (SHARED.state === 'full') return 'No room left';
+    if (SHARED.state === 'readonly') return 'Look only';
+    var mins = Math.round((Date.now() - SHARED.at) / 60000);
+    return mins < 1 ? 'Saved for everyone' : mins === 1 ? 'Saved a minute ago' : 'Saved ' + mins + ' min ago';
   }
 
   /* --------------------------------------------------- self-publishing */
@@ -1152,7 +1347,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
   /** Sync only runs on the plain web page; inside an Artifact the sandbox
       blocks outside calls and publishing already carries the data. */
-  function syncAvailable() { return cryptoOk() && !(window.claude && window.claude.use); }
+  function syncAvailable() { return cryptoOk() && !(window.claude && window.claude.use) && !SHARED.on; }
   function syncOn() { return !!(SYNC.code && syncAvailable()); }
 
   function hex(buf) {
@@ -1399,6 +1594,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
   function saveChip() {
     var cls = '', txt;
+    if (SHARED.on || SHARED.state === 'starting') {
+      txt = sharedLabel();
+      cls = SHARED.state === 'saving' || SHARED.state === 'starting' ? 'pending'
+        : SHARED.state === 'ok' ? '' : SHARED.state === 'offline' ? 'off' : 'bad';
+      return '<span class="savechip" title="' + esc(txt) + '"><i class="dot ' + cls + '"></i>' +
+        '<span class="lbl">' + esc(txt) + '</span></span>';
+    }
     if (syncOn()) {
       txt = syncLabel();
       cls = SYNC.state === 'working' ? 'pending' : SYNC.state === 'ok' ? '' :
@@ -1412,6 +1614,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<span class="lbl">' + esc(txt) + '</span></span>';
   }
   function saveBtn(extra) {
+    if (SHARED.on || SHARED.state === 'starting') return '';    // it saves itself, for everyone
     if (READONLY || !ARTIFACT) return '';
     return '<button class="btn ' + (DIRTY ? 'primary' : '') + extra + '" data-act="save"' +
       (DIRTY && !saving ? '' : ' disabled') + '>' + ico('check') + 'Save</button>';
@@ -2784,6 +2987,26 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   }
 
   function syncCard() {
+    if (SHARED.on || SHARED.state === 'starting') {
+      return '<section class="card"><div class="card-h">' + ico('users') + '<h3>Everyone on it</h3>' +
+        '<div class="spacer"></div><span class="chip ' + (SHARED.state === 'ok' ? 'good' : '') + '">' +
+        esc(sharedLabel()) + '</span></div><div class="card-b stack">' +
+        '<div class="hint">This one is shared. Everybody you have given it to is looking at the same jobs, ' +
+        'stock and invoices \u2014 put something in on your phone and it is on their laptop a second later. ' +
+        'There is nothing to save and nothing to send.</div>' +
+        '<div class="hint">To add someone, open the share menu at the top of this page and give them ' +
+        '<strong>edit</strong> access. They need to be signed in to the same Claude workspace as you.</div>' +
+        (SHARED.state === 'full'
+          ? '<div class="banner" style="border-color:var(--bad-rule);background:var(--bad-wash);color:var(--bad)">' +
+            ico('alert') + '<span class="spacer">The shared store is full. Delete some old jobs or orders, ' +
+            'or take a backup and clear them out.</span></div>' : '') +
+        (SHARED.state === 'readonly'
+          ? '<div class="banner" style="border-color:var(--s2);background:var(--panel);color:var(--s2)">' +
+            ico('alert') + '<span class="spacer">You can look but not change anything here. Whoever shared ' +
+            'it with you can give you edit access.</span></div>' : '') +
+        '<div><button class="btn" data-act="export" data-kind="backup">' + ico('down') + 'Download a backup</button></div>' +
+        '</div></section>';
+    }
     if (window.claude && window.claude.use && ASKED && !ARTIFACT) {
       return '<section class="card"><div class="card-h">' + ico('globe') + '<h3>Where this is kept</h3></div>' +
         '<div class="card-b stack">' +
@@ -2931,7 +3154,18 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         c.width = w; c.height = h;
         c.getContext('2d').drawImage(img, 0, 0, w, h);
         var uri;
-        try { uri = c.toDataURL('image/png'); } catch (e) { toast('Could not read that picture.'); return; }
+        try {
+          uri = c.toDataURL('image/png');
+          // it has to fit in one shared document, so trade quality for size
+          if (uri.length > 140000) uri = c.toDataURL('image/jpeg', 0.85);
+          if (uri.length > 140000) {
+            var c2 = document.createElement('canvas');
+            c2.width = Math.round(w / 2); c2.height = Math.round(h / 2);
+            c2.getContext('2d').drawImage(img, 0, 0, c2.width, c2.height);
+            uri = c2.toDataURL('image/jpeg', 0.82);
+          }
+        } catch (e) { toast('Could not read that picture.'); return; }
+        if (uri.length > 190000) { toast('That picture will not shrink enough. Try a smaller one.'); return; }
         biz().logo = uri;
         touch(); render(); toast('Logo saved. It is on your invoices now.');
       };
@@ -4112,7 +4346,11 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       syncKeep();
     }
     if (FORM && FORM.kind === 'orders' && t.id && /^f_(supplierId|ship|ordered)$/.test(t.id)) syncEta();
-    if (t.getAttribute && t.getAttribute('data-set') === 'theme') { S.meta.theme = t.value; applyTheme(); touch(); }
+    if (t.getAttribute && t.getAttribute('data-set') === 'theme') {
+      S.meta.theme = t.value; applyTheme();
+      try { localStorage.setItem(LS_THEME, t.value); } catch (e) {}
+      if (!SHARED.on) touch(); else renderChrome();
+    }
     if (t.hasAttribute && t.hasAttribute('data-logo')) { readLogo(t.files && t.files[0]); return; }
     if (t.hasAttribute && t.hasAttribute('data-biz') && t.type === 'checkbox') {
       biz()[t.getAttribute('data-biz')] = t.checked;
@@ -4125,9 +4363,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     if (day && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); openDay(day.getAttribute('data-d')); return; }
     if (ev.key === 'Escape' && document.querySelector('.scrim')) closeDrawer();
     else if (ev.key === 'Escape' && INVOICE) closeInvoice();
-    if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') { ev.preventDefault(); if (DIRTY) save(); }
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') { ev.preventDefault(); if (DIRTY && !SHARED.on) save(); }
   });
   window.addEventListener('beforeunload', function (e) {
+    if (SHARED.on) return;
     if (DIRTY && !saving && ARTIFACT && !READONLY) { e.preventDefault(); e.returnValue = ''; }
   });
 
@@ -4143,15 +4382,21 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   render();
 
   document.addEventListener('visibilitychange', function () {
+    if (SHARED.on) return;                 // nothing is ever waiting to be saved
     if (document.hidden && DIRTY && ARTIFACT && !READONLY && !saving) save();
   });
 
   if (window.claude && window.claude.use) {
-    window.claude.use('artifact').then(function (a) {
-      ARTIFACT = a; ASKED = true;
-      render();
-      if (DIRTY) autosaveSoon();
-    }, function () { ASKED = true; render(); });
+    // the shared store is the record when it is there; the page itself only
+    // when it is not, so ask for it before falling back to publishing
+    window.claude.use('db').then(function (d) {
+      if (d) return startShared(d);
+      return window.claude.use('artifact').then(function (a) {
+        ARTIFACT = a; ASKED = true;
+        render();
+        if (DIRTY) autosaveSoon();
+      });
+    }, function () { ASKED = true; render(); }).catch(function () { ASKED = true; render(); });
     window.claude.use('downloads').then(function (d) { DOWNLOADS = d; });
   }
 

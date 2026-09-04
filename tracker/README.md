@@ -326,6 +326,46 @@ A viewer who opens a shared link cannot save (`publish` returns `not_writer`).
 That used to surface only as a toast on the first save attempt; it now sets a
 banner at the top of every screen saying their changes stay on their device.
 
+## Three people, one tracker
+
+Three people run the business, so the tracker cannot be a page one of them
+owns and the other two read. When the artifact declares `capabilities: {db: {}}`
+the rows live outside the page — **one document per row** —
+`services/<id>`, `jobs/<id>`, `invoices/<id>`, `products/<id>`, `orders/<id>`,
+`expenses/<id>`, `suppliers/<id>`, plus `meta/settings`. Everyone reads and
+writes the same documents and `onSnapshot` delivers each other's edits live.
+
+One document per row rather than one big blob, because the store is
+last-writer-wins with no transactions: two people editing different jobs must
+not clobber each other. Same-row collisions still resolve last-writer-wins,
+which is the right trade for a three-person shop.
+
+- **`SHARED.shadow`** holds a stable-stringified copy of what the store is
+  believed to contain, so `pushShared()` (debounced 400 ms off `touch()`)
+  writes only what actually changed and deletes what disappeared. `stable()`
+  sorts keys, or key order alone would look like a change.
+- **Seeding** happens once: the first page in finds no `meta/settings`, takes a
+  short `acquire()` lease, re-checks, and writes what the page came with. A
+  second page opening at the same moment sees the lease held and just reads.
+- **Writes go five at a time** with a small gap — a burst trips the per-viewer
+  budget and returns `resource_exhausted`.
+- **Theme is stripped from `metaDoc()`** and kept in `localStorage`. Sharing it
+  would have two pages pushing light and dark back at each other.
+- **A logo has to fit one document** (256 KiB): `readLogo()` steps PNG → JPEG →
+  half size, and refuses what still will not shrink.
+- **Errors reach the save chip and Settings**: `quota_exceeded` says the store
+  is full, `invalid_argument` on a write means look-only, anything else reads
+  as offline.
+
+Without the capability — a copy saved to disk, the blank one handed out —
+`SHARED.on` stays false and nothing changes: `localStorage` plus the artifact
+publish, exactly as before. `shared.js` drives two pages against one fake store
+to prove both directions, the seeding race, deletes, the theme split and each
+error path.
+
+Note a db artifact is organisation-internal and cannot be shared publicly, so
+everyone who opens it is a signed-in member of the owner's workspace.
+
 ## How it saves
 
 No server. Data lives in the HTML:
