@@ -235,6 +235,18 @@ the job behind it. No number is spent until one is actually raised
 - `meta.biz` holds everything printed on it, filled in once under Settings →
   What goes on an invoice: name, ABN, address, contact, bank details, number
   prefix, days to pay, GST, and a footer.
+- `invoiceMissing()` is the one judge of whether that is finished, and it asks
+  the only question that matters: would this invoice actually work? So it wants
+  a way to be contacted (phone or email), an address, an ABN *if* GST is on,
+  and all three bank fields, because an invoice nobody can pay is not an
+  invoice. A business name is not on the list — it falls back to the business
+  name on its own. `invoiceReady()` is the empty check, and it is what the Home
+  checklist ticks, so the tick can never appear before the invoice is real.
+  Each gap names the field it belongs to; Settings turns them into buttons that
+  put the cursor in that box, and marks the same boxes **needed**.
+- **Empty this card and start again** blanks every printed detail so they can be
+  typed fresh. It deliberately keeps the invoice number, days to pay and GST
+  rate: resetting the counter would reissue a number that has already gone out.
 - GST is treated the Australian way: prices already include it, so the sheet
   shows the ex-GST subtotal, the GST inside the price, and the same total.
 - A deposit already on the job comes off and leaves an amount due.

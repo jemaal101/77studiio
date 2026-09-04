@@ -480,7 +480,12 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 .empty .acts2{display:flex;gap:10px;flex-wrap:wrap}
 .banner{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:3px;
   border:1px solid var(--acc-rule);background:var(--acc-wash);color:var(--acc);font-size:16px;font-weight:500}
-.banner .spacer{flex:1}
+.banner .spacer{flex:1;min-width:0}
+.gaps{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin-top:11px;min-width:0}
+.gaps .btn{display:block;text-align:left;white-space:normal;max-width:100%;
+  font-weight:600;padding:9px 13px;font-size:15px;line-height:1.35}
+.gaps .btn .s{display:block;font-weight:400;font-size:13px;opacity:.75;margin-top:1px}
+label>.chip{margin-left:6px;vertical-align:middle}
 .banner>svg{width:19px;height:19px;flex:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(110px + env(safe-area-inset-bottom));z-index:80;
   background:var(--bezel);color:var(--bezel-ink);padding:13px 18px;border-radius:3px;font-size:16px;font-weight:500;
@@ -612,6 +617,11 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     return a.slice().sort(function (x, y) { var p = f(x), q = f(y); return p === q ? 0 : (p > q ? 1 : -1) * (dir === 'desc' ? -1 : 1); });
   }
   function plural(count, one, many) { return count + ' ' + (count === 1 ? one : (many || one + 's')); }
+  /** "a, b and c" — the way a person would say it out loud. */
+  function joinList(a) {
+    if (a.length < 2) return a[0] || '';
+    return a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  }
 
   /* ---------------------------------------------------------- constants */
   /* Three states, not six. You are not sitting in this app all day marking a
@@ -1701,8 +1711,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       { t: 'Book a job', s: 'A car, what you are doing to it, and the price.', done: S.jobs.length > 0, act: 'new-job' },
       { t: 'Add the stock you hold', s: 'Film, vinyl, parts — anything you count.', done: S.products.length > 0, act: 'new-product' },
       { t: 'Save your supplier contacts', s: 'So you can call them from your phone.', done: S.suppliers.length > 0, act: 'new-supplier' },
-      { t: 'Set up your invoices', s: 'Your ABN and bank details go in once, then every invoice comes out finished.',
-        done: !!(biz().abn || biz().bank || biz().legal), act: 'tab', v: 'settings' }
+      { t: 'Set up your invoices', s: invoiceReady()
+          ? 'Done \u2014 every invoice comes out finished.'
+          : 'Still to fill in: ' + joinList(invoiceMissing().map(function (g) { return g.n; })) + '.',
+        done: invoiceReady(), act: 'tab', v: 'settings' }
     ];
     if (steps.every(function (x) { return x.done; })) return '';
     var done = steps.filter(function (x) { return x.done; }).length;
@@ -1920,6 +1932,27 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
      actually raise one.
      ===================================================================== */
   function biz() { if (!S.meta.biz) S.meta.biz = {}; return S.meta.biz; }
+  function bizHas(k) { return String(biz()[k] == null ? '' : biz()[k]).trim() !== ''; }
+
+  /* What an invoice still needs before it is worth handing to anybody. The
+     business name is not on this list — it falls back to Kitted Lab on its
+     own. Getting paid is on this list. So the tick below only appears when
+     an invoice would actually come out finished. */
+  function invoiceMissing() {
+    var gaps = [];
+    if (!bizHas('phone') && !bizHas('email'))
+      gaps.push({ k: 'phone', t: 'A phone number or an email', n: 'a phone number or an email',
+                  s: 'so they can get hold of you about it' });
+    if (!bizHas('addr'))
+      gaps.push({ k: 'addr', t: 'Your address', n: 'your address', s: 'where the business is' });
+    if (biz().gst && !bizHas('abn'))
+      gaps.push({ k: 'abn', t: 'Your ABN', n: 'your ABN', s: 'a GST invoice has to show it' });
+    if (!bizHas('bank') || !bizHas('bsb') || !bizHas('acct'))
+      gaps.push({ k: 'bank', t: 'Where the money goes', n: 'your bank details',
+                  s: 'account name, BSB and account number' });
+    return gaps;
+  }
+  function invoiceReady() { return invoiceMissing().length === 0; }
   function padNo(x, w) {
     var v = String(Math.max(1, Math.floor(n(x) || 1)));
     while (v.length < (w || 4)) v = '0' + v;
@@ -3102,7 +3135,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     h += shareCard();
 
     h += '<section class="card"><div class="card-h">' + ico('down') + '<h3>Your data</h3></div><div class="card-b stack">' +
-      '<div class="hint">' + (ARTIFACT
+      '<div class="hint">' + (SHARED.on || SHARED.state === 'starting'
+        ? 'Everything is kept in one shared place. Type it on your phone and it is on their laptop a second later. ' +
+          'There is nothing to save. Take a backup here whenever you want a copy of your own.'
+        : ARTIFACT
         ? 'Everything lives inside this page. Press <strong>Save</strong> at the top and it follows you to your other devices.'
         : 'Everything you type is saved straight away, in this browser on this device. Nothing is sent anywhere and nobody else can see it. ' +
           'To use it on your phone as well as your laptop, download a backup here and put it back on the other one.') + '</div>' +
@@ -3124,7 +3160,9 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       ['It goes booked, done, paid', 'Three buttons, in that order. It only counts as money in once it is paid.'],
       ['Profit', 'What you charged, minus the shelf, minus the film or vinyl.'],
       ['Stock looks after itself', 'Parts on a job come off. An order marked arrived goes back on.'],
-      ['Where it is kept', ARTIFACT
+      ['Where it is kept', SHARED.on || SHARED.state === 'starting'
+        ? 'In one shared place all of you write to. No saving, no sending, no copies to keep straight.'
+        : ARTIFACT
         ? 'Inside this page. It saves itself, so the link opens with everything on any device.'
         : 'In this browser, on this device. Take a backup before clearing your browsing data.']
       ].map(function (x) {
@@ -3197,9 +3235,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   /** Everything that ends up printed on an invoice, in one place, so a job
       never has to ask for any of it twice. */
   function invoiceSettings() {
-    var b = biz();
+    var b = biz(), gaps = invoiceMissing(), need = {};
+    gaps.forEach(function (g) {
+      if (g.k === 'phone') { need.phone = 1; need.email = 1; }
+      else if (g.k === 'bank') { need.bank = 1; need.bsb = 1; need.acct = 1; }
+      else need[g.k] = 1;
+    });
     var f = function (k, label, hint, attrs) {
-      return '<div class="field' + (/addr|footer/.test(k) ? ' full' : '') + '"><label for="bz_' + k + '">' + esc(label) + '</label>' +
+      var wanted = need[k] && !bizHas(k);
+      return '<div class="field' + (/addr|footer/.test(k) ? ' full' : '') + '"><label for="bz_' + k + '">' + esc(label) +
+        (wanted ? ' <span class="chip amb">needed</span>' : '') + '</label>' +
         (k === 'addr' || k === 'footer'
           ? '<textarea class="inp" id="bz_' + k + '" data-biz="' + k + '" rows="2">' + esc(b[k] || '') + '</textarea>'
           : '<input class="inp" id="bz_' + k + '" data-biz="' + k + '" value="' + esc(b[k] == null ? '' : b[k]) + '"' + (attrs || '') + '>') +
@@ -3209,7 +3254,16 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
     return '<section class="card"><div class="card-h">' + ico('doc') + '<h3>What goes on an invoice</h3>' +
       '<div class="spacer"></div>' + (raised ? '<span class="chip">' + plural(raised, 'raised') + '</span>' : '') +
       (out ? '<span class="chip amb">' + out + ' not sent</span>' : '') + '</div><div class="card-b">' +
-      '<div class="hint" style="margin-bottom:14px">Fill this in once and every invoice comes out finished.</div>' +
+      (gaps.length
+        ? '<div class="banner" style="margin-bottom:14px;border-color:var(--s2);background:var(--panel);align-items:flex-start">' +
+          ico('alert') + '<span class="spacer"><strong>Not ready to send yet.</strong> ' +
+          'Everything below is yours to fill in \u2014 these are the bits an invoice cannot go out without.' +
+          '<span class="gaps">' + gaps.map(function (g) {
+            return '<button class="btn sm" data-act="biz-focus" data-v="' + esc(g.k) + '">' +
+              esc(g.t) + '<span class="s">' + esc(g.s) + '</span></button>';
+          }).join('') + '</span></span></div>'
+        : '<div class="banner" style="margin-bottom:14px;border-color:var(--good-rule);background:var(--good-wash);color:var(--good)">' +
+          ico('check') + '<span class="spacer">All filled in \u2014 every invoice comes out finished.</span></div>') +
       '<div class="fgrid">' +
       '<div class="field full"><label for="bz_logo">Your logo</label>' +
       (b.logo ? '<div class="logobox"><img src="' + esc(b.logo) + '" alt="Your logo"></div>' : '') +
@@ -3241,6 +3295,13 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       '<div class="hint" style="margin-top:5px">' + (b.gst
         ? 'Your prices are treated as already including GST, and the invoice breaks it out.'
         : 'Turn this on once you are registered and every invoice shows the GST inside your prices.') + '</div>' +
+      '<div style="margin-top:16px;padding-top:15px;border-top:1px solid var(--rule)">' +
+      '<button class="btn danger sm" data-act="biz-clear">' + ico('trash') + 'Empty this card and start again</button>' +
+      '<div class="hint" style="margin-top:7px">Wipes only what is on this card \u2014 name, ABN, phone, email, ' +
+      'address, bank details, logo and footer \u2014 so you can type the lot in fresh. ' +
+      'Your jobs, stock, orders and invoices are not touched.' +
+      (SHARED.on ? ' These details are shared, so it empties them for all three of you.' : '') +
+      '</div></div>' +
       '</div></section>';
   }
 
@@ -4285,6 +4346,24 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
       case 'logo-clear':
         delete biz().logo; touch(); render(); toast('Logo taken off.');
         break;
+      case 'biz-clear':
+        confirmBox('Empty the invoice details?',
+          'Business name, ABN, phone, email, address, bank details, logo and footer all go blank so you can ' +
+          'fill them in from scratch. Your jobs, stock, orders and invoices stay exactly as they are.',
+          'Empty it', true, function () {
+            var keep = biz();
+            S.meta.biz = { legal: '', abn: '', addr: '', phone: '', email: '', bank: '', bsb: '', acct: '',
+                           terms: n(keep.terms) || 14, gst: !!keep.gst, gstRate: n(keep.gstRate) || 10,
+                           prefix: keep.prefix == null ? 'INV-' : keep.prefix,
+                           numWidth: n(keep.numWidth) || 4, footer: '' };
+            touch(); render(); toast('Emptied. Fill it in whenever you like.');
+          });
+        break;
+      case 'biz-focus': {
+        var box = document.getElementById('bz_' + el.getAttribute('data-v'));
+        if (box) { box.scrollIntoView({ block: 'center' }); box.focus(); }
+        break;
+      }
       case 'share-copy': offerFile('job-and-stock-tracker.html', freshDoc()); break;
       case 'export': exportKind(kind); break;
       case 'import-json': openImportJson(); break;
@@ -4304,7 +4383,10 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
         break;
       }
       case 'wipe': {
-        confirmBox('Delete everything?', 'Every job, stock item, order, bill and contact goes. Download a backup first if you are not sure.', 'Delete everything', true, function () {
+        confirmBox('Delete everything?',
+          'Every job, invoice, stock item, order, bill and contact goes. Your prices and your invoice details stay. ' +
+          (SHARED.on ? 'This is the shared tracker, so it goes for all three of you. ' : '') +
+          'Download a backup first if you are not sure.', 'Delete everything', true, function () {
           var meta = S.meta, services = S.services;
           S = emptyState(); S.meta = meta; S.services = services;
           touch(); render(); toast('All clear.');
