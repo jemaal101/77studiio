@@ -256,6 +256,27 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## A gift with every purchase
+
+The air fresheners are not stock to sell, they are a thank-you that goes out
+with every job. Tick **one of these goes out with every job** on a stock item
+and `giftLines()` puts it on each new job as an ordinary parts line.
+
+Deliberately a real line rather than a hidden adjustment: it comes off the
+shelf and off the profit through exactly the same path as anything else, so
+editing, deleting and undoing a job all unwind it correctly with no new
+plumbing — and it stays visible on the job, so he can take it off for the
+customer who did not get one. Only new jobs get one, and never a pre-order,
+because nothing has been sold yet.
+
+Two things this turned up in the form layer, both real:
+
+- `String(false).trim()` is `"false"`, which is truthy, so a checkbox could be
+  ticked but never unticked. `t: 'check'` now saves a boolean.
+- `n('')` is `0`, so an empty number field saved as zero. On `reorder` that
+  silently undid "blank means never" the moment an item was edited in the
+  app. Fields where empty is its own instruction now carry `blankOk`.
+
 ## Blank means never warn me
 
 `lowStock()` only looks at an item whose reorder point has actually been

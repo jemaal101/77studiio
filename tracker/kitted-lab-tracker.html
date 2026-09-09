@@ -1098,6 +1098,18 @@ label>.chip{margin-left:6px;vertical-align:middle}
   function lowStock() {
     return S.products.filter(function (p) { return warnsLow(p) && carsLeft(p) <= n(p.reorder); });
   }
+  function gifts() { return S.products.filter(function (p) { return !!p.gift; }); }
+
+  /* A gift is put on the job as a real line, so it comes off the shelf and
+     off the profit through exactly the same path as anything else -- and it
+     stays visible and removable if this customer did not get one. */
+  function giftLines(existing) {
+    var have = {};
+    (existing || []).forEach(function (l) { have[l.productId] = 1; });
+    return gifts().filter(function (p) { return !have[p.id]; }).map(function (p) {
+      return { productId: p.id, qty: 1, cost: costPerCar(p), per: uses(p) };
+    });
+  }
   function lateOrders() { return S.orders.filter(orderLate); }
   function unpaidJobs() {
     return S.jobs.filter(function (j) { return j.status === 'Done' && jobOwing(j) > 0; });
@@ -2662,7 +2674,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
               '<td class="num" data-l="Coming">' + (inc ? '<span class="chip acc">+' + inc + '</span>' : '—') + '</td>' +
               '<td class="num" data-l="Costs you">' + money2(shared(p) ? costPerCar(p) : p.cost) +
               (shared(p) ? '<span class="sub2">a car · ' + money2(p.cost) + ' the roll</span>' : '') + '</td>' +
-              '<td class="num" data-l="Sell for">' + (n(p.price) ? money2(p.price) : '—') + '</td>' +
+              '<td class="num" data-l="Sell for">' +
+              (p.gift ? '<span class="chip acc">gift</span>' : n(p.price) ? money2(p.price) : '—') + '</td>' +
               '<td class="actcell"><div class="acts">' +
               '<button class="btn sm" data-act="adjust" data-id="' + p.id + '">Count</button>' +
               '<button class="btn icon sm" data-act="edit-product" data-id="' + p.id + '" aria-label="Edit item">' + ico('pencil') + '</button>' +
@@ -3406,7 +3419,10 @@ label>.chip{margin-left:6px;vertical-align:middle}
           hint: 'A roll that does 5 cars \u2192 put 5. Selling the thing itself, like a bumper? Leave it at 1.' },
         { k: 'cost', l: 'What one costs you', t: 'money', hint: 'What you pay for the whole roll or box' },
         { k: 'price', l: 'What you sell it for', t: 'money' },
-        { k: 'reorder', l: 'Tell me when I am down to', t: 'int',
+        { k: 'gift', l: 'One of these goes out with every job', t: 'check', full: true,
+          hint: 'For a thank-you you hand over rather than sell \u2014 an air freshener, a sticker, a cloth. ' +
+                'Every new job gets one put on it, so it comes off the count and off what you keep.' },
+        { k: 'reorder', l: 'Tell me when I am down to', t: 'int', blankOk: true,
           hint: 'Counted in cars. Hit it and it turns red on Stock and shows up on Home. ' +
                 'Leave it empty for a one-off you will not be buying again.' },
         { k: 'supplierId', l: 'Who you buy it from', t: 'ref', ref: supOpts, adv: true },
@@ -3519,6 +3535,12 @@ label>.chip{margin-left:6px;vertical-align:middle}
     var id = 'f_' + f.k, h = '<div class="field' + (f.full ? ' full' : '') + '"><label for="' + id + '">' +
       esc(f.l) + (f.req === true ? ' *' : '') + '</label>';
     var v = val == null ? '' : val;
+    if (f.t === 'check') {
+      return '<div class="field' + (f.full ? ' full' : '') + '">' +
+        '<label class="switch"><input type="checkbox" id="' + id + '" data-k="' + f.k + '" data-check="1"' +
+        (v ? ' checked' : '') + '><span>' + esc(f.l) + '</span></label>' +
+        (f.hint ? '<div class="hint">' + esc(f.hint) + '</div>' : '') + '</div>';
+    }
     if (f.t === 'textarea') h += '<textarea class="inp" id="' + id + '" data-k="' + f.k + '" rows="3">' + esc(v) + '</textarea>';
     else if (f.t === 'select' || f.t === 'ref') {
       var list = f.t === 'ref' ? f.ref() : f.o;
@@ -3539,7 +3561,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       var type = f.t === 'date' ? 'date' : (f.t === 'money' || f.t === 'int') ? 'number' :
         f.t === 'email' ? 'email' : f.t === 'tel' ? 'tel' : 'text';
       var ex = f.t === 'money' ? ' step="0.01" inputmode="decimal"' : f.t === 'int' ? ' step="1" inputmode="numeric"' : '';
-      if ((f.t === 'money' || f.t === 'int') && n(v) === 0) v = '';
+      if ((f.t === 'money' || f.t === 'int') && n(v) === 0 && !(f.blankOk && v === 0)) v = '';
       h += '<input class="inp" type="' + type + '" id="' + id + '" data-k="' + f.k + '" value="' + esc(v) + '"' + ex +
         (f.ph ? ' placeholder="' + esc(f.ph) + '"' : '') + '>';
     }
@@ -3709,7 +3731,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
   function readForm() {
     var host = document.querySelector('.drawer-b'), out = {};
     if (!host) return out;
-    host.querySelectorAll('[data-k]').forEach(function (el) { out[el.getAttribute('data-k')] = el.value; });
+    host.querySelectorAll('[data-k]').forEach(function (el) {
+      out[el.getAttribute('data-k')] = el.hasAttribute('data-check') ? el.checked : el.value;
+    });
     var lines = [];
     host.querySelectorAll('.itemline').forEach(function (row) {
       var o = {};
@@ -3745,9 +3769,16 @@ label>.chip{margin-left:6px;vertical-align:middle}
         return;
       }
       var v = vals[f.k];
+      if (f.t === 'check') { rec[f.k] = !!v; return; }
+      // a number field where empty means something keeps its emptiness --
+      // n('') is 0, and 0 is a different instruction from "never"
+      if (f.blankOk && String(v == null ? '' : v).trim() === '') { rec[f.k] = ''; return; }
       rec[f.k] = (f.t === 'money' || f.t === 'int') ? n(v) : String(v == null ? '' : v).trim();
     });
 
+    // a brand new job that is actually happening gets its thank-you
+    if (kind === 'jobs' && isNew && rec.status !== WANTED)
+      rec.parts = (rec.parts || []).concat(giftLines(rec.parts));
     if (kind === 'jobs') applyLines(rec.parts, -1);
     if (kind === 'orders') {
       if (rec.status === 'Arrived') { applyLines(rec.items, +1); rec.applied = true; }
