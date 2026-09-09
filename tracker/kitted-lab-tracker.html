@@ -52,7 +52,7 @@
 html,body{margin:0;padding:0}
 body{background:var(--ground);color:var(--ink);
   font-family:Barlow,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+  font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
 h1,h2,h3{margin:0;font-weight:700;letter-spacing:.01em}
 .num{font-family:"Roboto Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -131,7 +131,7 @@ a{color:var(--acc)}
 .card.fold:not(.open)>.card-h{border-bottom:0}
 .card.fold:not(.open)>.card-b,.card.fold:not(.open)>.tablewrap{display:none}
 /* the to-do list on Home: one line per thing, the number on the right */
-.todo{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid var(--rule-2);cursor:pointer}
+.todo{display:flex;align-items:center;gap:14px;padding:18px;border-bottom:1px solid var(--rule-2);cursor:pointer}
 .todo:last-child{border-bottom:0}
 .todo:hover{background:var(--sunk)}
 .todo>svg{width:20px;height:20px;flex:none}
@@ -198,22 +198,25 @@ a{color:var(--acc)}
 @media (min-width:1000px){.fab{display:none}}
 
 /* ------------------------------------------------------------ blocks ---- */
-.wrap{padding:16px}
-@media (min-width:1000px){.wrap{padding:22px 28px 64px}}
-.stack{display:flex;flex-direction:column;gap:16px}
+.wrap{padding:20px 16px 40px}
+@media (min-width:1000px){.wrap{padding:28px 36px 72px;max-width:1180px}}
+.stack{display:flex;flex-direction:column;gap:22px}
+/* one thing at a time: every card gets clear air around it */
+.wrap>.card,.wrap>.headline,.wrap>.stages,.wrap>.tiles,.wrap>.grid,.wrap>.jobs,.wrap>.toolbar{margin-bottom:24px}
+.wrap>.card:last-child{margin-bottom:0}
 .card{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px}
-.card-h{display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:1px solid var(--rule);
+.card-h{display:flex;align-items:center;gap:11px;padding:16px 18px;border-bottom:1px solid var(--rule);
   min-width:0;background:var(--sunk)}
 .card-h h3{font-size:20px;font-weight:700;letter-spacing:-.01em;min-width:0;overflow-wrap:anywhere}
 .card-h .spacer{flex:1}
 .card-h>svg{width:19px;height:19px;flex:none;color:var(--muted)}
-.card-b{padding:16px}
+.card-b{padding:20px 18px}
 .card-b.flush{padding:0}
 .eyebrow{font-size:15px;color:var(--ink-2);font-weight:700}
-.sec-h{display:flex;align-items:center;gap:10px 14px;margin:26px 0 12px;flex-wrap:wrap}
+.sec-h{display:flex;align-items:center;gap:10px 14px;margin:36px 0 14px;flex-wrap:wrap}
 .sec-h h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
 .sec-h .line{flex:1 1 24px;min-width:24px;height:1px;background:var(--rule-hard)}
-.grid{display:grid;gap:14px;min-width:0;align-items:start}
+.grid{display:grid;gap:22px;min-width:0;align-items:start}
 .g2{grid-template-columns:minmax(0,1fr)}
 @media (min-width:960px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
@@ -221,12 +224,12 @@ a{color:var(--acc)}
 .headline{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;
   display:grid;grid-template-columns:minmax(0,1fr);border-top:3px solid var(--acc-fill)}
 @media (min-width:760px){.headline{grid-template-columns:minmax(0,1fr) minmax(0,330px)}}
-.headline-l{padding:20px 22px 18px}
+.headline-l{padding:26px 24px 24px}
 .headline-r{padding:16px 18px;border-top:1px solid var(--rule)}
 @media (min-width:760px){.headline-r{border-top:0;border-left:1px solid var(--rule)}}
 .headline .lab{font-size:16px;color:var(--ink-2);font-weight:700}
 .headline .big{font-size:clamp(44px,11vw,64px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:5px}
-.headline .sub{margin-top:11px;color:var(--ink-2);font-size:17.5px;line-height:1.5}
+.headline .sub{margin-top:14px;color:var(--ink-2);font-size:17.5px;line-height:1.7}
 .tiles{display:grid;gap:1px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px;
   background:var(--rule-hard);border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
 @media (min-width:900px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -236,6 +239,20 @@ a{color:var(--acc)}
 .tile .sub{font-size:15.5px;color:var(--muted);margin-top:2px}
 .tile.tap{cursor:pointer} .tile.tap:hover{background:var(--sunk)}
 .pos{color:var(--good)} .neg{color:var(--bad)} .amb{color:var(--s2)}
+/* any number you can open: dotted underline, and it says so on hover */
+.open-num{cursor:pointer;text-decoration:underline dotted;text-decoration-thickness:2px;text-underline-offset:4px;
+  text-decoration-color:var(--acc-fill);border-radius:3px}
+.open-num:hover{background:var(--acc-wash)}
+.sum-list{border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden;background:var(--panel)}
+.sum-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--rule-2)}
+.sum-row:last-child{border-bottom:0}
+.sum-row.tap{cursor:pointer} .sum-row.tap:hover{background:var(--sunk)}
+.sum-row .grow{flex:1;min-width:0}
+.sum-row .t{font-weight:600;font-size:17px}
+.sum-row .s{font-size:15px;color:var(--muted)}
+.sum-row .v{flex:none;font-weight:600;font-size:17px}
+.sum-row.total{background:var(--sunk);border-top:2px solid var(--rule-hard)}
+.sum-row.total .t,.sum-row.total .v{font-weight:700;font-size:19px}
 
 /* ------------------------------------------------------------- stage ---- */
 .stages{display:grid;gap:1px;grid-template-columns:minmax(0,1fr);margin-top:14px;
@@ -252,7 +269,7 @@ a{color:var(--acc)}
 .stage.s-prog{border-top-color:var(--s2)}
 .stage.s-owed{border-top-color:var(--bad)}
 .stage.s-paid{border-top-color:var(--good)}
-.stage{padding:16px 18px}
+.stage{padding:20px 18px}
 .stage .n{font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:1.05;margin-top:2px}
 .stage .l{font-size:15px;color:var(--ink-2);font-weight:700}
 .stage .v{font-size:16px;color:var(--muted);margin-top:3px}
@@ -267,7 +284,7 @@ a{color:var(--acc)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 
 /* ------------------------------------------------------------- jobs ----- */
-.jobs{display:grid;gap:12px;grid-template-columns:minmax(0,1fr);align-items:start}
+.jobs{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);align-items:start}
 @media (min-width:880px){.jobs{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (min-width:1560px){.jobs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .job{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;display:flex;flex-direction:column;
@@ -277,7 +294,7 @@ a{color:var(--acc)}
 .job.s-prog{border-left-color:var(--s2)}
 .job.s-owed{border-left-color:var(--bad)}
 .job.s-paid{border-left-color:var(--good)}
-.job-top{padding:14px 16px 13px;cursor:pointer}
+.job-top{padding:18px 18px 16px;cursor:pointer}
 .job-top:hover{background:var(--sunk)}
 .job-row1{display:flex;align-items:flex-start;gap:12px}
 .job-who{flex:1;min-width:0}
@@ -285,9 +302,9 @@ a{color:var(--acc)}
 .job-who .c{font-size:16.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .job-price{font-size:23px;font-weight:700;letter-spacing:-.02em;text-align:right;flex:none}
 .job-price.soft{font-size:16px;font-weight:600;color:var(--muted);letter-spacing:0}
-.job-meta{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap}
+.job-meta{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
 .job-when{font-size:16px;color:var(--muted);font-weight:500}
-.job-acts{display:flex;gap:8px;padding:11px 16px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap}
+.job-acts{display:flex;gap:9px;padding:14px 18px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap}
 .job-acts .spacer{flex:1}
 
 /* ---------------------------------------------------------- calendar ---- */
@@ -323,7 +340,7 @@ a{color:var(--acc)}
 
 /* ------------------------------------------------------------- rows ----- */
 .rows{display:flex;flex-direction:column}
-.row{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--rule-2)}
+.row{display:flex;align-items:center;gap:14px;padding:18px;border-bottom:1px solid var(--rule-2)}
 .row:last-child{border-bottom:0}
 .row.tap{cursor:pointer} .row.tap:hover{background:var(--sunk)}
 .row>svg{width:19px;height:19px;flex:none;color:var(--muted)}
@@ -339,7 +356,7 @@ a{color:var(--acc)}
 table{width:100%;border-collapse:collapse;font-size:16.5px}
 thead th{text-align:left;font-size:15px;color:var(--ink-2);
   font-weight:700;padding:12px 14px;border-bottom:1px solid var(--rule-hard);white-space:nowrap;background:var(--sunk)}
-tbody td{padding:12px 14px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
+tbody td{padding:16px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:var(--sunk)}
 td.num,th.num{font-family:"Roboto Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;
@@ -350,7 +367,7 @@ th.wcol{width:34%}
 .acts{display:flex;gap:6px;justify-content:flex-end}
 @media (max-width:719px){
   .responsive thead{display:none}
-  .responsive tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;padding:14px;
+  .responsive tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;padding:18px;
     border-bottom:1px solid var(--rule)}
   .responsive tbody tr:hover{background:transparent}
   .responsive tbody td{display:flex;justify-content:space-between;gap:14px;padding:3px 0;border:0;text-align:left}
@@ -408,12 +425,12 @@ th.wcol{width:34%}
 .lvl .bar>i.out{background:var(--bad)}
 
 /* ------------------------------------------------------------ inputs ---- */
-.field{display:flex;flex-direction:column;gap:6px}
+.field{display:flex;flex-direction:column;gap:7px}
 .field label{font-size:16px;color:var(--ink-2);font-weight:600}
 .inp{width:100%;background:var(--raised);border:1px solid var(--rule-hard);border-radius:3px;padding:12px 13px;font-size:17px}
 .inp:focus{outline:3px solid var(--acc-fill);outline-offset:-1px;border-color:var(--acc-fill)}
 textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
-.hint{font-size:16.5px;color:var(--muted);line-height:1.55}
+.hint{font-size:16.5px;color:var(--muted);line-height:1.6}
 /* the running sum at the foot of a job: charge, minus the shelf, what is left */
 .keep{margin-top:18px;border:1px solid var(--rule-hard);border-radius:4px;background:var(--sunk);padding:13px 15px}
 .keep .kr{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:4px 0;
@@ -467,7 +484,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 .search input{border:0;background:transparent;padding:11px 0;width:100%;font-size:17px}
 .search input:focus{outline:none}
 .search>svg{width:19px;height:19px;color:var(--muted);flex:none}
-.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
 .seg{display:inline-flex;background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;overflow:auto}
 .seg button{border:0;border-right:1px solid var(--rule);background:transparent;padding:9px 15px;cursor:pointer;
   font-size:16px;font-weight:600;color:var(--ink-2);white-space:nowrap}
@@ -499,7 +516,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
 }
 .drawer-h{display:flex;align-items:center;gap:11px;padding:15px 18px;border-bottom:1px solid var(--rule-hard);background:var(--sunk)}
 .drawer-h h3{font-size:23px;font-weight:700;letter-spacing:-.01em;flex:1;min-width:0}
-.drawer-b{padding:18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:16px}
+.drawer-b{padding:22px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:20px}
 .drawer-b.flush{padding:0;gap:0}
 .drawer-f{display:flex;gap:10px;flex-wrap:wrap;padding:14px 18px calc(14px + env(safe-area-inset-bottom));
   border-top:1px solid var(--rule-hard);background:var(--sunk)}
@@ -509,7 +526,7 @@ textarea.inp{min-height:88px;resize:vertical;font-size:16.5px;line-height:1.55}
   .drawer-f .btn{flex:1 1 auto;justify-content:center}
   .drawer-f .btn.icon{flex:none}
 }
-.fgrid{display:grid;gap:15px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.fgrid{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .fgrid .full{grid-column:1/-1}
 @media (max-width:540px){.fgrid{grid-template-columns:minmax(0,1fr)}}
 .more{border:0;background:transparent;color:var(--acc);font-weight:700;font-size:16px;cursor:pointer;
@@ -1198,6 +1215,89 @@ label>.chip{margin-left:6px;vertical-align:middle}
     return r;
   }
 
+  /* ------------------------------------------ what is in this number --
+     Any figure you can see, you can open. The sheet lists the exact rows
+     that add up to it, and the total at the bottom is the same number you
+     tapped -- so nothing on the screen is a number you have to take on
+     trust. */
+  function explainRows(kind, ctx) {
+    var m = ctx || UI.month, rows = [], title = '', note = '';
+    var paid = S.jobs.filter(function (j) { return j.status === 'Paid' && mKey(j.date) === m; });
+    var bills = S.expenses.filter(function (e) { return mKey(e.date) === m; });
+    var jobRow = function (j, amt, sub) {
+      return { t: (j.customer || 'No name') + (j.car ? ' ' + MIDC + ' ' + j.car : ''), s: sub || jobTitle(j), v: amt, act: 'edit-job', id: j.id };
+    };
+    if (kind === 'in') {
+      title = 'What came in, ' + mLabel(m);
+      note = 'Every job marked paid this month, at what they paid you.';
+      paid.forEach(function (j) { rows.push(jobRow(j, n(j.price), jobTitle(j) + ' ' + MIDC + ' paid ' + whenLabel(j.paidOn || j.date))); });
+    } else if (kind === 'out') {
+      title = 'What went out, ' + mLabel(m);
+      note = 'What the parts and materials cost you on each paid job, plus any bills you logged.';
+      paid.forEach(function (j) {
+        (j.parts || []).forEach(function (l) {
+          var pr = prod(l.productId);
+          rows.push(jobRow(j, n(l.qty) * n(l.cost), (pr ? pr.name : 'Part') + ' ' + MIDC + ' ' + qtyStr(l.qty) + ' at ' + money2(l.cost)));
+        });
+        if (n(j.materials)) rows.push(jobRow(j, n(j.materials), 'what it cost you'));
+      });
+      bills.forEach(function (e) {
+        rows.push({ t: e.campaign || e.vendor || e.category || 'Bill', s: (e.category || 'Bill') + ' ' + MIDC + ' ' + dLabel(e.date), v: n(e.amount), act: 'edit-expense', id: e.id });
+      });
+    } else if (kind === 'profit') {
+      var r = monthStats(m);
+      title = 'Profit, ' + mLabel(m);
+      note = 'What came in, minus what went out. Tap either line to see what is in it.';
+      rows.push({ t: 'Came in', s: plural(r.jobs, 'job') + ' paid', v: r.in, act: 'explain', id: 'in' });
+      rows.push({ t: 'Went out', s: 'parts, materials and bills', v: -(r.cost + r.out), act: 'explain', id: 'out' });
+    } else if (kind === 'shelf') {
+      title = 'Money sitting on the shelf';
+      note = 'Each item, how many you have, times what one cost you. It only becomes a cost when it goes on a job.';
+      sortBy(S.products.filter(function (x) { return n(x.qty) > 0; }), function (x) { return -n(x.qty) * n(x.cost); }).forEach(function (x) {
+        rows.push({ t: x.name, s: qtyStr(x.qty) + ' at ' + money2(x.cost), v: n(x.qty) * n(x.cost), act: 'edit-product', id: x.id });
+      });
+    } else if (kind === 'wanted') {
+      title = 'What the pre-orders are worth';
+      note = 'Only the ones you have priced. Sale price minus what the part costs you. Unpriced ones are not counted.';
+      wantedList().forEach(function (j) {
+        if (!n(j.price)) return;
+        rows.push(jobRow(j, n(j.price) - jobCost(j), money(j.price) + ' sale' + (jobCost(j) ? ' ' + MIDC + ' costs you ' + money(jobCost(j)) : '')));
+      });
+    } else if (kind === 'ads') {
+      title = 'Ad spend, ' + mLabel(m);
+      note = 'Bills you marked as Ads.';
+      bills.filter(function (e) { return e.category === 'Ads'; }).forEach(function (e) {
+        rows.push({ t: e.campaign || e.platform || 'Ads', s: (e.platform || 'Ads') + ' ' + MIDC + ' ' + dLabel(e.date), v: n(e.amount), act: 'edit-expense', id: e.id });
+      });
+    } else if (kind === 'job') {
+      var j = byId(S.jobs, ctx); if (!j) return null;
+      title = 'What you keep on this one';
+      note = 'What they paid, minus what it cost you.';
+      rows.push({ t: 'They paid', s: j.customer || 'No name', v: n(j.price) });
+      (j.parts || []).forEach(function (l) {
+        var pr = prod(l.productId);
+        rows.push({ t: pr ? pr.name : 'Part', s: qtyStr(l.qty) + ' at ' + money2(l.cost), v: -n(l.qty) * n(l.cost) });
+      });
+      if (n(j.materials)) rows.push({ t: 'What it cost you', s: 'the part, or the film and polish', v: -n(j.materials) });
+    }
+    return { title: title, note: note, rows: rows };
+  }
+  var MIDC = '\u00b7';
+  function openExplain(kind, ctx) {
+    var x = explainRows(kind, ctx); if (!x) return;
+    var total = x.rows.reduce(function (a, r) { return a + n(r.v); }, 0);
+    var body = '<div class="hint" style="margin-bottom:4px">' + esc(x.note) + '</div>';
+    if (!x.rows.length) body += '<div class="calm" style="color:var(--muted)">' + ico('check') + 'Nothing in here yet.</div>';
+    else body += '<div class="sum-list">' + x.rows.map(function (r) {
+      return '<div class="sum-row' + (r.act ? ' tap' : '') + '"' + (r.act ? ' data-act="' + r.act + '" data-' + (r.act === 'explain' ? 'v' : 'id') + '="' + esc(r.id) + '"' : '') + '>' +
+        '<span class="grow"><span class="t truncate">' + esc(r.t) + '</span><br><span class="s truncate">' + esc(r.s) + '</span></span>' +
+        '<span class="v num ' + (n(r.v) < 0 ? 'neg' : '') + '">' + (n(r.v) < 0 ? '\u2212' : '') + money2(Math.abs(n(r.v))) + '</span></div>';
+    }).join('') +
+      '<div class="sum-row total"><span class="grow"><span class="t">' + (kind === 'profit' || kind === 'job' ? 'You keep' : 'Total') + '</span></span>' +
+      '<span class="v num ' + (total < 0 ? 'neg' : total > 0 ? 'pos' : '') + '">' + (total < 0 ? '\u2212' : '') + money2(Math.abs(total)) + '</span></div></div>';
+    drawer(x.title, body, '<button class="btn primary block" data-act="close">Close</button>');
+  }
+
   /* ------------------------------------------------------------- toasts */
   function toast(msg) {
     var el = document.createElement('div');
@@ -1736,11 +1836,13 @@ label>.chip{margin-left:6px;vertical-align:middle}
     var h = monthBar();
     h += '<div class="headline"><div class="headline-l">' +
       '<div class="lab">' + (m === curMonth() ? 'So far this month' : 'Profit in ' + esc(mLabel(m))) + '</div>' +
-      '<div class="big ' + (r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : '') + '">' + money(r.profit) + '</div>' +
+      '<div class="big ' + (r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : '') + '"><span class="open-num" data-act="explain" data-v="profit">' + money(r.profit) + '</span></div>' +
       '<div class="sub">' + (r.in
-        ? money(r.in) + ' came in, ' + money(r.cost + r.out) + ' went out.' +
+        ? '<span class="open-num" data-act="explain" data-v="in">' + money(r.in) + ' came in</span>, ' +
+          '<span class="open-num" data-act="explain" data-v="out">' + money(r.cost + r.out) + ' went out</span>.' +
           (r.profit >= 0 ? ' You keep ' + pct(r.margin) + ' of every dollar.' : ' More going out than coming in.')
-        : 'Nothing paid yet this month.') + '</div></div></div>';
+        : 'Nothing paid yet this month.') +
+      '<div class="hint" style="margin-top:8px;font-size:14.5px">Tap any number to see what is in it.</div></div></div></div>';
     h += todoList();
     h += stageStrip(m);
     h += latest();
@@ -2074,7 +2176,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       '<span class="job-when">' + esc(whenLabel(j.date)) + '</span>' +
       (jinv ? '<span class="chip ' + (jinv.sent ? 'acc' : 'amb') + '">' +
         esc(jinv.no) + (jinv.sent ? ' sent' : ' not sent') + '</span>' : '') +
-      (j.status === 'Paid' ? '<span class="job-when num ' + (profit >= 0 ? 'pos' : 'neg') + '">' + money(profit) + ' profit</span>' :
+      (j.status === 'Paid' ? '<span class="job-when num open-num ' + (profit >= 0 ? 'pos' : 'neg') + '" data-act="explain" data-v="job" data-id="' + j.id + '">' + money(profit) + ' profit</span>' :
         (n(j.deposit) ? '<span class="job-when num">' + money(j.deposit) + ' deposit</span>' : '')) +
       '</div></div><div class="job-acts">' + acts + '</div></article>';
   }
@@ -2737,7 +2839,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
         '<button class="btn big" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button>') + '</section>';
     } else {
       h += '<div class="hint" style="margin:-6px 0 12px">' + plural(S.products.length, 'item') + ' on the shelf, ' +
-        '<strong>' + money(sv.cost) + '</strong> of your money sitting in it' +
+        '<strong class="open-num" data-act="explain" data-v="shelf">' + money(sv.cost) + '</strong> of your money sitting in it' +
         (low.length ? ', <strong style="color:var(--s2)">' + plural(low.length, 'thing') + ' running low</strong>' : '') + '.</div>';
 
       if (!list.length) {
@@ -2951,10 +3053,10 @@ label>.chip{margin-left:6px;vertical-align:middle}
     var h = monthBar();
 
     h += '<div class="tiles" style="margin-top:0">' +
-      tile('Came in', money(r.in), plural(r.jobs, 'job') + ' paid') +
-      tile('Went out', money(r.cost + r.out), 'Job costs ' + money(r.cost) + ' · bills ' + money(r.out)) +
-      tile('Profit', money(r.profit), r.in ? pct(r.margin) + ' of what came in' : 'Nothing in yet') +
-      tile('Ad spend', money(r.ads), r.ads ? money2(r.roas) + ' back per ' + cur() + '1' : 'No ad spend') +
+      tile('Came in', money(r.in), plural(r.jobs, 'job') + ' paid ' + MIDC + ' tap to see', null, ['explain', 'in']) +
+      tile('Went out', money(r.cost + r.out), 'Job costs ' + money(r.cost) + ' ' + MIDC + ' bills ' + money(r.out) + ' ' + MIDC + ' tap to see', null, ['explain', 'out']) +
+      tile('Profit', money(r.profit), (r.in ? pct(r.margin) + ' of what came in' : 'Nothing in yet') + ' ' + MIDC + ' tap to see', null, ['explain', 'profit']) +
+      tile('Ad spend', money(r.ads), (r.ads ? money2(r.roas) + ' back per ' + cur() + '1' : 'No ad spend') + ' ' + MIDC + ' tap to see', null, ['explain', 'ads']) +
       '</div>';
 
     h += '<div class="toolbar" style="margin-top:16px">' +
@@ -4416,6 +4518,11 @@ label>.chip{margin-left:6px;vertical-align:middle}
       case 'save': save(); break;
       case 'quick': openQuick(); break;
       case 'help': openHelp(); markHelpSeen(); break;
+      case 'explain': {
+        var ek = el.getAttribute('data-v');
+        openExplain(ek, ek === 'job' ? el.getAttribute('data-id') : UI.month);
+        break;
+      }
       case 'find': openFind(); break;
 
       case 'month': UI.month = shiftMonth(UI.month, +el.getAttribute('data-d')); render(); break;

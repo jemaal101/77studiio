@@ -256,6 +256,30 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## Every number opens
+
+"I don't know what money out means" -- and he was right to say it. A figure
+you cannot open is a figure you have to take on trust. So any number you can
+see, you can tap, and `openExplain(kind)` shows the exact rows that add up
+to it with the total at the bottom: *came in* is every job paid this month;
+*went out* is each part and material on those jobs plus every bill; *profit*
+is the two of them as two lines you can drill into; the shelf total is each
+item times what one cost; a pre-order's worth is sale minus cost for the
+priced ones only; a paid job's profit opens its own little sum. Rows inside a
+sheet open the job, bill or item they came from. Tappable figures carry a
+dotted underline (`.open-num`) so you can tell.
+
+The headline rounds to the dollar and the sheet does not, on purpose: "$52
+went out" is easier to read, and the sheet underneath says $51.76.
+
+## Breathing room
+
+"It feels so congested" was a spacing complaint, and whitespace is what lets
+you read one thing at a time. Cards now sit 24px apart with 20px inside,
+rows and to-do lines are 18px tall, section headings get 36px above them,
+body copy is 1.6 line-height, and the page is capped at 1180px on a desktop
+so lines do not run the width of a monitor.
+
 ## One question per screen
 
 Three times he said it was confusing, and three times a specific complaint
