@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap">
 <style id="app-css">
 /* ==========================================================================
    Kitted Lab — workshop job-card system
@@ -22,41 +22,47 @@
    Type: Barlow throughout, Roboto Mono for figures that line up in columns
    ========================================================================== */
 :root{
-  --ground:#E6E8E5; --panel:#FBFCFA; --sunk:#EFF1ED; --raised:#FFFFFF;
-  --ink:#141A17; --ink-2:#3D4742; --muted:#5F6B65;
-  --rule:#CFD5CE; --rule-2:#DFE3DD; --rule-hard:#AFB8B1;
-  --bezel:#1A1F1E; --bezel-ink:#E7EDE9; --bezel-muted:#9AA6A0; --bezel-rule:#2C3432; --bezel-hot:#242B29;
-  --acc:#07717D; --acc-fill:#0092A0; --acc-ink:#FFFFFF; --acc-wash:#DDEEF0; --acc-rule:#9CCBD1;
-  --s1:#0092A0; --s2:#B4531B;
-  --good:#197A4B; --good-wash:#DEEFE5; --good-rule:#A6D3BB;
-  --bad:#B3261E; --bad-wash:#F8E3E1; --bad-rule:#E3B2AE;
-  --grid:#E2E6E0;
+  --ground:#F5F5F3; --panel:#FFFFFF; --sunk:#F6F6F4; --raised:#FFFFFF;
+  --ink:#141414; --ink-2:#2E2E2E; --muted:#5C5C5C;
+  --rule:#E6E6E3; --rule-2:#EEEEEC; --rule-hard:#D6D6D2;
+  --bezel:#14191A; --bezel-ink:#FFFFFF; --bezel-muted:#B3BDB9; --bezel-rule:#26302F; --bezel-hot:#1F2A29;
+  --acc:#0A6B75; --acc-fill:#0A7580; --acc-ink:#FFFFFF; --acc-wash:#E4F4F6; --acc-rule:#A5D6DC;
+  --s1:#0A7580; --s2:#B0480F; --s2-wash:#FBEEE4;
+  --good:#14703F; --good-wash:#E3F4EA; --good-rule:#A8D8BB;
+  --bad:#B3261E; --bad-wash:#FBE7E5; --bad-rule:#EBB5B0;
+  --grid:#E8E8E5;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.06);
+  --shadow-up:0 2px 4px rgba(0,0,0,.06),0 12px 32px rgba(0,0,0,.09);
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --ground:#0D1113; --panel:#151B1D; --sunk:#101618; --raised:#1B2224;
-    --ink:#EAF0EC; --ink-2:#BAC6C0; --muted:#8D9994;
-    --rule:#242C2E; --rule-2:#1D2426; --rule-hard:#33403F;
-    --bezel:#101517; --bezel-ink:#EAF0EC; --bezel-muted:#8D9994; --bezel-rule:#212A2B; --bezel-hot:#1A2224;
-    --acc:#5CCBD3; --acc-fill:#2CA3AC; --acc-ink:#06181A; --acc-wash:#123137; --acc-rule:#255B63;
-    --s1:#2CA3AC; --s2:#D07A2C;
-    --good:#57D394; --good-wash:#0E2C1E; --good-rule:#1E5138;
-    --bad:#F48F87; --bad-wash:#2E1917; --bad-rule:#5A2C29;
-    --grid:#222A2C;
+    --ground:#0F1112; --panel:#181C1D; --sunk:#131718; --raised:#1E2325;
+    --ink:#F2F4F3; --ink-2:#D3D8D6; --muted:#A3ABA8;
+    --rule:#2A3032; --rule-2:#232829; --rule-hard:#3A4244;
+    --bezel:#0B0E0F; --bezel-ink:#F2F4F3; --bezel-muted:#9AA4A0; --bezel-rule:#1F2628; --bezel-hot:#1A2123;
+    --acc:#6CD3DC; --acc-fill:#17838E; --acc-ink:#FFFFFF; --acc-wash:#123539; --acc-rule:#2A5C62;
+    --s1:#2FA9B4; --s2:#E08A3E; --s2-wash:#33231A;
+    --good:#6BD99E; --good-wash:#0F2F20; --good-rule:#1F5A3A;
+    --bad:#F79A92; --bad-wash:#33191A; --bad-rule:#5E2E2B;
+    --grid:#262C2E;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+    --shadow-up:0 2px 4px rgba(0,0,0,.45),0 12px 32px rgba(0,0,0,.5);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --ground:#0D1113; --panel:#151B1D; --sunk:#101618; --raised:#1B2224;
-  --ink:#EAF0EC; --ink-2:#BAC6C0; --muted:#8D9994;
-  --rule:#242C2E; --rule-2:#1D2426; --rule-hard:#33403F;
-  --bezel:#101517; --bezel-ink:#EAF0EC; --bezel-muted:#8D9994; --bezel-rule:#212A2B; --bezel-hot:#1A2224;
-  --acc:#5CCBD3; --acc-fill:#2CA3AC; --acc-ink:#06181A; --acc-wash:#123137; --acc-rule:#255B63;
-  --s1:#2CA3AC; --s2:#D07A2C;
-  --good:#57D394; --good-wash:#0E2C1E; --good-rule:#1E5138;
-  --bad:#F48F87; --bad-wash:#2E1917; --bad-rule:#5A2C29;
-  --grid:#222A2C;
+  --ground:#0F1112; --panel:#181C1D; --sunk:#131718; --raised:#1E2325;
+  --ink:#F2F4F3; --ink-2:#D3D8D6; --muted:#A3ABA8;
+  --rule:#2A3032; --rule-2:#232829; --rule-hard:#3A4244;
+  --bezel:#0B0E0F; --bezel-ink:#F2F4F3; --bezel-muted:#9AA4A0; --bezel-rule:#1F2628; --bezel-hot:#1A2123;
+  --acc:#6CD3DC; --acc-fill:#17838E; --acc-ink:#FFFFFF; --acc-wash:#123539; --acc-rule:#2A5C62;
+  --s1:#2FA9B4; --s2:#E08A3E; --s2-wash:#33231A;
+  --good:#6BD99E; --good-wash:#0F2F20; --good-rule:#1F5A3A;
+  --bad:#F79A92; --bad-wash:#33191A; --bad-rule:#5E2E2B;
+  --grid:#262C2E;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);
+  --shadow-up:0 2px 4px rgba(0,0,0,.45),0 12px 32px rgba(0,0,0,.5);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -584,6 +590,98 @@ label>.chip{margin-left:6px;vertical-align:middle}
 .check .grow{flex:1;min-width:0}
 .check .t{font-weight:600;font-size:17.5px}
 .check .s{font-size:16px;color:var(--muted);line-height:1.5}
+
+/* ==========================================================================
+   READABILITY LAYER -- black on white, one face, fewer boxes, more air.
+   Appended last on purpose: everything above is the skeleton, this is how
+   it reads. The workshop look is gone; the point is that it can be read.
+   ========================================================================== */
+body,button,input,select,textarea{font-family:"Atkinson Hyperlegible",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{font-size:19px;line-height:1.65}
+.num,.chart .tick,.charttip .r,.hbar-t .v,.hbar-t .p,.cal-num,.cal-money,.sub2,.todo .r,.navbtn .pip,td.num,th.num,.savechip{
+  font-family:"Atkinson Hyperlegible",ui-sans-serif,system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:0}
+h1,h2,h3{letter-spacing:0}
+.top h1{font-size:32px;font-weight:700}
+.top .why{font-size:15.5px;color:var(--muted)}
+.sec-h h2{font-size:25px}
+.sec-h .line{background:var(--rule-hard);opacity:.7}
+.card-h h3{font-size:21px}
+.eyebrow{font-size:15px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+/* cards lift off the page instead of sitting in a box */
+.card,.headline,.tile,.stage,.job,.sum-list,.linebox{border:0;border-radius:14px;box-shadow:var(--shadow)}
+.card-h{background:transparent;border-bottom:1px solid var(--rule-2);padding:18px 20px 14px}
+.card-b{padding:20px}
+.card.fold>.card-h{padding:18px 20px}
+.headline{border-top:5px solid var(--acc-fill);overflow:hidden}
+.headline-r{border-left:0;border-top:1px solid var(--rule-2)}
+.headline .lab{font-size:16px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.headline .big{font-size:clamp(50px,13vw,72px);letter-spacing:-.02em}
+.headline .sub{font-size:18.5px;line-height:1.7;color:var(--ink-2)}
+.tiles,.stages{background:transparent;border:0;gap:14px;overflow:visible;border-radius:0}
+.tile,.stage{border-top-width:5px;border-top-style:solid;border-top-color:var(--rule-hard)}
+.tile{background:var(--panel)}
+.stage .n{font-size:38px} .stage .l{font-size:15.5px;color:var(--muted);font-weight:700} .stage .v{font-size:16px;color:var(--ink-2)}
+.job{border-left:6px solid var(--rule-hard);overflow:hidden}
+.job-top{padding:20px 20px 16px}
+.job-who .n{font-size:22px} .job-who .c{font-size:17px}
+.job-price{font-size:25px}
+.job-acts{background:var(--sunk);border-top:1px solid var(--rule-2);padding:14px 20px}
+/* chips: soft pills, no borders; a job's item name is just words */
+.chip{border:0;background:var(--sunk);color:var(--ink-2);font-size:14.5px;padding:6px 12px;border-radius:999px;font-weight:700}
+.chip.acc{background:var(--acc-wash);color:var(--acc)}
+.chip.good{background:var(--good-wash);color:var(--good)}
+.chip.bad{background:var(--bad-wash);color:var(--bad)}
+.chip.amb{background:var(--s2-wash);color:var(--s2)}
+.job .chips .chip.acc{background:transparent;padding:0;border-radius:0;font-size:17.5px;color:var(--ink);font-weight:700}
+.navbtn .pip,.tabbtn .pip{background:var(--bad)}
+/* rows and lists: air, then one hairline */
+.row,.todo,.sum-row,.hits .hit,.check{padding:20px;gap:16px}
+.row .t,.todo .t,.hits .hit .t,.sum-row .t,.check .t{font-weight:700;font-size:18.5px}
+.row .s,.todo .s,.hits .hit .s,.sum-row .s,.check .s{font-size:16px;color:var(--muted);margin-top:2px}
+.todo .r,.sum-row .v{font-size:18px}
+.sum-row.total{border-top:2px solid var(--rule-hard)}
+.rowtitle{font-size:18.5px;font-weight:700} .rowsub{font-size:16px}
+thead th{background:transparent;color:var(--muted);font-size:14px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--rule-hard)}
+tbody td{padding:18px 16px}
+.hint{font-size:16.5px;line-height:1.6}
+/* controls */
+.btn{border-radius:12px;font-weight:700;font-size:16.5px;padding:12px 18px;border-color:var(--rule-hard)}
+.btn.sm{padding:9px 14px;font-size:15.5px;border-radius:10px}
+.btn.primary{box-shadow:0 2px 0 rgba(0,0,0,.08)}
+.btn.icon{padding:10px}
+.inp{border-radius:12px;font-size:18px;padding:14px 15px;border-color:var(--rule-hard)}
+.field label{font-size:16.5px;color:var(--ink-2);font-weight:700}
+.search{border-radius:12px;border-color:var(--rule-hard)}
+.search input{font-size:18px}
+.seg{border-radius:12px;box-shadow:var(--shadow)} .seg button{font-size:16.5px;padding:11px 17px}
+.pills button{border-radius:999px;font-weight:700;font-size:15.5px;padding:9px 15px}
+.switch{border-radius:12px}
+.fab{border-radius:18px;width:64px;height:64px;box-shadow:var(--shadow-up)}
+.drawer{border-radius:20px 0 0 20px}
+@media (max-width:640px){.drawer{border-radius:20px 20px 0 0}}
+.drawer-h{background:transparent;border-bottom:1px solid var(--rule-2);padding:18px 22px}
+.drawer-h h3{font-size:24px}
+.drawer-f{background:transparent;border-top:1px solid var(--rule-2)}
+.toast{border-radius:12px;font-size:17px}
+.banner{border-radius:12px;font-size:16.5px;line-height:1.55}
+.gaps .btn{border-radius:12px}
+.calm{font-size:18px;padding:22px 20px}
+.steps .step{padding:16px 0} .step .t{font-size:18.5px} .step .s{font-size:16.5px}
+.where{font-size:16.5px}
+/* the nav: keep it dark, but let it breathe too */
+.rail{padding:22px 14px}
+.navbtn{padding:13px 12px;font-size:17.5px;border-radius:10px;border-left:0}
+.navbtn[aria-current="page"]{background:var(--bezel-hot);color:#fff}
+.tabbtn{font-size:13.5px;gap:4px;padding:7px 2px}
+@media (max-width:420px){.tabbtn{font-size:12px}}
+/* spacing, again, bolder */
+.wrap{padding:24px 18px 48px}
+@media (min-width:1000px){.wrap{padding:32px 40px 80px;max-width:1120px}}
+.wrap>.card,.wrap>.headline,.wrap>.stages,.wrap>.tiles,.wrap>.grid,.wrap>.jobs,.wrap>.toolbar{margin-bottom:28px}
+.sec-h{margin:44px 0 16px}
+.grid{gap:24px} .jobs{gap:20px} .stack{gap:24px}
+.fgrid{gap:20px}
+.drawer-b{padding:24px 22px;gap:22px}
 </style>
 </head>
 <body>
@@ -1076,7 +1174,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
   var HEAD_LINKS =
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700' +
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Barlow:wght@400;500;600;700' +
     '&amp;family=Roboto+Mono:wght@400;500;600&amp;display=swap">';
 
   /** Rebuild the whole page from its own stylesheet, script and current data. */
@@ -1252,7 +1350,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
           var pr = prod(l.productId);
           rows.push(jobRow(j, n(l.qty) * n(l.cost), (pr ? pr.name : 'Part') + ' ' + MIDC + ' ' + qtyStr(l.qty) + ' at ' + money2(l.cost)));
         });
-        if (n(j.materials)) rows.push(jobRow(j, n(j.materials), 'what it cost you'));
+        if (n(j.materials)) rows.push(jobRow(j, n(j.materials), jobTitle(j) + ' ' + MIDC + ' what it cost you'));
       });
       bills.forEach(function (e) {
         rows.push({ t: e.campaign || e.vendor || e.category || 'Bill', s: (e.category || 'Bill') + ' ' + MIDC + ' ' + dLabel(e.date), v: n(e.amount), act: 'edit-expense', id: e.id });
@@ -1307,7 +1405,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
         '<span class="v num ' + (n(r.v) < 0 ? 'neg' : '') + '">' + (n(r.v) < 0 ? '\u2212' : '') + money2(Math.abs(n(r.v))) + '</span></div>';
     }).join('') +
       '<div class="sum-row total"><span class="grow"><span class="t">' + (kind === 'profit' || kind === 'job' ? 'You keep' : 'Total') + '</span></span>' +
-      '<span class="v num ' + (total < 0 ? 'neg' : total > 0 ? 'pos' : '') + '">' + (total < 0 ? '\u2212' : '') + money2(Math.abs(total)) + '</span></div></div>';
+      '<span class="v num ' + ((kind === 'profit' || kind === 'job') ? (total < 0 ? 'neg' : total > 0 ? 'pos' : '') : '') + '">' +
+      (total < 0 ? '\u2212' : '') + money2(Math.abs(total)) + '</span></div></div>';
     drawer(x.title, body, '<button class="btn primary block" data-act="close">Close</button>');
   }
 
@@ -1937,7 +2036,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
         '<div class="v">' + esc(value) + '</div></button>';
     };
     var w = wantedWorth();
-    return secH('Where everything is up to') + '<div class="stages' + (want.length ? '' : ' three') + '" style="margin-top:0">' +
+    return secH('Where things are') + '<div class="stages' + (want.length ? '' : ' three') + '" style="margin-top:0">' +
       (want.length ? cell('s-want', 'Waiting on a part', want,
         w.priced ? money(w.sale - w.cost) + ' in it' : 'none priced yet', 'want') : '') +
       cell('s-book', 'Booked in', booked, money(sum(booked, function (j) { return n(j.price); })) + ' coming', 'open') +

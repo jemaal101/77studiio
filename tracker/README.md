@@ -256,6 +256,38 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## It has to be readable before it can be understood
+
+Three times he said it was congested and hard to read, and twice the answer
+was spacing. The third time he named it: *maybe it's the colour scheme*. He
+was right. The workshop look -- concrete-grey ground, grey-white cards, grey
+borders on everything, greyed secondary text, a condensed face at 18px, mono
+figures, chips on every row -- was a designer's palette, not a reader's.
+Everything was low contrast against everything else, so no amount of air
+between the boxes made the boxes easier to read.
+
+The readability layer is appended at the end of `#app-css` so it wins:
+
+- **Black on white.** Ink `#141414` on white; secondary text no lighter than
+  `#5C5C5C` (6.7:1). Every text/background pair in both palettes is checked
+  with the WCAG formula; the worst in light mode is the orange chip at 4.9:1
+  and nothing is below AA for its size. The dark palette is rebuilt on the
+  same rule, with white labels on a deeper teal after the first cut measured
+  2.6:1.
+- **One legible face.** Atkinson Hyperlegible for everything, 19px body at
+  1.65 line-height, two weights only. Roboto Mono stays for the invoice
+  paper and nowhere else; tabular figures come from `font-variant-numeric`.
+- **Fewer boxes.** Cards carry a soft shadow and 14px corners instead of a
+  border; chips are borderless pills; a job's item name is plain bold words,
+  not a pill; tables lose their header band. One hairline between rows.
+- **Real hierarchy.** Titles 32px, section headings 25px, card headings 21px,
+  the month figure up to 72px, uppercase eyebrows for labels.
+- **More air, again.** 28px between cards, 20px inside rows, 44px above a
+  section heading, and a 1120px cap on a desktop.
+
+The cost sheet's total is coloured only when it is a profit: "$51.76 went
+out" in green was wrong.
+
 ## Every number opens
 
 "I don't know what money out means" -- and he was right to say it. A figure
