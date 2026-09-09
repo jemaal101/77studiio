@@ -256,6 +256,47 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## One question per screen
+
+Three times he said it was confusing, and three times a specific complaint
+got fixed while the whole got busier. Screenshotting every screen on a phone
+with his real data made the shape of it obvious: Home was three screens with
+two empty panels and a chart of nothing; Jobs opened on a filter that was
+*empty* for him, so his twenty records were hidden; Stock buried five items
+under two screens of analytics; Settings was seven screens; the Add menu had
+eight choices. It was a dashboard. He needed a list.
+
+So every screen now answers one question, and says which under its title
+(`TABS[].why`):
+
+- **Home — what needs you today.** One line on the month, then `todoList()`:
+  everything wanting a decision, worst first (owes you, late, unsent,
+  running low, wants a part you have not priced, booked in). Then the strip
+  of where everything is up to, then the last five things that happened.
+  No charts, no empty panels, no checklist -- when there is nothing to do it
+  says so in one line.
+- **Jobs** opens on *Everything*, newest first. The filters are wrapping
+  pills (`.pills`) so nothing clips off the edge of a phone. The cars-per-week
+  chart moved to Money → Coming in, next to month-by-month.
+- **Stock** shows the list first, one summary line above it; per-car cost,
+  where the money sits and coming-in follow underneath.
+- **Settings** is a list of headings. `fold()` gives a card a tappable header
+  with a one-line summary and a closed body (`UI.folds` remembers what was
+  opened this session). What goes on an invoice starts open while it is not
+  ready; the setup list lives here now and closes itself once done.
+- **The + button** asks *What happened?* and offers four things in his words
+  -- sold something, someone wants a part, send a receipt or invoice, bought
+  stock -- with the rest under *Less often*.
+- **?** opens *How this works*: the four-step loop and where things live.
+  It opens by itself the first time each device sees the page
+  (`kittedlab.seen-help` in localStorage, deliberately per device and not in
+  the shared store, so each co-owner sees it once).
+- **Find anything** (the search button, or Ctrl/Cmd+K) searches jobs,
+  invoices, stock, contacts and orders together, grouped, tap to open.
+
+The test hooks -- `data-act` names, `.stage`, `[data-act="job-filter"]` --
+are unchanged; what changed is what is on the screen.
+
 ## A gift with every purchase
 
 The air fresheners are not stock to sell, they are a thank-you that goes out

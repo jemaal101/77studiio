@@ -108,6 +108,58 @@ a{color:var(--acc)}
 .top h1{font-size:28px;font-weight:700;letter-spacing:-.01em;
   min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .top .spacer{flex:1}
+.top .ttl{min-width:0;display:flex;flex-direction:column;gap:1px}
+.top .why{font-size:14.5px;color:var(--muted);font-weight:500;line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:420px){.top .why{font-size:13.5px}}
+.top .btn.icon{flex:none}
+/* filter pills wrap instead of clipping off the edge of a phone */
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pills button{border:1px solid var(--rule-hard);background:var(--panel);color:var(--ink-2);padding:8px 13px;
+  border-radius:20px;cursor:pointer;font-size:15px;font-weight:600;white-space:nowrap;line-height:1.2}
+.pills button[aria-pressed="true"]{background:var(--acc-fill);border-color:var(--acc-fill);color:var(--acc-ink)}
+.pills button .n{opacity:.7;font-weight:500;margin-left:4px}
+/* a card that opens when you tap its header */
+.card.fold>.card-h{cursor:pointer;user-select:none}
+.card.fold>.card-h .sum{font-size:15px;color:var(--muted);font-weight:500;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto}
+.card.fold>.card-h .chev{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .15s}
+.card.fold:not(.open)>.card-h .chev{transform:rotate(-90deg)}
+.card.fold:not(.open)>.card-h{border-bottom:0}
+.card.fold:not(.open)>.card-b,.card.fold:not(.open)>.tablewrap{display:none}
+/* the to-do list on Home: one line per thing, the number on the right */
+.todo{display:flex;align-items:center;gap:13px;padding:14px 16px;border-bottom:1px solid var(--rule-2);cursor:pointer}
+.todo:last-child{border-bottom:0}
+.todo:hover{background:var(--sunk)}
+.todo>svg{width:20px;height:20px;flex:none}
+.todo.bad>svg{color:var(--bad)} .todo.amb>svg{color:var(--s2)} .todo.acc>svg{color:var(--acc)}
+.todo .grow{flex:1;min-width:0}
+.todo .t{font-weight:600;font-size:17.5px}
+.todo .s{font-size:15.5px;color:var(--muted)}
+.todo .r{flex:none;font-weight:700;font-family:"Roboto Mono",monospace;font-size:17px}
+.calm{display:flex;align-items:center;gap:12px;padding:16px;color:var(--good);font-weight:600;font-size:17px}
+.calm>svg{width:22px;height:22px;flex:none}
+/* the how-it-works screen */
+.steps{display:flex;flex-direction:column;gap:0;counter-reset:st}
+.step{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--rule-2)}
+.step:last-child{border-bottom:0}
+.step .n{width:34px;height:34px;border-radius:50%;background:var(--acc-fill);color:var(--acc-ink);
+  display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
+.step .t{font-weight:700;font-size:17.5px}
+.step .s{font-size:16px;color:var(--muted);line-height:1.5;margin-top:2px}
+.where{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;align-items:baseline;font-size:16px}
+.where b{font-weight:700;white-space:nowrap}
+.where span{color:var(--muted)}
+/* find anything */
+.hits .hit{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--rule-2);cursor:pointer}
+.hits .hit:last-child{border-bottom:0}
+.hits .hit:hover{background:var(--sunk)}
+.hits .hit>svg{width:18px;height:18px;flex:none;color:var(--muted)}
+.hits .hit .grow{flex:1;min-width:0}
+.hits .hit .t{font-weight:600;font-size:16.5px}
+.hits .hit .s{font-size:14.5px;color:var(--muted)}
+.hits .grp{padding:12px 14px 6px;font-size:13.5px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:700;color:var(--muted)}
 .savechip{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;color:var(--ink-2);font-weight:500;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--good);flex:none}
 .dot.pending{background:var(--s2)} .dot.off{background:var(--muted)} .dot.bad{background:var(--bad)}
@@ -538,6 +590,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
     up:'<path d="M12 20.5v-12M7 13l5-5 5 5M4 3.5h16"/>',
     check:'<path d="m4.5 12.5 5 5 10-11"/>',
     x:'<path d="M6 6l12 12M18 6 6 18"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.24c-.7.35-1.1.9-1.1 1.76v.5"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/>',
     left:'<path d="m14.5 5-7 7 7 7"/>',
     right:'<path d="m9.5 5 7 7-7 7"/>',
     chevron:'<path d="m6 9.5 6 6 6-6"/>',
@@ -1570,14 +1623,17 @@ label>.chip{margin-left:6px;vertical-align:middle}
   }
 
   /* ------------------------------------------------------------- chrome */
+  /* One plain line under every title saying what the screen is for. Nobody
+     should have to guess what "Orders" means when they also sell things. */
   var TABS = [
-    { id: 'home', label: 'Home', icon: 'home' },
-    { id: 'jobs', label: 'Jobs', icon: 'car' },
-    { id: 'stock', label: 'Stock', icon: 'box' },
-    { id: 'orders', label: 'Orders', icon: 'truck' },
-    { id: 'money', label: 'Money', icon: 'wallet' },
-    { id: 'contacts', label: 'Contacts', icon: 'users' }
+    { id: 'home', label: 'Home', icon: 'home', why: 'What needs you, and how the month is going' },
+    { id: 'jobs', label: 'Jobs', icon: 'car', why: 'Every sale, and everyone waiting on a part' },
+    { id: 'stock', label: 'Stock', icon: 'box', why: 'What is on the shelf and what it cost you' },
+    { id: 'orders', label: 'Orders', icon: 'truck', why: 'Stuff you have bought that has not landed yet' },
+    { id: 'money', label: 'Money', icon: 'wallet', why: 'Invoices, receipts, and where it all adds up' },
+    { id: 'contacts', label: 'Contacts', icon: 'users', why: 'Who you buy from, and how to reach them' }
   ];
+  var SETTINGS_WHY = 'Your details, your prices, what goes on an invoice';
   function alerts(id) {
     if (id === 'jobs') return unpaidJobs().length;
     if (id === 'stock') return lowStock().length;
@@ -1608,9 +1664,12 @@ label>.chip{margin-left:6px;vertical-align:middle}
 
     document.getElementById('fab').innerHTML = ico('plus');
 
-    var t = TABS.concat([{ id: 'settings', label: 'Settings' }]).filter(function (x) { return x.id === UI.tab; })[0] || TABS[0];
+    var t = TABS.concat([{ id: 'settings', label: 'Settings', why: SETTINGS_WHY }]).filter(function (x) { return x.id === UI.tab; })[0] || TABS[0];
     document.getElementById('top').innerHTML =
-      '<h1>' + esc(t.label) + '</h1><div class="spacer"></div>' + saveChip() +
+      '<div class="ttl"><h1>' + esc(t.label) + '</h1><div class="why">' + esc(t.why || '') + '</div></div>' +
+      '<div class="spacer"></div>' + saveChip() +
+      '<button class="btn icon" data-act="find" aria-label="Find anything" title="Find anything">' + ico('search') + '</button>' +
+      '<button class="btn icon" data-act="help" aria-label="How this works" title="How this works">' + ico('help') + '</button>' +
       '<button class="btn icon" data-tab="settings" aria-label="Settings" style="display:none" id="gear">' + ico('cog') + '</button>' +
       saveBtn('');
     var gear = document.getElementById('gear');
@@ -1663,34 +1722,78 @@ label>.chip{margin-left:6px;vertical-align:middle}
       '</div>';
   }
 
+  /* Home answers one question: what needs me? One line on the month, the
+     list of things to do, where everything is up to, and the last few
+     things that happened. No charts -- those live under Money. */
   function viewHome() {
     var m = UI.month, r = monthStats(m);
-    var owed = S.jobs.reduce(function (a, j) { return a + (j.status === 'Done' ? jobOwing(j) : 0); }, 0);
     var h = monthBar();
-
     h += '<div class="headline"><div class="headline-l">' +
-      '<div class="lab">Profit in ' + esc(mLabel(m)) + '</div>' +
+      '<div class="lab">' + (m === curMonth() ? 'So far this month' : 'Profit in ' + esc(mLabel(m))) + '</div>' +
       '<div class="big ' + (r.profit > 0 ? 'pos' : r.profit < 0 ? 'neg' : '') + '">' + money(r.profit) + '</div>' +
-      '<div class="sub">' + money(r.in) + ' came in · ' + money(r.cost + r.out) + ' went out' +
-      (r.in > 0 && r.profit >= 0 ? ' · you keep ' + pct(r.margin) + ' of every dollar' :
-        r.profit < 0 ? ' · more going out than coming in' : '') + '</div></div>' +
-      '<div class="headline-r"><div class="eyebrow" style="margin-bottom:6px">Profit, last 6 months</div>' +
-      chartHost('spark', 74) + '</div></div>';
-
+      '<div class="sub">' + (r.in
+        ? money(r.in) + ' came in, ' + money(r.cost + r.out) + ' went out.' +
+          (r.profit >= 0 ? ' You keep ' + pct(r.margin) + ' of every dollar.' : ' More going out than coming in.')
+        : 'Nothing paid yet this month.') + '</div></div></div>';
+    h += todoList();
     h += stageStrip(m);
-
-    h += '<div class="grid g2" style="margin-top:20px">' + needsDoing() + comingUp() + '</div>';
-
-    h += secH('Month by month');
-    h += '<section class="card"><div class="card-b">' +
-      '<div class="legend" style="margin-bottom:10px">' +
-      '<span><i style="background:var(--s1)"></i>Money in</span>' +
-      '<span><i style="background:var(--s2)"></i>Costs &amp; bills</span></div>' +
-      chartHost('months', 196) +
-      '<div class="hint" style="margin-top:8px">Tap a month to open it.</div></div></section>';
-
-    h += startHere();          // last on the page, out of the way
+    h += latest();
     return h;
+  }
+
+  /** Everything that wants a decision, in one list, worst first. */
+  function todoList() {
+    var unpaid = unpaidJobs(), low = lowStock(), late = lateOrders(), unsent = unsentInvoices();
+    var booked = S.jobs.filter(jobOpen);
+    var unpriced = wantedList().filter(function (j) { return !n(j.price); });
+    var rows = [];
+    unpaid.forEach(function (j) {
+      rows.push({ c: 'bad', i: 'money', t: esc(j.customer || 'No name') + ' owes you', s: esc(jobTitle(j)) + ' \u00b7 done ' + esc(whenLabel(j.date)),
+        r: money(jobOwing(j)), act: 'edit-job', id: j.id });
+    });
+    late.forEach(function (o) {
+      rows.push({ c: 'bad', i: 'truck', t: esc(o.ref || 'Order') + ' is late', s: esc(supName(o.supplierId) || 'No supplier') + ' \u00b7 was due ' + dLabel(o.eta),
+        r: Math.abs(days(o.eta)) + 'd', act: 'edit-order', id: o.id });
+    });
+    unsent.forEach(function (v) {
+      var vj = invJob(v);
+      rows.push({ c: 'amb', i: 'doc', t: esc(v.no) + ' has not gone out', s: esc(vj ? (vj.customer || 'No name') : 'Job deleted'),
+        r: money(invTotals(v).due), act: 'open-invoice', id: v.id });
+    });
+    low.forEach(function (p) {
+      rows.push({ c: carsLeft(p) <= 0 ? 'bad' : 'amb', i: 'box', t: esc(p.name) + (carsLeft(p) <= 0 ? ' \u2014 none left' : ' is running low'),
+        s: incomingQty(p.id) ? incomingQty(p.id) + ' on the way' : 'Nothing on order',
+        r: carsLeft(p) <= 0 ? 'Out' : (shared(p) ? carsStr(carsLeft(p)) : qtyStr(p.qty)) + ' left', act: 'edit-product', id: p.id });
+    });
+    if (unpriced.length) rows.push({ c: 'acc', i: 'clip', t: plural(unpriced.length, 'person wants a part', 'people want parts') + ' you have not priced',
+      s: unpriced.slice(0, 3).map(function (j) { return esc(j.customer || jobTitle(j)); }).join(', ') + (unpriced.length > 3 ? '\u2026' : ''),
+      r: '', act: 'job-jump', id: 'want' });
+    booked.forEach(function (j) {
+      var d = days(j.date);
+      rows.push({ c: d != null && d < 0 ? 'bad' : 'acc', i: 'car', t: esc(j.customer || 'No name') + ' is booked in', s: esc(jobTitle(j)) + ' \u00b7 ' + esc(whenLabel(j.date)),
+        r: money(j.price), act: 'edit-job', id: j.id });
+    });
+    var h = '<section class="card" style="margin-top:14px"><div class="card-h">' + ico('alert') + '<h3>Needs doing</h3><div class="spacer"></div>' +
+      '<span class="chip ' + (rows.length ? 'bad' : 'good') + '">' + rows.length + '</span></div>';
+    if (!rows.length) return h + '<div class="calm">' + ico('check') + 'Nothing needs you right now.</div></section>';
+    return h + '<div class="card-b flush">' + rows.map(function (x) {
+      return '<div class="todo ' + x.c + '" data-act="' + x.act + '" data-' + (x.act === 'job-jump' ? 'v' : 'id') + '="' + x.id + '">' + ico(x.i) +
+        '<span class="grow"><span class="t truncate">' + x.t + '</span><br><span class="s truncate">' + x.s + '</span></span>' +
+        (x.r ? '<span class="r">' + esc(x.r) + '</span>' : ico('right')) + '</div>';
+    }).join('') + '</div></section>';
+  }
+
+  /** The last few things that happened, so the business looks alive. */
+  function latest() {
+    var list = sortBy(S.jobs.filter(function (j) { return j.status === 'Paid'; }), function (j) { return (j.paidOn || j.date || '') + j.id; }, 'desc').slice(0, 5);
+    if (!list.length) return '';
+    return secH('Latest') + '<section class="card"><div class="card-b flush"><div class="rows">' + list.map(function (j) {
+      return '<div class="row tap" data-act="edit-job" data-id="' + j.id + '">' + ico('check') +
+        '<span class="grow"><span class="t truncate">' + esc(j.customer || 'No name') + (j.car ? ' \u00b7 ' + esc(j.car) : '') + '</span>' +
+        '<br><span class="s truncate">' + esc(jobTitle(j)) + ' \u00b7 paid ' + esc(whenLabel(j.paidOn || j.date)) + '</span></span>' +
+        '<span class="num" style="font-weight:600">' + money(j.price) + '</span></div>';
+    }).join('') + '</div></div></section>' +
+    '<div style="margin-top:14px"><button class="btn block" data-act="job-jump" data-v="paid">Every sale</button></div>';
   }
 
   function tile(lab, val, sub, tab, act) {
@@ -1713,7 +1816,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
         '<div class="v">' + esc(value) + '</div></button>';
     };
     var w = wantedWorth();
-    return '<div class="stages' + (want.length ? '' : ' three') + '">' +
+    return secH('Where everything is up to') + '<div class="stages' + (want.length ? '' : ' three') + '" style="margin-top:0">' +
       (want.length ? cell('s-want', 'Waiting on a part', want,
         w.priced ? money(w.sale - w.cost) + ' in it' : 'none priced yet', 'want') : '') +
       cell('s-book', 'Booked in', booked, money(sum(booked, function (j) { return n(j.price); })) + ' coming', 'open') +
@@ -1736,9 +1839,10 @@ label>.chip{margin-left:6px;vertical-align:middle}
     ];
     if (steps.every(function (x) { return x.done; })) return '';
     var done = steps.filter(function (x) { return x.done; }).length;
-    return secH('Getting set up', '<span class="chip">' + done + ' of ' + steps.length + '</span>' +
-      '<button class="btn ghost sm" data-act="hide-start">Hide this</button>') +
-      '<section class="card"><div class="card-b flush">' + steps.map(function (x) {
+    return '<section class="card" style="grid-column:1/-1"><div class="card-h">' + ico('check') + '<h3>Getting set up</h3>' +
+      '<div class="spacer"></div><span class="chip">' + done + ' of ' + steps.length + '</span>' +
+      '<button class="btn ghost sm" data-act="hide-start">Hide this</button></div>' +
+      '<div class="card-b flush">' + steps.map(function (x) {
         return '<div class="check' + (x.done ? ' done' : '') + '"' +
           (x.done ? '' : (x.act === 'tab' ? ' data-tab="' + x.v + '"' : ' data-act="' + x.act + '"') + ' style="cursor:pointer"') + '>' +
           '<span class="bx">' + (x.done ? ico('check') : '') + '</span>' +
@@ -1878,6 +1982,12 @@ label>.chip{margin-left:6px;vertical-align:middle}
     });
     list = sortBy(list, function (j) { return j.date || ''; },
       f === 'open' || f === 'want' ? 'asc' : 'desc');
+    var pills = function (act, list, active) {
+      return '<div class="pills">' + list.map(function (o) {
+        return '<button data-act="' + act + '" data-v="' + esc(o.v) + '" aria-pressed="' + (active === o.v) + '">' +
+          esc(o.l) + (o.n ? '<span class="n">' + o.n + '</span>' : '') + '</button>';
+      }).join('') + '</div>';
+    };
 
     var viewSeg = seg('jobs-view', [{ v: 'list', l: 'List' }, { v: 'calendar', l: 'Calendar' }], UI.jobsView);
 
@@ -1893,12 +2003,12 @@ label>.chip{margin-left:6px;vertical-align:middle}
     }
 
     var h = '<div class="toolbar">' + viewSeg + searchBar('Search a name, car or rego…') +
-      seg('job-filter', [
-        { v: 'want', l: 'Wants one', n: wantedList().length || '' },
-        { v: 'open', l: 'Coming up', n: S.jobs.filter(jobOpen).length || '' },
-        { v: 'done', l: 'To be paid', n: S.jobs.filter(function (j) { return j.status === 'Done'; }).length || '' },
-        { v: 'paid', l: 'Paid', n: '' },
-        { v: 'all', l: 'All', n: '' }
+      pills('job-filter', [
+        { v: 'all', l: 'Everything', n: S.jobs.length || '' },
+        { v: 'want', l: 'Wants a part', n: wantedList().length || '' },
+        { v: 'open', l: 'Booked in', n: S.jobs.filter(jobOpen).length || '' },
+        { v: 'done', l: 'Owes you', n: S.jobs.filter(function (j) { return j.status === 'Done'; }).length || '' },
+        { v: 'paid', l: 'Paid', n: S.jobs.filter(function (j) { return j.status === 'Paid'; }).length || '' }
       ], f) +
       '<button class="btn primary" data-act="' + (f === 'want' ? 'new-want' : 'new-job') + '">' + ico('plus') +
       (f === 'want' ? 'Add a pre-order' : 'Book a job') + '</button></div>';
@@ -1908,9 +2018,6 @@ label>.chip{margin-left:6px;vertical-align:middle}
         'Every car you tint, detail, wrap or fit parts to goes in here — with what you charged and what it cost you.',
         '<button class="btn primary big" data-act="new-job">' + ico('plus') + 'Book your first job</button>') + '</section>';
     }
-
-    h += '<section class="card" style="margin-bottom:16px"><div class="card-h">' + ico('calendar') +
-      '<h3>Cars in, week by week</h3></div><div class="card-b">' + chartHost('weeks', 160) + '</div></section>';
 
     if (!list.length) {
       var why = UI.q.trim()
@@ -2623,39 +2730,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
         '<button class="btn primary big" data-act="new-product">' + ico('plus') + 'Add an item</button>' +
         '<button class="btn big" data-act="paste" data-kind="products">' + ico('clip') + 'Paste a list</button>') + '</section>';
     } else {
-      h += '<div class="tiles" style="margin-bottom:16px;margin-top:0">' +
-        tile('Items', S.products.length + '', qtyStr(sv.units) + ' on the shelf') +
-        tile('What it cost you', money(sv.cost), 'Money sitting on the shelf') +
-        tile('Low or out', low.length + '', out.length + ' completely out', 'stock') +
-        tile('On the way', S.products.reduce(function (a, p) { return a + incomingQty(p.id); }, 0) + '', 'units on order') +
-        '</div>';
-
-      var byCat = {};
-      S.products.forEach(function (p) {
-        var k = p.category || 'No type';
-        byCat[k] = (byCat[k] || 0) + n(p.qty) * n(p.cost);
-      });
-      var catRows = sortBy(Object.keys(byCat).map(function (k) { return { n: k, v: byCat[k] }; }), function (x) { return x.v; }, 'desc').slice(0, 7);
-
-      h += perCarCard();
-      h += '<div class="grid g2" style="margin-bottom:16px">';
-      h += '<section class="card"><div class="card-h">' + ico('box') + '<h3>Where the money is sitting</h3></div>' +
-        '<div class="card-b">' + hbars(catRows, sv.cost, { empty: 'Nothing costed yet.' }) + '</div></section>';
-      h += '<section class="card"><div class="card-h">' + ico('truck') + '<h3>Coming in</h3><div class="spacer"></div>' +
-        (S.orders.length ? '<button class="btn ghost sm" data-tab="orders">See all orders</button>' : '') +
-        '</div><div class="card-b flush">' +
-        (S.orders.filter(orderOpen).length
-          ? '<div class="rows">' + sortBy(S.orders.filter(orderOpen), function (o) { return o.eta || '9999'; }).slice(0, 5).map(function (o) {
-            var d = days(o.eta);
-            return '<div class="row tap" data-act="edit-order" data-id="' + o.id + '">' +
-              '<span class="grow"><span class="t truncate">' + esc(o.ref || 'Order') + ' · ' + esc(supName(o.supplierId) || 'No supplier') + '</span>' +
-              '<br><span class="s truncate">' + plural(orderUnits(o), 'unit') + ' · ' + money(orderTotal(o)) + ' landed</span></span>' +
-              '<span class="chip ' + (orderLate(o) ? 'bad' : d != null && d <= 7 ? 'amb' : 'acc') + '">' +
-              (d == null ? 'No date' : d < 0 ? Math.abs(d) + 'd late' : d === 0 ? 'Today' : 'in ' + d + 'd') + '</span></div>';
-          }).join('') + '</div>'
-          : emptyBlock('truck', 'Nothing on order', 'Put an order in as soon as you place it.',
-            '<button class="btn" data-act="new-order">' + ico('plus') + 'Add an order</button>')) +
-        '</div></section></div>';
+      h += '<div class="hint" style="margin:-6px 0 12px">' + plural(S.products.length, 'item') + ' on the shelf, ' +
+        '<strong>' + money(sv.cost) + '</strong> of your money sitting in it' +
+        (low.length ? ', <strong style="color:var(--s2)">' + plural(low.length, 'thing') + ' running low</strong>' : '') + '.</div>';
 
       if (!list.length) {
         h += '<section class="card">' + emptyBlock('search', 'Nothing here', 'Try another search or filter.') + '</section>';
@@ -2683,6 +2760,34 @@ label>.chip{margin-left:6px;vertical-align:middle}
               '</div></td></tr>';
           }).join('') + '</tbody></table></div></section>';
       }
+      h += '<div style="height:18px"></div>';
+      var byCat = {};
+      S.products.forEach(function (p) {
+        var k = p.category || 'No type';
+        byCat[k] = (byCat[k] || 0) + n(p.qty) * n(p.cost);
+      });
+      var catRows = sortBy(Object.keys(byCat).map(function (k) { return { n: k, v: byCat[k] }; }), function (x) { return x.v; }, 'desc').slice(0, 7);
+
+      h += perCarCard();
+      h += '<div class="grid g2" style="margin-bottom:16px">';
+      h += '<section class="card"><div class="card-h">' + ico('box') + '<h3>Where the money is sitting</h3></div>' +
+        '<div class="card-b">' + hbars(catRows, sv.cost, { empty: 'Nothing costed yet.' }) + '</div></section>';
+      h += '<section class="card"><div class="card-h">' + ico('truck') + '<h3>Coming in</h3><div class="spacer"></div>' +
+        (S.orders.length ? '<button class="btn ghost sm" data-tab="orders">See all orders</button>' : '') +
+        '</div><div class="card-b flush">' +
+        (S.orders.filter(orderOpen).length
+          ? '<div class="rows">' + sortBy(S.orders.filter(orderOpen), function (o) { return o.eta || '9999'; }).slice(0, 5).map(function (o) {
+            var d = days(o.eta);
+            return '<div class="row tap" data-act="edit-order" data-id="' + o.id + '">' +
+              '<span class="grow"><span class="t truncate">' + esc(o.ref || 'Order') + ' · ' + esc(supName(o.supplierId) || 'No supplier') + '</span>' +
+              '<br><span class="s truncate">' + plural(orderUnits(o), 'unit') + ' · ' + money(orderTotal(o)) + ' landed</span></span>' +
+              '<span class="chip ' + (orderLate(o) ? 'bad' : d != null && d <= 7 ? 'amb' : 'acc') + '">' +
+              (d == null ? 'No date' : d < 0 ? Math.abs(d) + 'd late' : d === 0 ? 'Today' : 'in ' + d + 'd') + '</span></div>';
+          }).join('') + '</div>'
+          : emptyBlock('truck', 'Nothing on order', 'Put an order in as soon as you place it.',
+            '<button class="btn" data-act="new-order">' + ico('plus') + 'Add an order</button>')) +
+        '</div></section></div>';
+
     }
 
     return h;
@@ -2861,7 +2966,14 @@ label>.chip{margin-left:6px;vertical-align:middle}
           : '') + '</div>';
 
     if (UI.moneyView === 'invoices') return h + invoicesView();
-    if (UI.moneyView === 'in') return h + whereMoneyCame(m) + moneyIn(m);
+    if (UI.moneyView === 'in') return h +
+      '<section class="card" style="margin-bottom:14px"><div class="card-h">' + ico('calendar') +
+      '<h3>Cars in, week by week</h3></div><div class="card-b">' + chartHost('weeks', 160) + '</div></section>' +
+      '<section class="card" style="margin-bottom:14px"><div class="card-b">' +
+      '<div class="legend" style="margin-bottom:10px"><span><i style="background:var(--s1)"></i>Money in</span>' +
+      '<span><i style="background:var(--s2)"></i>Costs &amp; bills</span></div>' + chartHost('months', 196) +
+      '<div class="hint" style="margin-top:8px">Tap a month to open it.</div></div></section>' +
+      whereMoneyCame(m) + moneyIn(m);
 
     var list = sortBy(S.expenses.filter(function (e) { return mKey(e.date) === m; }), function (e) { return e.date; }, 'desc');
     if (!S.expenses.length) {
@@ -3149,17 +3261,32 @@ label>.chip{margin-left:6px;vertical-align:middle}
   }
 
   /* ============================== SETTINGS ============================== */
+  /* Every settings card starts closed with a one-line summary, so the page
+     is a list of headings you can read, not seven screens of fields. */
+  function fold(id, icon, title, sum, body, open) {
+    var isOpen = UI.folds && UI.folds[id] != null ? UI.folds[id] : !!open;
+    return '<section class="card fold' + (isOpen ? ' open' : '') + '" data-fold="' + id + '">' +
+      '<div class="card-h" data-act="fold" data-v="' + id + '">' + ico(icon) + '<h3>' + esc(title) + '</h3>' +
+      (sum ? '<span class="sum">' + esc(sum) + '</span>' : '<div class="spacer"></div>') +
+      '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></div>' +
+      body + '</section>';
+  }
   function viewSettings() {
     var h = '<div class="grid g2">';
     h += syncCard();
+    h += startHere();
 
-    h += '<section class="card"><div class="card-h">' + ico('spark') + '<h3>Your prices</h3><div class="spacer"></div>' +
-      '<button class="btn sm" data-act="new-service">' + ico('plus') + 'Add</button></div><div class="card-b flush">' +
+    var priced = S.services.filter(function (x) { return n(x.price) > 0 || svcMode(x) === 'varies'; }).length;
+    h += fold('prices', 'spark', 'Your prices',
+      priced ? priced + ' of ' + S.services.length + ' set' : 'none set yet',
+      '<div class="card-b flush">' +
       '<div class="hint" style="padding:14px 16px 0">Set these once and booking a job fills the price in for you.</div>' +
+      '<div style="padding:10px 16px 0"><button class="btn sm" data-act="new-service">' + ico('plus') + 'Add one</button></div>' +
       (S.services.length ? serviceRows() : emptyBlock('spark', 'No services yet', 'Add the work you do and what you charge for it.')) +
-      '</div></section>';
+      '</div>');
 
-    h += '<section class="card"><div class="card-h">' + ico('cog') + '<h3>Basics</h3></div><div class="card-b">' +
+    h += fold('basics', 'cog', 'Basics', (S.meta.business || 'Kitted Lab') + ' · ' + (S.meta.currency || '$'),
+      '<div class="card-b">' +
       '<div class="fgrid">' +
       '<div class="field full"><label for="set-biz">Business name</label>' +
       '<input class="inp" id="set-biz" value="' + esc(S.meta.business || '') + '" data-set="business"></div>' +
@@ -3171,14 +3298,14 @@ label>.chip{margin-left:6px;vertical-align:middle}
           (o === 'system' ? 'Match my phone' : o === 'light' ? 'Always light' : 'Always dark') + '</option>';
       }).join('') + '</select></div></div>' +
       (S.meta.hideStart ? '<div style="margin-top:15px;padding-top:15px;border-top:1px solid var(--rule)">' +
-        '<button class="btn sm" data-act="show-start">Show the setup list on Home again</button></div>' : '') +
-      '</div></section>';
+        '<button class="btn sm" data-act="show-start">Show the setup list again</button></div>' : '') +
+      '</div>');
 
     h += invoiceSettings();
 
     h += shareCard();
 
-    h += '<section class="card"><div class="card-h">' + ico('down') + '<h3>Your data</h3></div><div class="card-b stack">' +
+    h += fold('data', 'down', 'Your data', 'backups and spreadsheets', '<div class="card-b stack">' +
       '<div class="hint">' + (SHARED.on || SHARED.state === 'starting'
         ? 'Everything is kept in one shared place. Type it on your phone and it is on their laptop a second later. ' +
           'There is nothing to save. Take a backup here whenever you want a copy of your own.'
@@ -3197,9 +3324,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
       }).join('') + '</div>' +
       '<div style="margin-top:6px;padding-top:15px;border-top:1px solid var(--rule)">' +
       '<button class="btn danger" data-act="wipe">' + ico('trash') + 'Delete everything</button></div>' +
-      '</div></section>';
+      '</div>');
 
-    h += '<section class="card"><div class="card-h">' + ico('clip') + '<h3>How it adds up</h3></div><div class="card-b">' +
+    h += fold('how', 'clip', 'How it adds up', 'the rules in five lines', '<div class="card-b">' +
       [['A job is one car', 'One card, one price — tint, detail, wrap, install, parts, whatever it is.'],
       ['It goes booked, done, paid', 'Three buttons, in that order. It only counts as money in once it is paid.'],
       ['Profit', 'What you charged, minus the shelf, minus the film or vinyl.'],
@@ -3212,7 +3339,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       ].map(function (x) {
         return '<div style="margin-bottom:15px"><div style="font-weight:600">' + esc(x[0]) + '</div>' +
           '<div class="hint" style="margin-top:2px">' + esc(x[1]) + '</div></div>';
-      }).join('') + '</div></section>';
+      }).join('') + '</div>');
 
     return h + '</div>';
   }
@@ -3294,10 +3421,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
           : '<input class="inp" id="bz_' + k + '" data-biz="' + k + '" value="' + esc(b[k] == null ? '' : b[k]) + '"' + (attrs || '') + '>') +
         (hint ? '<div class="hint">' + esc(hint) + '</div>' : '') + '</div>';
     };
-    var raised = S.invoices.length, out = unsentInvoices().length;
-    return '<section class="card"><div class="card-h">' + ico('doc') + '<h3>What goes on an invoice</h3>' +
-      '<div class="spacer"></div>' + (raised ? '<span class="chip">' + plural(raised, 'raised') + '</span>' : '') +
-      (out ? '<span class="chip amb">' + out + ' not sent</span>' : '') + '</div><div class="card-b">' +
+    return fold('invoice', 'doc', 'What goes on an invoice',
+      gaps.length ? 'not ready — ' + gaps.length + ' to fill in' : 'ready',
+      '<div class="card-b">' +
       (gaps.length
         ? '<div class="banner" style="margin-bottom:14px;border-color:var(--s2);background:var(--panel);align-items:flex-start">' +
           ico('alert') + '<span class="spacer"><strong>Not ready to send yet.</strong> ' +
@@ -3346,7 +3472,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       'Your jobs, stock, orders and invoices are not touched.' +
       (SHARED.on ? ' These details are shared, so it empties them for all three of you.' : '') +
       '</div></div>' +
-      '</div></section>';
+      '</div>', gaps.length > 0);
   }
 
   function serviceRow(sv) {
@@ -3823,24 +3949,109 @@ label>.chip{margin-left:6px;vertical-align:middle}
   }
 
   /* --------------------------- quick add sheet -------------------------- */
+  /* Four things he actually does, in his words. The rest sits under a line. */
   function openQuick() {
-    var acts = [
-      { a: 'new-receipt', i: 'doc', t: 'Write a receipt', s: 'They already paid — proof for them, money in for you' },
-      { a: 'new-invoice', i: 'doc', t: 'Write an invoice', s: 'Bill someone — print it or save it to send' },
-      { a: 'new-job', i: 'car', t: 'Book a job', s: 'A car in for tint, detail, wrap or install' },
-      { a: 'new-want', i: 'clip', t: 'Someone wants a part', s: 'They have asked for it and you have not bought it yet' },
-      { a: 'new-expense', i: 'wallet', t: 'Money going out', s: 'Ads, rent, materials, tools, fuel' },
-      { a: 'new-product', i: 'box', t: 'Add stock', s: 'Film, vinyl, parts — anything you count' },
-      { a: 'new-order', i: 'truck', t: 'Put an order in', s: 'Something on the way from a supplier' },
+    var main = [
+      { a: 'new-job', i: 'car', t: 'Sold something', s: 'A badge, a grille, a tint — who, what, how much' },
+      { a: 'new-want', i: 'clip', t: 'Someone wants a part', s: 'They asked, you have not bought it yet' },
+      { a: 'new-receipt', i: 'doc', t: 'Send a receipt or invoice', s: 'With your logo on it, straight to their email' },
+      { a: 'new-product', i: 'box', t: 'Bought stock', s: 'Something landed — put it on the shelf' }
+    ];
+    var more = [
+      { a: 'new-order', i: 'truck', t: 'Ordered from China', s: 'On the way, not landed yet' },
+      { a: 'new-expense', i: 'wallet', t: 'Money going out', s: 'Ads, fuel, postage, anything else' },
       { a: 'new-supplier', i: 'users', t: 'Add a contact', s: 'Someone you buy from' }
     ];
-    drawer('Add something',
-      '<div class="rows" style="margin:-8px -4px">' + acts.map(function (x) {
-        return '<div class="row tap" data-act="' + x.a + '">' + ico(x.i) +
-          '<span class="grow"><span class="t">' + esc(x.t) + '</span><br><span class="s">' + esc(x.s) + '</span></span>' +
-          ico('right') + '</div>';
-      }).join('') + '</div>',
+    var row = function (x) {
+      return '<div class="row tap" data-act="' + x.a + '">' + ico(x.i) +
+        '<span class="grow"><span class="t">' + esc(x.t) + '</span><br><span class="s">' + esc(x.s) + '</span></span>' +
+        ico('right') + '</div>';
+    };
+    drawer('What happened?',
+      '<div class="rows" style="margin:-8px -4px">' + main.map(row).join('') + '</div>' +
+      '<div class="eyebrow" style="margin:10px 0 -4px">Less often</div>' +
+      '<div class="rows" style="margin:0 -4px">' + more.map(row).join('') + '</div>',
       '<button class="btn ghost block" data-act="close">Close</button>');
+  }
+
+  /* ------------------------------ how this works ------------------------ */
+  var LS_SEEN = 'kittedlab.seen-help';
+  function openHelp() {
+    var steps = [
+      ['Someone wants a part', 'Put it on the pre-order list. No price needed yet. It sits under Jobs → Wants one.'],
+      ['You buy it', 'Tap I have ordered it. If it is a whole China order, log it under Orders so you know when it lands.'],
+      ['It lands', 'Mark the order arrived and it goes on the shelf under Stock, with what it cost you.'],
+      ['They pay', 'Tap They paid on the job. Send them a receipt with your logo from the same card. That is the only moment it counts as money in.']
+    ];
+    var where = [
+      ['Home', 'what needs you today'],
+      ['Jobs', 'every sale, and everyone waiting on a part'],
+      ['Stock', 'what is on the shelf and what it cost'],
+      ['Orders', 'what you have bought that has not landed'],
+      ['Money', 'invoices, receipts, and how the month adds up'],
+      ['Contacts', 'who you buy from'],
+      ['Settings', 'your details, your prices, what goes on an invoice'],
+      ['+', 'the big button — four things that happen, in your words'],
+      [ico('search'), 'find anything — a name, a car, a part, an invoice number']
+    ];
+    drawer('How this works',
+      '<div class="hint" style="margin-bottom:6px">One part, one card, four steps. Everything else is bookkeeping around that.</div>' +
+      '<div class="steps">' + steps.map(function (x, i) {
+        return '<div class="step"><div class="n">' + (i + 1) + '</div><div><div class="t">' + esc(x[0]) + '</div>' +
+          '<div class="s">' + esc(x[1]) + '</div></div></div>';
+      }).join('') + '</div>' +
+      '<div class="eyebrow" style="margin-top:8px">Where things live</div>' +
+      '<div class="where">' + where.map(function (x) {
+        return '<b>' + (x[0].charAt(0) === '<' ? x[0] : esc(x[0])) + '</b><span>' + esc(x[1]) + '</span>';
+      }).join('') + '</div>' +
+      '<div class="hint" style="margin-top:6px">Profit is what you charged, minus what the part cost you, minus the freebie that went with it. ' +
+      'It only counts once they have paid.</div>',
+      '<button class="btn primary block" data-act="close">Got it</button>');
+  }
+  function seenHelp() { try { return !!localStorage.getItem(LS_SEEN); } catch (e) { return true; } }
+  function markHelpSeen() { try { localStorage.setItem(LS_SEEN, '1'); } catch (e) {} }
+
+  /* ------------------------------ find anything ------------------------- */
+  function openFind() {
+    drawer('Find anything',
+      '<div class="search" style="flex:none"><input id="findq" placeholder="A name, a car, a part, an invoice number…" autocomplete="off"></div>' +
+      '<div class="hits" id="findhits"><div class="hint" style="padding:8px 2px">Start typing.</div></div>',
+      '<button class="btn ghost block" data-act="close">Close</button>');
+    var q = document.getElementById('findq'); if (q) q.focus();
+  }
+  function findHits(q) {
+    q = String(q || '').trim().toLowerCase();
+    var host = document.getElementById('findhits'); if (!host) return;
+    if (!q) { host.innerHTML = '<div class="hint" style="padding:8px 2px">Start typing.</div>'; return; }
+    var m = function (parts) { return parts.join(' ').toLowerCase().indexOf(q) >= 0; };
+    var hit = function (icon, t, s, act, id) {
+      return '<div class="hit" data-act="' + act + '" data-id="' + id + '">' + ico(icon) +
+        '<span class="grow"><span class="t truncate">' + esc(t) + '</span><br><span class="s truncate">' + esc(s) + '</span></span>' + ico('right') + '</div>';
+    };
+    var out = [];
+    var jobs = S.jobs.filter(function (j) { return m([j.customer, j.car, j.rego, j.phone, j.email, j.notes, jobTitle(j)]); }).slice(0, 8);
+    if (jobs.length) out.push('<div class="grp">Jobs</div>' + jobs.map(function (j) {
+      return hit('car', (j.customer || 'No name') + (j.car ? ' · ' + j.car : ''), jobTitle(j) + ' · ' + statusWord(j) +
+        (n(j.price) ? ' · ' + money(j.price) : ''), 'edit-job', j.id);
+    }).join(''));
+    var inv = S.invoices.filter(function (v) { var j = invJob(v) || {}; return m([v.no, j.customer, j.car]); }).slice(0, 6);
+    if (inv.length) out.push('<div class="grp">Invoices &amp; receipts</div>' + inv.map(function (v) {
+      var j = invJob(v) || {};
+      return hit('doc', v.no, (j.customer || 'No name') + ' · ' + money(invTotals(v).total), 'open-invoice', v.id);
+    }).join(''));
+    var prods = S.products.filter(function (x) { return m([x.name, x.sku, x.category, x.notes]); }).slice(0, 6);
+    if (prods.length) out.push('<div class="grp">Stock</div>' + prods.map(function (x) {
+      return hit('box', x.name, (shared(x) ? carsStr(carsLeft(x)) : qtyStr(x.qty)) + ' left · costs you ' + money2(shared(x) ? costPerCar(x) : x.cost), 'edit-product', x.id);
+    }).join(''));
+    var sup = S.suppliers.filter(function (x) { return m([x.name, x.contact, x.notes, x.city]); }).slice(0, 6);
+    if (sup.length) out.push('<div class="grp">Contacts</div>' + sup.map(function (x) {
+      return hit('users', x.name, x.contact || x.city || 'Contact', 'edit-supplier', x.id);
+    }).join(''));
+    var ords = S.orders.filter(function (o) { return m([o.ref, supName(o.supplierId), o.notes]); }).slice(0, 6);
+    if (ords.length) out.push('<div class="grp">Orders</div>' + ords.map(function (o) {
+      return hit('truck', o.ref || 'Order', (supName(o.supplierId) || 'No supplier') + ' · ' + o.status, 'edit-order', o.id);
+    }).join(''));
+    host.innerHTML = out.length ? out.join('') : '<div class="hint" style="padding:8px 2px">Nothing matches “' + esc(q) + '”.</div>';
   }
 
   /* ---------------------------- stock count ----------------------------- */
@@ -4194,12 +4405,22 @@ label>.chip{margin-left:6px;vertical-align:middle}
       case 'close': closeDrawer(); break;
       case 'save': save(); break;
       case 'quick': openQuick(); break;
+      case 'help': openHelp(); markHelpSeen(); break;
+      case 'find': openFind(); break;
 
       case 'month': UI.month = shiftMonth(UI.month, +el.getAttribute('data-d')); render(); break;
       case 'month-now': UI.month = curMonth(); render(); break;
       case 'job-filter': UI.jobFilter = el.getAttribute('data-v'); render(); break;
-      case 'hide-start': S.meta.hideStart = true; touch(); render(); toast('Hidden. Bring it back from Settings.'); break;
-      case 'show-start': S.meta.hideStart = false; touch(); render(); setTab('home'); break;
+      case 'hide-start': S.meta.hideStart = true; touch(); render(); toast('Hidden. Bring it back from Basics.'); break;
+      case 'show-start': S.meta.hideStart = false; touch(); render(); break;
+      case 'fold': {
+        var fid = el.getAttribute('data-v');
+        UI.folds = UI.folds || {};
+        var sec = el.closest('.card.fold');
+        UI.folds[fid] = !(sec && sec.classList.contains('open'));
+        render();
+        break;
+      }
       case 'job-jump': UI.jobFilter = el.getAttribute('data-v'); UI.jobsView = 'list'; setTab('jobs'); break;
       case 'new-want': openForm('jobs', null, { status: WANTED, price: '' }); break;
       case 'jobs-view': UI.jobsView = el.getAttribute('data-v'); UI.q = ''; render(); break;
@@ -4471,6 +4692,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
   document.addEventListener('input', function (ev) {
     var t = ev.target;
     if (t.id === 'q') { UI.q = t.value; render(); return; }
+    if (t.id === 'findq') { findHits(t.value); return; }
     if (FORM && FORM.kind === 'jobs' && t.closest && t.closest('.drawer-b')) syncKeep();
     if (t.hasAttribute && t.hasAttribute('data-vk')) invRunning();
     if (FORM && FORM.kind === 'orders' && t.id && /^f_(ship|ordered)$/.test(t.id)) syncEta();
@@ -4518,6 +4740,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
     if (ev.key === 'Escape' && document.querySelector('.scrim')) closeDrawer();
     else if (ev.key === 'Escape' && INVOICE) closeInvoice();
     if ((ev.metaKey || ev.ctrlKey) && ev.key === 's') { ev.preventDefault(); if (DIRTY && !SHARED.on) save(); }
+    if ((ev.metaKey || ev.ctrlKey) && ev.key === 'k') { ev.preventDefault(); openFind(); }
   });
   window.addEventListener('beforeunload', function (e) {
     if (SHARED.on) return;
@@ -4526,7 +4749,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
 
   /* ================================ INIT ================================ */
   loadState();
-  UI = { tab: 'home', month: curMonth(), q: '', jobFilter: 'open', jobsView: 'list', stockFilter: 'all', moneyView: 'invoices', invFilter: 'all', orderFilter: 'open' };
+  UI = { tab: 'home', month: curMonth(), q: '', jobFilter: 'all', jobsView: 'list', stockFilter: 'all', moneyView: 'invoices', invFilter: 'all', orderFilter: 'open' };
   try {
     var saved = JSON.parse(sessionStorage.getItem('kl.ui') || 'null');
     if (saved && saved.tab) { UI = saved; UI.q = ''; }
@@ -4534,6 +4757,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
   } catch (e) {}
   applyTheme();
   render();
+  // the first time this device opens it, say how it works before anything else
+  if (!seenHelp() && !document.querySelector('.scrim')) { openHelp(); markHelpSeen(); }
 
   document.addEventListener('visibilitychange', function () {
     if (SHARED.on) return;                 // nothing is ever waiting to be saved
