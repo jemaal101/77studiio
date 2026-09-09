@@ -256,6 +256,31 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## The pre-order list is a job that has not been ordered
+
+Most of what he sells is a part he has not bought yet: somebody asks, he
+finds it on Alibaba, and weeks later it lands. That is not an order (an
+order is stock he has already bought) and it is not a booked job (there is
+often no price yet). So it is a fifth job status, **Wanted**, sitting before
+Booked, and it moves down the same line: Wanted -> Booked -> Done -> Paid.
+
+- `wanted(j)`, `wantedList()` and `wantedWorth()` are the whole of it. Worth
+  never adds a priced pre-order to an unpriced one, because a pre-order you
+  have not priced is not money you can count on -- Home says "none priced
+  yet" rather than inventing a number.
+- `price` stops being required when the status is Wanted (`req` may now be a
+  function of the form's values, not just a flag). A card with no price says
+  **no price yet**, never `$0`.
+- `link` holds the Alibaba or supplier page, run through `safeUrl()` before
+  it ever reaches an `href`.
+- A pre-order is deliberately kept out of everything that counts real work:
+  `jobOpen()` still means Booked only, so it stays off Coming up; the
+  cars-per-week chart skips it; and the card offers **I have ordered it**
+  instead of an invoice, because you cannot bill for a part you have not
+  bought. Raising an invoice on one is still possible once it exists.
+- The list sorts oldest first. The ones that have been sitting longest are
+  the ones nobody has chased.
+
 ## Receipts are the same document, settled
 
 There is one document, not two. Unpaid it is a **Tax invoice** with a due date

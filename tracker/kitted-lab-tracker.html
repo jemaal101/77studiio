@@ -191,6 +191,7 @@ a{color:var(--acc)}
 .stage{background:var(--panel);padding:13px 15px;border-top:3px solid var(--rule-hard);cursor:pointer;
   text-align:left;font:inherit;color:inherit;border-left:0;border-right:0;border-bottom:0}
 .stage:hover{background:var(--sunk)}
+.stage.s-want{border-top-color:var(--acc-fill)}
 .stage.s-book{border-top-color:var(--muted)}
 .stage.s-prog{border-top-color:var(--s2)}
 .stage.s-owed{border-top-color:var(--bad)}
@@ -216,6 +217,7 @@ a{color:var(--acc)}
 .job{background:var(--panel);border:1px solid var(--rule-hard);border-radius:3px;display:flex;flex-direction:column;
   overflow:hidden;border-left:5px solid var(--rule-hard)}
 .job.s-book{border-left-color:var(--muted)}
+.job.s-want{border-left-color:var(--acc-fill);border-left-style:dashed}
 .job.s-prog{border-left-color:var(--s2)}
 .job.s-owed{border-left-color:var(--bad)}
 .job.s-paid{border-left-color:var(--good)}
@@ -226,6 +228,7 @@ a{color:var(--acc)}
 .job-who .n{font-weight:700;font-size:21px;line-height:1.18;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .job-who .c{font-size:16.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .job-price{font-size:23px;font-weight:700;letter-spacing:-.02em;text-align:right;flex:none}
+.job-price.soft{font-size:16px;font-weight:600;color:var(--muted);letter-spacing:0}
 .job-meta{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap}
 .job-when{font-size:16px;color:var(--muted);font-weight:500}
 .job-acts{display:flex;gap:8px;padding:11px 16px;border-top:1px solid var(--rule);background:var(--sunk);flex-wrap:wrap}
@@ -614,8 +617,12 @@ label>.chip{margin-left:6px;vertical-align:middle}
   /* Three states, not six. You are not sitting in this app all day marking a
      car as started and then finished — a job is booked, then it is done, then
      it is paid. Same for an order: ordered, on the way, landed. */
-  var JOB_STATUS = ['Booked', 'Done', 'Paid', 'Cancelled'];
+  /* Five, not four. Before a car is booked in, somebody has asked for a part
+     that is not bought yet -- the pre-order list. It is a job that has not
+     been ordered, so it lives here and moves along the same line. */
+  var JOB_STATUS = ['Wanted', 'Booked', 'Done', 'Paid', 'Cancelled'];
   var OPEN_JOB = ['Booked'];
+  var WANTED = 'Wanted';
   var ORDER_STATUS = ['Ordered', 'On the way', 'Arrived', 'Cancelled'];
   var OPEN_ORDER = ['Ordered', 'On the way'];
   var EXP_CATS = ['Ads', 'Materials', 'Freight & duty', 'Tools & equipment', 'Rent', 'Wages', 'Software', 'Fees', 'Fuel & travel', 'Other'];
@@ -1223,7 +1230,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
       var start = new Date(monday.getTime() - i * 7 * 86400000);
       var end = new Date(start.getTime() + 7 * 86400000);
       var si = start.toISOString().slice(0, 10), ei = end.toISOString().slice(0, 10);
-      var count = S.jobs.filter(function (j) { return j.date >= si && j.date < ei && j.status !== 'Cancelled'; }).length;
+      var count = S.jobs.filter(function (j) {
+        return j.date >= si && j.date < ei && j.status !== 'Cancelled' && !wanted(j);
+      }).length;
       out.push({
         v: count, on: i === 0, label: i % 2 === 0 ? (+si.slice(8, 10)) + ' ' + MON[+si.slice(5, 7) - 1] : '',
         tipLabel: 'Week of ' + dLabel(si), tipValue: plural(count, 'car') + ' in'
@@ -1675,6 +1684,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
 
   /** Three cards, in the order the work happens: booked, done, paid. */
   function stageStrip(m) {
+    var want = wantedList();
     var booked = S.jobs.filter(jobOpen);
     var owed = S.jobs.filter(function (j) { return j.status === 'Done'; });
     var paid = S.jobs.filter(function (j) { return j.status === 'Paid' && mKey(j.date) === m; });
@@ -1684,7 +1694,10 @@ label>.chip{margin-left:6px;vertical-align:middle}
         '<div class="l">' + esc(label) + '</div><div class="n">' + list.length + '</div>' +
         '<div class="v">' + esc(value) + '</div></button>';
     };
-    return '<div class="stages three">' +
+    var w = wantedWorth();
+    return '<div class="stages' + (want.length ? '' : ' three') + '">' +
+      (want.length ? cell('s-want', 'Waiting on a part', want,
+        w.priced ? money(w.sale - w.cost) + ' in it' : 'none priced yet', 'want') : '') +
       cell('s-book', 'Booked in', booked, money(sum(booked, function (j) { return n(j.price); })) + ' coming', 'open') +
       cell('s-owed', 'Waiting to be paid', owed, money(sum(owed, jobOwing)) + ' owed to you', 'done') +
       cell('s-paid', 'Paid this month', paid, money(sum(paid, function (j) { return n(j.price); })) + ' banked', 'paid') +
@@ -1814,25 +1827,39 @@ label>.chip{margin-left:6px;vertical-align:middle}
   function hit(text) { var q = UI.q.trim().toLowerCase(); return !q || String(text).toLowerCase().indexOf(q) >= 0; }
   function statusCls(j) {
     return j.status === 'Paid' ? 's-paid' : j.status === 'Done' ? 's-owed' :
-      j.status === 'Cancelled' ? '' : 's-book';
+      j.status === WANTED ? 's-want' : j.status === 'Cancelled' ? '' : 's-book';
   }
   function statusWord(j) {
-    return j.status === 'Done' ? 'Waiting to be paid' : j.status === 'Booked' ? 'Booked in' : j.status;
+    return j.status === 'Done' ? 'Waiting to be paid' : j.status === 'Booked' ? 'Booked in'
+      : j.status === WANTED ? 'Wants one' : j.status;
+  }
+  function wanted(j) { return j.status === WANTED; }
+  function wantedList() { return S.jobs.filter(wanted); }
+  /* A pre-order you have not priced yet is worth nothing you can count on,
+     so the two are never added together. */
+  function wantedWorth() {
+    var l = wantedList(), priced = l.filter(function (j) { return n(j.price) > 0; });
+    return { all: l.length, priced: priced.length, unpriced: l.length - priced.length,
+             sale: priced.reduce(function (a, j) { return a + n(j.price); }, 0),
+             cost: priced.reduce(function (a, j) { return a + jobCost(j); }, 0) };
   }
   function statusChip(j) {
-    var c = j.status === 'Paid' ? 'good' : j.status === 'Done' ? 'amb' : '';
+    var c = j.status === 'Paid' ? 'good' : j.status === 'Done' ? 'amb' : j.status === WANTED ? 'acc' : '';
     return '<span class="chip ' + c + '">' + esc(statusWord(j)) + '</span>';
   }
 
   function viewJobs() {
     var f = UI.jobFilter;
     var list = S.jobs.filter(function (j) {
+      if (f === 'want' && !wanted(j)) return false;
+      if (f !== 'want' && f !== 'all' && wanted(j)) return false;
       if (f === 'open' && !jobOpen(j)) return false;
       if (f === 'done' && j.status !== 'Done') return false;
       if (f === 'paid' && j.status !== 'Paid') return false;
       return hit([j.customer, j.car, j.rego, j.phone, jobTitle(j), j.notes].join(' '));
     });
-    list = sortBy(list, function (j) { return j.date || ''; }, f === 'open' ? 'asc' : 'desc');
+    list = sortBy(list, function (j) { return j.date || ''; },
+      f === 'open' || f === 'want' ? 'asc' : 'desc');
 
     var viewSeg = seg('jobs-view', [{ v: 'list', l: 'List' }, { v: 'calendar', l: 'Calendar' }], UI.jobsView);
 
@@ -1849,12 +1876,14 @@ label>.chip{margin-left:6px;vertical-align:middle}
 
     var h = '<div class="toolbar">' + viewSeg + searchBar('Search a name, car or rego…') +
       seg('job-filter', [
+        { v: 'want', l: 'Wants one', n: wantedList().length || '' },
         { v: 'open', l: 'Coming up', n: S.jobs.filter(jobOpen).length || '' },
         { v: 'done', l: 'To be paid', n: S.jobs.filter(function (j) { return j.status === 'Done'; }).length || '' },
         { v: 'paid', l: 'Paid', n: '' },
         { v: 'all', l: 'All', n: '' }
       ], f) +
-      '<button class="btn primary" data-act="new-job">' + ico('plus') + 'Book a job</button></div>';
+      '<button class="btn primary" data-act="' + (f === 'want' ? 'new-want' : 'new-job') + '">' + ico('plus') +
+      (f === 'want' ? 'Add a pre-order' : 'Book a job') + '</button></div>';
 
     if (!S.jobs.length) {
       return h + '<section class="card">' + emptyBlock('car', 'No jobs yet',
@@ -1868,7 +1897,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
     if (!list.length) {
       var why = UI.q.trim()
         ? { h: 'Nothing matches "' + UI.q.trim() + '"', p: 'Try a different name, car or rego.' }
-        : f === 'open' ? { h: 'Nothing booked in', p: 'No cars waiting on you right now.' }
+        : f === 'want' ? { h: 'Nobody is waiting on a part', p: 'When someone asks for something you have not bought yet, put it here. You do not need a price.' }
+          : f === 'open' ? { h: 'Nothing booked in', p: 'No cars waiting on you right now.' }
           : f === 'done' ? { h: 'Nobody owes you', p: 'Every finished job has been paid.' }
             : f === 'paid' ? { h: 'No paid jobs yet', p: 'Finish a job and mark it paid — it shows up here.' }
               : { h: 'Nothing here', p: 'Try a different tab above.' };
@@ -1882,13 +1912,20 @@ label>.chip{margin-left:6px;vertical-align:middle}
     var names = (j.serviceIds || []).map(svcName).filter(Boolean);
     var profit = jobProfit(j), owing = jobOwing(j);
     var acts = '';
+    if (wanted(j))
+      acts += '<button class="btn sm primary" data-act="job-status" data-id="' + j.id + '" data-v="Booked">' +
+        ico('check') + 'I have ordered it</button>';
     if (j.status === 'Booked')
       acts += '<button class="btn sm ok" data-act="job-status" data-id="' + j.id + '" data-v="Done">' + ico('check') + 'It is done</button>';
     if (j.status === 'Done')
       acts += '<button class="btn sm primary" data-act="job-paid" data-id="' + j.id + '">' + ico('money') + 'They paid ' + money(owing) + '</button>';
     var jinv = invOfJob(j.id);
-    acts += '<button class="btn sm" data-act="invoice" data-id="' + j.id + '">' + ico('doc') +
-      (jinv ? esc(jinv.no) : 'Invoice') + '</button>';
+    var buy = safeUrl(j.link);
+    if (buy) acts += '<a class="btn sm" href="' + esc(buy) + '" target="_blank" rel="noopener noreferrer">' +
+      ico('globe') + 'Where to buy</a>';
+    if (!wanted(j) || jinv)
+      acts += '<button class="btn sm" data-act="invoice" data-id="' + j.id + '">' + ico('doc') +
+        (jinv ? esc(jinv.no) : 'Invoice') + '</button>';
     acts += '<span class="spacer"></span>' +
       '<button class="btn icon sm" data-act="edit-job" data-id="' + j.id + '" aria-label="Edit job">' + ico('pencil') + '</button>' +
       '<button class="btn icon sm" data-act="del" data-kind="jobs" data-id="' + j.id + '" aria-label="Delete job">' + ico('trash') + '</button>';
@@ -1897,10 +1934,11 @@ label>.chip{margin-left:6px;vertical-align:middle}
       '<div class="job-row1"><div class="job-who">' +
       '<div class="n">' + esc(j.customer || 'No name') + '</div>' +
       '<div class="c">' + esc(j.car || 'Car not set') + (j.rego ? ' · ' + esc(j.rego) : '') + '</div>' +
-      '</div><div class="job-price">' + money(j.price) + '</div></div>' +
-      (names.length ? '<div class="job-meta"><span class="chips">' + names.map(function (x) {
-        return '<span class="chip acc">' + esc(x) + '</span>';
-      }).join('') + '</span></div>' : '') +
+      '</div><div class="job-price' + (wanted(j) && !n(j.price) ? ' soft' : '') + '">' +
+      (wanted(j) && !n(j.price) ? 'no price yet' : money(j.price)) + '</div></div>' +
+      '<div class="job-meta"><span class="chips">' +
+      (names.length ? names.map(function (x) { return '<span class="chip acc">' + esc(x) + '</span>'; }).join('')
+                    : '<span class="chip acc">' + esc(jobTitle(j)) + '</span>') + '</span></div>' +
       '<div class="job-meta">' + statusChip(j) +
       '<span class="job-when">' + esc(whenLabel(j.date)) + '</span>' +
       (jinv ? '<span class="chip ' + (jinv.sent ? 'acc' : 'amb') + '">' +
@@ -3330,10 +3368,15 @@ label>.chip{margin-left:6px;vertical-align:middle}
         { k: 'car', l: 'Car', t: 'text', ph: '2019 Toyota GR86' },
         { k: 'date', l: 'When', t: 'date' },
         { k: 'serviceIds', l: 'What are you doing?', t: 'services', full: true },
-        { k: 'price', l: 'What you are charging', t: 'money', req: true },
+        { k: 'price', l: 'What you are charging', t: 'money',
+          req: function (vals) { return vals.status !== WANTED; },
+          hint: 'On the pre-order list you can leave this until you know.' },
         { k: 'status', l: 'Where it is at', t: 'select', o: JOB_STATUS.map(function (v) {
-          return { v: v, l: v === 'Done' ? 'Waiting to be paid' : v === 'Booked' ? 'Booked in' : v };
+          return { v: v, l: v === 'Done' ? 'Waiting to be paid' : v === 'Booked' ? 'Booked in'
+            : v === WANTED ? 'Wants one \u2014 not ordered yet' : v };
         }) },
+        { k: 'link', l: 'Where you buy it', t: 'text', full: true, adv: true,
+          hint: 'Paste the Alibaba or supplier page so you can find it again' },
         { k: 'phone', l: 'Phone', t: 'tel', adv: true },
         { k: 'email', l: 'Their email', t: 'email', adv: true, hint: 'So you can send the invoice or receipt straight to them' },
         { k: 'rego', l: 'Rego', t: 'text', adv: true },
@@ -3341,7 +3384,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
         { k: 'paidHow', l: 'How they paid', t: 'select', adv: true,
           o: [{ v: '', l: '\u2014' }].concat(opts(PAY_WAYS)) },
         { k: 'paidOn', l: 'Paid on', t: 'date', adv: true },
-        { k: 'materials', l: 'Film, vinyl or polish used', t: 'money', adv: true, hint: 'Roughly what the materials cost you' },
+        { k: 'materials', l: 'What it costs you', t: 'money', adv: true,
+          hint: 'The part itself, or the film, vinyl and polish you go through' },
         { k: 'parts', l: 'Parts off your shelf', t: 'lines', full: true, adv: true },
         { k: 'notes', l: 'Notes', t: 'textarea', full: true, adv: true }
       ]
@@ -3466,7 +3510,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
 
   function fieldHtml(f, val) {
     var id = 'f_' + f.k, h = '<div class="field' + (f.full ? ' full' : '') + '"><label for="' + id + '">' +
-      esc(f.l) + (f.req ? ' *' : '') + '</label>';
+      esc(f.l) + (f.req === true ? ' *' : '') + '</label>';
     var v = val == null ? '' : val;
     if (f.t === 'textarea') h += '<textarea class="inp" id="' + id + '" data-k="' + f.k + '" rows="3">' + esc(v) + '</textarea>';
     else if (f.t === 'select' || f.t === 'ref') {
@@ -3476,8 +3520,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
           '<div class="hint">No contacts saved yet. You can add them later and come back to this.</div></div>';
       }
       h += '<select class="inp" id="' + id + '" data-k="' + f.k + '">' +
-        (f.t === 'ref' && !f.req ? '<option value="">Not sure yet</option>' : '') +
-        (f.t === 'ref' && f.req ? '<option value="">— pick one —</option>' : '') +
+        (f.t === 'ref' && f.req !== true ? '<option value="">Not sure yet</option>' : '') +
+        (f.t === 'ref' && f.req === true ? '<option value="">— pick one —</option>' : '') +
         list.map(function (o) {
           return '<option value="' + esc(o.v) + '"' + (String(v) === String(o.v) ? ' selected' : '') + '>' + esc(o.l) + '</option>';
         }).join('') + '</select>';
@@ -3569,7 +3613,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
     var def = KIND[kind];
     // a required picker starts on the first real option, not on "not set"
     def.fields.forEach(function (f) {
-      if (f.t !== 'ref' || !f.req || rec[f.k]) return;
+      if (f.t !== 'ref' || f.req !== true || rec[f.k]) return;
       var list = f.ref();
       if (list.length) rec[f.k] = list[0].v;
     });
@@ -3672,7 +3716,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
 
   function saveForm() {
     var kind = FORM.kind, def = KIND[kind], vals = readForm();
-    var missing = def.fields.filter(function (f) { return f.req && !String(vals[f.k] == null ? '' : vals[f.k]).trim(); });
+    var need = function (f) { return typeof f.req === 'function' ? f.req(vals) : !!f.req; };
+    var missing = def.fields.filter(function (f) { return need(f) && !String(vals[f.k] == null ? '' : vals[f.k]).trim(); });
     if (missing.length) {
       toast('Put in the ' + missing[0].l.toLowerCase() + ' first.');
       var el = document.getElementById('f_' + missing[0].k); if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); }
@@ -3745,6 +3790,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       { a: 'new-receipt', i: 'doc', t: 'Write a receipt', s: 'They already paid — proof for them, money in for you' },
       { a: 'new-invoice', i: 'doc', t: 'Write an invoice', s: 'Bill someone — print it or save it to send' },
       { a: 'new-job', i: 'car', t: 'Book a job', s: 'A car in for tint, detail, wrap or install' },
+      { a: 'new-want', i: 'clip', t: 'Someone wants a part', s: 'They have asked for it and you have not bought it yet' },
       { a: 'new-expense', i: 'wallet', t: 'Money going out', s: 'Ads, rent, materials, tools, fuel' },
       { a: 'new-product', i: 'box', t: 'Add stock', s: 'Film, vinyl, parts — anything you count' },
       { a: 'new-order', i: 'truck', t: 'Put an order in', s: 'Something on the way from a supplier' },
@@ -4117,6 +4163,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       case 'hide-start': S.meta.hideStart = true; touch(); render(); toast('Hidden. Bring it back from Settings.'); break;
       case 'show-start': S.meta.hideStart = false; touch(); render(); setTab('home'); break;
       case 'job-jump': UI.jobFilter = el.getAttribute('data-v'); UI.jobsView = 'list'; setTab('jobs'); break;
+      case 'new-want': openForm('jobs', null, { status: WANTED, price: '' }); break;
       case 'jobs-view': UI.jobsView = el.getAttribute('data-v'); UI.q = ''; render(); break;
       case 'cal-day': openDay(el.getAttribute('data-d')); break;
       case 'new-job-on': closeDrawer(); openForm('jobs', null, { date: el.getAttribute('data-d') }); break;
