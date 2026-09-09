@@ -644,8 +644,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
   var SHIP_WAYS = ['Sea freight', 'Air freight', 'Express courier', 'Picked up locally'];
   var SHIP_DAYS = { 'Sea freight': 40, 'Air freight': 12, 'Express courier': 6, 'Picked up locally': 0 };
   var PAY_WAYS = ['Cash', 'Bank transfer', 'Card', 'PayID', 'Other'];
-  var STOCK_CATS = ['Tint film', 'Wrap vinyl', 'Paint protection film', 'Detailing supplies', 'Body kit', 'Bumper',
-    'Spoiler', 'Wheels', 'Exhaust', 'Suspension', 'Lighting', 'Interior', 'Tools', 'Other'];
+  var STOCK_CATS = ['Badges & emblems', 'Grille', 'Tint film', 'Wrap vinyl', 'Paint protection film',
+    'Detailing supplies', 'Body kit', 'Bumper', 'Spoiler', 'Wheels', 'Exhaust', 'Suspension', 'Lighting',
+    'Interior', 'Steering wheel', 'Merch & giveaways', 'Tools', 'Other'];
   var STARTER_SERVICES = ['Window tint — full car', 'Window tint — front two', 'Windscreen strip',
     'Ceramic coating', 'Full detail', 'Interior detail', 'Cut & polish', 'Paint correction',
     'Full wrap', 'Partial wrap', 'Chrome delete', 'Paint protection film', 'Parts installation', 'Parts supply only'];
@@ -1104,7 +1105,12 @@ label>.chip{margin-left:6px;vertical-align:middle}
   function orderTotal(o) { return orderGoods(o) + n(o.freight) + n(o.duties); }
   function orderLate(o) { var d = days(o.eta); return orderOpen(o) && d != null && d < 0; }
 
-  function lowStock() { return S.products.filter(function (p) { return carsLeft(p) <= n(p.reorder); }); }
+  /* Blank means never warn me -- a steering wheel you bought once is not
+     "running low" the moment it sells. Zero still means tell me at empty. */
+  function warnsLow(p) { return p && p.reorder !== '' && p.reorder != null; }
+  function lowStock() {
+    return S.products.filter(function (p) { return warnsLow(p) && carsLeft(p) <= n(p.reorder); });
+  }
   function lateOrders() { return S.orders.filter(orderLate); }
   function unpaidJobs() {
     return S.jobs.filter(function (j) { return j.status === 'Done' && jobOwing(j) > 0; });
@@ -2596,7 +2602,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
   function viewStock() {
     var low = lowStock(), out = S.products.filter(function (p) { return n(p.qty) <= 0; });
     var list = S.products.filter(function (p) {
-      if (UI.stockFilter === 'low' && n(p.qty) > n(p.reorder)) return false;
+      if (UI.stockFilter === 'low' && !(warnsLow(p) && carsLeft(p) <= n(p.reorder))) return false;
       if (UI.stockFilter === 'out' && n(p.qty) > 0) return false;
       return hit([p.name, p.sku, p.category, supName(p.supplierId), p.location].join(' '));
     });
@@ -3414,7 +3420,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
         { k: 'cost', l: 'What one costs you', t: 'money', hint: 'What you pay for the whole roll or box' },
         { k: 'price', l: 'What you sell it for', t: 'money' },
         { k: 'reorder', l: 'Tell me when I am down to', t: 'int',
-          hint: 'Counted in cars. Hit it and it turns red on Stock and shows up on Home.' },
+          hint: 'Counted in cars. Hit it and it turns red on Stock and shows up on Home. ' +
+                'Leave it empty for a one-off you will not be buying again.' },
         { k: 'supplierId', l: 'Who you buy it from', t: 'ref', ref: supOpts, adv: true },
         { k: 'sku', l: 'Code or part number', t: 'text', adv: true },
         { k: 'location', l: 'Where it sits', t: 'text', adv: true, ph: 'Rack A1' },
