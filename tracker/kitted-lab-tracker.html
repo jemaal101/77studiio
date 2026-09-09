@@ -111,7 +111,8 @@ a{color:var(--acc)}
 .top .ttl{min-width:0;display:flex;flex-direction:column;gap:1px}
 .top .why{font-size:14.5px;color:var(--muted);font-weight:500;line-height:1.3;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media (max-width:420px){.top .why{font-size:13.5px}}
+@media (max-width:680px){.top .why{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:13.5px}
+  .top h1{font-size:24px}}
 .top .btn.icon{flex:none}
 /* filter pills wrap instead of clipping off the edge of a phone */
 .pills{display:flex;flex-wrap:wrap;gap:7px}
@@ -121,8 +122,9 @@ a{color:var(--acc)}
 .pills button .n{opacity:.7;font-weight:500;margin-left:4px}
 /* a card that opens when you tap its header */
 .card.fold>.card-h{cursor:pointer;user-select:none}
-.card.fold>.card-h .sum{font-size:15px;color:var(--muted);font-weight:500;min-width:0;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto}
+.card.fold>.card-h h3{flex:none;white-space:nowrap}
+.card.fold>.card-h .sum{font-size:15px;color:var(--muted);font-weight:500;min-width:0;flex:1;text-align:right;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card.fold>.card-h .chev{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .15s}
 .card.fold:not(.open)>.card-h .chev{transform:rotate(-90deg)}
 .card.fold:not(.open)>.card-h{border-bottom:0}
@@ -237,7 +239,8 @@ a{color:var(--acc)}
 /* ------------------------------------------------------------- stage ---- */
 .stages{display:grid;gap:1px;grid-template-columns:minmax(0,1fr);margin-top:14px;
   background:var(--rule-hard);border:1px solid var(--rule-hard);border-radius:3px;overflow:hidden}
-@media (min-width:620px){.stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stages{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:619px){.stage{padding:12px 13px}.stage .n{font-size:28px}.stage .l{font-size:14px}.stage .v{font-size:14px}}
 @media (min-width:880px){.stages{grid-template-columns:repeat(4,minmax(0,1fr))}
   .stages.three{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .stage{background:var(--panel);padding:13px 15px;border-top:3px solid var(--rule-hard);cursor:pointer;
@@ -327,6 +330,8 @@ a{color:var(--acc)}
 .row .t{font-weight:600;font-size:17.5px}
 .row .s{font-size:16px;color:var(--muted)}
 .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grow>.t.truncate,.grow>.s.truncate{display:block}
+.grow>.t.truncate+br,.grow>.s.truncate+br{display:none}
 
 /* ------------------------------------------------------------ tables ---- */
 .tablewrap{overflow-x:auto}
@@ -1626,7 +1631,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
   /* One plain line under every title saying what the screen is for. Nobody
      should have to guess what "Orders" means when they also sell things. */
   var TABS = [
-    { id: 'home', label: 'Home', icon: 'home', why: 'What needs you, and how the month is going' },
+    { id: 'home', label: 'Home', icon: 'home', why: 'What needs you today' },
     { id: 'jobs', label: 'Jobs', icon: 'car', why: 'Every sale, and everyone waiting on a part' },
     { id: 'stock', label: 'Stock', icon: 'box', why: 'What is on the shelf and what it cost you' },
     { id: 'orders', label: 'Orders', icon: 'truck', why: 'Stuff you have bought that has not landed yet' },
@@ -1839,16 +1844,16 @@ label>.chip{margin-left:6px;vertical-align:middle}
     ];
     if (steps.every(function (x) { return x.done; })) return '';
     var done = steps.filter(function (x) { return x.done; }).length;
-    return '<section class="card" style="grid-column:1/-1"><div class="card-h">' + ico('check') + '<h3>Getting set up</h3>' +
-      '<div class="spacer"></div><span class="chip">' + done + ' of ' + steps.length + '</span>' +
-      '<button class="btn ghost sm" data-act="hide-start">Hide this</button></div>' +
-      '<div class="card-b flush">' + steps.map(function (x) {
+    return fold('setup', 'check', 'Getting set up', done + ' of ' + steps.length + ' done',
+      '<div class="card-b flush">' +
+      '<div style="padding:10px 16px 0;text-align:right"><button class="btn ghost sm" data-act="hide-start">Hide this for good</button></div>' +
+      steps.map(function (x) {
         return '<div class="check' + (x.done ? ' done' : '') + '"' +
           (x.done ? '' : (x.act === 'tab' ? ' data-tab="' + x.v + '"' : ' data-act="' + x.act + '"') + ' style="cursor:pointer"') + '>' +
           '<span class="bx">' + (x.done ? ico('check') : '') + '</span>' +
           '<span class="grow"><span class="t">' + esc(x.t) + '</span><br><span class="s">' + esc(x.s) + '</span></span>' +
           (x.done ? '' : ico('right')) + '</div>';
-      }).join('') + '</div></section>';
+      }).join('') + '</div>', done < steps.length);
   }
 
   function comingUp() {
@@ -3264,7 +3269,9 @@ label>.chip{margin-left:6px;vertical-align:middle}
   /* Every settings card starts closed with a one-line summary, so the page
      is a list of headings you can read, not seven screens of fields. */
   function fold(id, icon, title, sum, body, open) {
-    var isOpen = UI.folds && UI.folds[id] != null ? UI.folds[id] : !!open;
+    UI.folds = UI.folds || {};
+    if (UI.folds[id] == null && open) UI.folds[id] = true;   // remembered, so it does not close under you
+    var isOpen = UI.folds[id] != null ? UI.folds[id] : !!open;
     return '<section class="card fold' + (isOpen ? ' open' : '') + '" data-fold="' + id + '">' +
       '<div class="card-h" data-act="fold" data-v="' + id + '">' + ico(icon) + '<h3>' + esc(title) + '</h3>' +
       (sum ? '<span class="sum">' + esc(sum) + '</span>' : '<div class="spacer"></div>') +
@@ -3277,13 +3284,14 @@ label>.chip{margin-left:6px;vertical-align:middle}
     h += startHere();
 
     var priced = S.services.filter(function (x) { return n(x.price) > 0 || svcMode(x) === 'varies'; }).length;
+    var unset = S.services.filter(function (x) { return svcMode(x) === 'fixed' && !n(x.price); }).length;
     h += fold('prices', 'spark', 'Your prices',
       priced ? priced + ' of ' + S.services.length + ' set' : 'none set yet',
       '<div class="card-b flush">' +
       '<div class="hint" style="padding:14px 16px 0">Set these once and booking a job fills the price in for you.</div>' +
       '<div style="padding:10px 16px 0"><button class="btn sm" data-act="new-service">' + ico('plus') + 'Add one</button></div>' +
       (S.services.length ? serviceRows() : emptyBlock('spark', 'No services yet', 'Add the work you do and what you charge for it.')) +
-      '</div>');
+      '</div>', unset > 0);
 
     h += fold('basics', 'cog', 'Basics', (S.meta.business || 'Kitted Lab') + ' · ' + (S.meta.currency || '$'),
       '<div class="card-b">' +
@@ -3387,7 +3395,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       what travels with the link and offer the safe way instead. */
   function shareCard() {
     var mine = (window.claude && window.claude.use);
-    return '<section class="card"><div class="card-h">' + ico('users') + '<h3>Sharing it</h3></div>' +
+    return fold('share', 'users', 'Sharing it', mine ? 'the other two owners' : 'a blank copy for someone',
       '<div class="card-b stack">' +
       (mine
         ? '<div class="banner" style="border-color:var(--s2);background:var(--panel);color:var(--s2)">' + ico('alert') +
@@ -3400,7 +3408,7 @@ label>.chip{margin-left:6px;vertical-align:middle}
       '<div><button class="btn primary" data-act="share-copy">' + ico('down') + 'Give someone a blank copy</button></div>' +
       '<div class="hint">A whole working tracker with none of your details in it. Send them the file, ' +
       'they open it, and what they put in stays theirs.</div>' +
-      '</div></section>';
+      '</div>');
   }
 
   /** Everything that ends up printed on an invoice, in one place, so a job
@@ -3954,7 +3962,8 @@ label>.chip{margin-left:6px;vertical-align:middle}
     var main = [
       { a: 'new-job', i: 'car', t: 'Sold something', s: 'A badge, a grille, a tint — who, what, how much' },
       { a: 'new-want', i: 'clip', t: 'Someone wants a part', s: 'They asked, you have not bought it yet' },
-      { a: 'new-receipt', i: 'doc', t: 'Send a receipt or invoice', s: 'With your logo on it, straight to their email' },
+      { a: 'new-receipt', i: 'check', t: 'Send a receipt', s: 'They paid — proof for them, with your logo on it' },
+      { a: 'new-invoice', i: 'doc', t: 'Write an invoice', s: 'Bill someone — print it, save it, or email it' },
       { a: 'new-product', i: 'box', t: 'Bought stock', s: 'Something landed — put it on the shelf' }
     ];
     var more = [
