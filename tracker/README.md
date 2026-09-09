@@ -256,6 +256,15 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## Blank means never warn me
+
+`lowStock()` only looks at an item whose reorder point has actually been
+set. A steering wheel bought once is not "running low" the second it sells,
+and an item you will never buy again should not sit under Needs doing for
+the rest of time. So `warnsLow()` gates on the field having a value at all:
+blank is never, zero still means tell me when it hits empty, and a new item
+still starts at 2 so the warning is opt-out rather than opt-in.
+
 ## The pre-order list is a job that has not been ordered
 
 Most of what he sells is a part he has not bought yet: somebody asks, he
