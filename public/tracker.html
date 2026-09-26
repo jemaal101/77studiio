@@ -1282,9 +1282,15 @@ tbody td{padding:18px 16px}
   /* Blank means never warn me -- a steering wheel you bought once is not
      "running low" the moment it sells. Zero still means tell me at empty. */
   function warnsLow(p) { return p && p.reorder !== '' && p.reorder != null; }
-  function lowStock() {
-    return S.products.filter(function (p) { return warnsLow(p) && carsLeft(p) <= n(p.reorder); });
+  /* Something is only low if what is on the shelf PLUS what is already on
+     the way will not cover it. Nineteen new lines at zero the day you place
+     the order are not nineteen things to chase -- the order is one thing,
+     and it shows up by itself the day it is late. */
+  function isLow(p) {
+    if (!warnsLow(p)) return false;
+    return carsLeft(p) + incomingQty(p.id) * uses(p) <= n(p.reorder);
   }
+  function lowStock() { return S.products.filter(isLow); }
   function gifts() { return S.products.filter(function (p) { return !!p.gift; }); }
 
   /* A gift is put on the job as a real line, so it comes off the shelf and
@@ -2928,7 +2934,7 @@ tbody td{padding:18px 16px}
   function viewStock() {
     var low = lowStock(), out = S.products.filter(function (p) { return n(p.qty) <= 0; });
     var list = S.products.filter(function (p) {
-      if (UI.stockFilter === 'low' && !(warnsLow(p) && carsLeft(p) <= n(p.reorder))) return false;
+      if (UI.stockFilter === 'low' && !isLow(p)) return false;
       if (UI.stockFilter === 'out' && n(p.qty) > 0) return false;
       return hit([p.name, p.sku, p.category, supName(p.supplierId), p.location].join(' '));
     });
@@ -3152,7 +3158,7 @@ tbody td{padding:18px 16px}
       '<div class="job-price">' + money(orderTotal(o)) + '</div></div>' +
       '<div class="job-meta">' +
       '<span class="chip ' + (o.status === 'Arrived' ? 'good' : late ? 'bad' : 'acc') + '">' + esc(o.status) + '</span>' +
-      '<span class="job-when">' + (o.status === 'Arrived' ? 'Done' : d == null ? 'No date set' : d < 0 ? Math.abs(d) + ' days late' : d === 0 ? 'Due today' : 'in ' + d + ' days') + '</span>' +
+      '<span class="job-when">' + (o.status === 'Arrived' ? 'Done' : d == null ? 'No date set' : d < 0 ? plural(Math.abs(d), 'day') + ' late' : d === 0 ? 'Due today' : 'in ' + plural(d, 'day')) + '</span>' +
       (o.ship ? '<span class="job-when">' + esc(o.ship) + '</span>' : '') +
       '<span class="job-when">' + plural(orderUnits(o), 'unit') + '</span></div>' +
       shipProgress(o) +

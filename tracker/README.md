@@ -256,6 +256,42 @@ the job behind it. No number is spent until one is actually raised
   the app shell; Save a copy writes a complete self-contained HTML document.
 - An invoice raised but not marked sent shows on Home under Needs doing.
 
+## An order is a thing on the way, not stock on the shelf
+
+Order 2 was the first real use of the Orders tab, and it showed up the rule
+that was missing. Nineteen new stock lines at zero, the day the order is
+placed, made nineteen "running low" alarms on Home -- for parts that were in
+a plane. `isLow()` now counts what is already on the way: something is only
+low if the shelf *plus* the open orders will not cover it. The order itself
+is one thing, and it surfaces on Home by itself the day it is late.
+
+How a China order goes in:
+
+- **A supplier** first; an order will not save without one.
+- **Stock lines at zero**, one per line on the supplier's invoice, with the
+  landed cost on each -- DDP shipping spread across the units by count, in
+  the AUD he actually paid. The order's `freight` stays 0 because the
+  shipping is already inside each line; the note on the order says so.
+- **The order** with those lines, *On the way*, ordered date, express, ETA
+  at the far end of the supplier's window. **It arrived** puts every unit on
+  the shelf in one tap and cannot do it twice (`applied`).
+- **A part bought for a customer is not stock.** It goes on that person's
+  pre-order as the job's cost (`materials`), and the pre-order moves to
+  Booked with no fitting date. So "money on the shelf" is only what can be
+  sold to anyone, and the part's cost lands in profit when *that* job pays.
+  The order's note lists these so its total is not a mystery.
+
+## Tests live in the repo now
+
+The first sixteen suites lived in a scratch directory and were lost when
+the container was reclaimed. Everything from here on goes in
+`tracker/tests/` and runs with `sh tracker/tests/run.sh`. `fixture.js`
+builds a state: with `KL_LIVE=<read_db snapshot dir>` it uses the real rows
+(that snapshot is never committed -- it has customers' names and addresses
+in it), otherwise a synthetic set with the same ids. `KL_PAGE=<html>` points
+a run at a built or publish file instead of the source, which is how the
+exact file that gets published is verified.
+
 ## It has to be readable before it can be understood
 
 Three times he said it was congested and hard to read, and twice the answer
